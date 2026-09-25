@@ -1,0 +1,11 @@
+{
+  "name": "random_sunglasses",
+  "src": "assets/character/interactions/codeboy_random_sunglasses.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 30,
+  "rarity": "LEGENDARY"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "idle_yawn",
+  "src": "assets/character/idle/codeboy_idle_yawn.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": false,
+  "priority": 0,
+  "rarity": "COMMON"
+}

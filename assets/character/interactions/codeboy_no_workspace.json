@@ -1,0 +1,10 @@
+{
+  "name": "no_workspace",
+  "src": "assets/character/interactions/codeboy_no_workspace.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": true,
+  "priority": 10
+}

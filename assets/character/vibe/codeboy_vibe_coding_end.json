@@ -1,0 +1,11 @@
+{
+  "name": "vibe_coding_end",
+  "src": "assets/character/vibe/codeboy_vibe_coding_end.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 20,
+  "next": "idle"
+}

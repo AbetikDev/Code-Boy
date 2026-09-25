@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "module": "ESNext", "moduleResolution": "bundler", "lib": ["ES2022", "DOM", "DOM.Iterable"], "types": [], "rootDir": ".", "noEmit": true },
+  "include": ["webview/**/*.ts", "src/models/**/*.ts"]
+}

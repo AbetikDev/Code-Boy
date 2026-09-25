@@ -1,0 +1,11 @@
+{
+  "name": "idle_bug_hunt",
+  "src": "assets/character/idle/codeboy_idle_bug_hunt.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": false,
+  "priority": 0,
+  "rarity": "RARE"
+}

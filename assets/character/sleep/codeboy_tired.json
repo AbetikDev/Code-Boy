@@ -1,0 +1,10 @@
+{
+  "name": "tired",
+  "src": "assets/character/sleep/codeboy_tired.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": true,
+  "priority": 10
+}

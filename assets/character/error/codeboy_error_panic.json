@@ -1,0 +1,10 @@
+{
+  "name": "error_panic",
+  "src": "assets/character/error/codeboy_error_panic.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 50
+}

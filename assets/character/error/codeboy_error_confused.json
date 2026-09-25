@@ -1,0 +1,10 @@
+{
+  "name": "error_confused",
+  "src": "assets/character/error/codeboy_error_confused.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 50
+}

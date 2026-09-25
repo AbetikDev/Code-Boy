@@ -1,0 +1,11 @@
+{
+  "name": "idle_look_right",
+  "src": "assets/character/idle/codeboy_idle_look_right.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": false,
+  "priority": 0,
+  "rarity": "COMMON"
+}

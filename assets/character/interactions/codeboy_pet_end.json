@@ -1,0 +1,11 @@
+{
+  "name": "pet_end",
+  "src": "assets/character/interactions/codeboy_pet_end.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 40,
+  "next": "idle"
+}

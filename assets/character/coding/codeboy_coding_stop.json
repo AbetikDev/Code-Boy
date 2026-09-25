@@ -1,0 +1,11 @@
+{
+  "name": "coding_stop",
+  "src": "assets/character/coding/codeboy_coding_stop.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 20,
+  "next": "idle"
+}

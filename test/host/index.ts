@@ -1,0 +1,45 @@
+import * as assert from 'node:assert/strict';
+import * as vscode from 'vscode';
+import { ActivityEvent, Snapshot } from '../../src/models/types';
+const delay = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
+interface TestApi { getSnapshot(): Snapshot; dispatch(event: ActivityEvent): void }
+export async function run(): Promise<void> {
+  const extension = vscode.extensions.getExtension<TestApi>('code-boy-local.code-boy');
+  assert.ok(extension, 'Extension discovered');
+  const api = await extension.activate();
+  assert.equal(extension.isActive, true);
+  const commands = await vscode.commands.getCommands(true);
+  for (const command of ['open', 'pet', 'dance', 'toggleVibeMode', 'sleep', 'wakeUp', 'changeRoom', 'showStats', 'toggleMusicDetection', 'resetCharacter']) assert.ok(commands.includes(`codeBoy.${command}`), command);
+  await vscode.commands.executeCommand('codeBoy.open');
+  await delay(1500);
+  assert.equal(api.getSnapshot().hasWorkspace, true);
+  api.dispatch({ type: 'focus', focused: true });
+  api.dispatch({ type: 'typing', characters: 8, languageId: 'typescript' });
+  assert.ok(['CODING', 'VIBE_CODING'].includes(api.getSnapshot().state), 'Coding state responds');
+  await vscode.commands.executeCommand('codeBoy.sleep');
+  assert.equal(api.getSnapshot().state, 'SLEEPING');
+  await vscode.commands.executeCommand('codeBoy.wakeUp');
+  await vscode.commands.executeCommand('codeBoy.pet');
+  assert.ok(['HAPPY', 'VERY_HAPPY'].includes(api.getSnapshot().state), 'Pet command responds');
+  const root = vscode.workspace.workspaceFolders![0].uri;
+  const uri = vscode.Uri.joinPath(root, 'smoke.ts');
+  await vscode.workspace.fs.writeFile(uri, Buffer.from('const answer = 42;\n'));
+  const document = await vscode.workspace.openTextDocument(uri);
+  await vscode.window.showTextDocument(document);
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(uri, new vscode.Position(1, 0), '// saved locally\n');
+  await vscode.workspace.applyEdit(edit);
+  const beforeSave = api.getSnapshot().daily.filesSaved;
+  await document.save();
+  assert.ok(api.getSnapshot().daily.filesSaved > beforeSave, 'Real document save tracked');
+  const diagnostics = vscode.languages.createDiagnosticCollection('code-boy-smoke');
+  diagnostics.set(uri, [new vscode.Diagnostic(new vscode.Range(0, 0, 0, 5), 'Synthetic test error', vscode.DiagnosticSeverity.Error)]);
+  await delay(1800);
+  const beforeFix = api.getSnapshot().daily.errorsFixed;
+  diagnostics.clear();
+  await delay(1800);
+  assert.ok(api.getSnapshot().daily.errorsFixed > beforeFix, 'Real diagnostics change tracked');
+  diagnostics.dispose();
+  await vscode.commands.executeCommand('codeBoy.showStats');
+  console.log('CODE BOY HOST SMOKE PASSED: activation, webview, commands, coding, sleep, pet, document save, diagnostics.');
+}

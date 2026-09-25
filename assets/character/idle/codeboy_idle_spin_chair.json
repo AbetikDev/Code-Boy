@@ -1,0 +1,11 @@
+{
+  "name": "idle_spin_chair",
+  "src": "assets/character/idle/codeboy_idle_spin_chair.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": false,
+  "priority": 0,
+  "rarity": "RARE"
+}

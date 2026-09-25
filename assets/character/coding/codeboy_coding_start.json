@@ -1,0 +1,11 @@
+{
+  "name": "coding_start",
+  "src": "assets/character/coding/codeboy_coding_start.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 20,
+  "next": "coding_loop"
+}

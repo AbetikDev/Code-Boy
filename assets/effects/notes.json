@@ -1,0 +1,9 @@
+{
+  "name": "notes",
+  "src": "assets/effects/notes.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "frames": 8,
+  "fps": 8,
+  "loop": true
+}

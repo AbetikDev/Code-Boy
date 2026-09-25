@@ -1,0 +1,329 @@
+{
+  "name": "code-boy",
+  "displayName": "Code Boy",
+  "description": "A tiny pixel programmer living in your editor. Code, vibe, and grow together.",
+  "version": "1.0.0",
+  "publisher": "code-boy-local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "pixel",
+    "pet",
+    "tamagotchi",
+    "companion",
+    "vibe"
+  ],
+  "icon": "assets/icons/extension.png",
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codeBoy",
+          "title": "Code Boy",
+          "icon": "assets/icons/activity.svg"
+        },
+        {
+          "id": "contextback",
+          "title": "ContextBack",
+          "icon": "assets/icons/contextback.svg"
+        }
+      ]
+    },
+    "views": {
+      "codeBoy": [
+        {
+          "id": "codeBoy.companion",
+          "name": "Code Boy",
+          "type": "webview"
+        }
+      ],
+      "contextback": [
+        {
+          "id": "contextback.sidebar",
+          "name": "Context",
+          "type": "tree"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "codeBoy.open",
+        "title": "Open",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.pet",
+        "title": "Pet",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.dance",
+        "title": "Dance",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.toggleVibeMode",
+        "title": "Toggle Vibe Mode",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.sleep",
+        "title": "Sleep",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.wakeUp",
+        "title": "Wake Up",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.changeRoom",
+        "title": "Change Room",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.showStats",
+        "title": "Show Stats",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.toggleMusicDetection",
+        "title": "Toggle Music Detection",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.resetCharacter",
+        "title": "Reset Character",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.connectSpotify",
+        "title": "Connect Spotify Access Token",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.disconnectSpotify",
+        "title": "Disconnect Spotify",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.spriteGallery",
+        "title": "Sprite Gallery",
+        "category": "Code Boy",
+        "enablement": "codeBoy.development"
+      },
+      {
+        "command": "contextBack.openDashboard",
+        "title": "Open Dashboard",
+        "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.continueSession",
+        "title": "Continue Last Session",
+        "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.summarizeSession",
+        "title": "Summarize Last Session",
+        "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.showOpenThreads",
+        "title": "Show Open Threads",
+        "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.pauseTracking",
+        "title": "Pause Tracking",
+        "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.clearHistory",
+        "title": "Clear Project History",
+        "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.setOpenAIKey",
+        "title": "Set OpenAI API Key",
+        "category": "ContextBack"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "codeBoy.spriteGallery",
+          "when": "codeBoy.development"
+        }
+      ]
+    },
+    "configuration": [
+      {
+        "title": "Code Boy",
+        "properties": {
+          "codeBoy.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable the companion and local activity tracking."
+          },
+          "codeBoy.soundEnabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Play quiet, short pixel sounds after interacting with the companion."
+          },
+          "codeBoy.musicDetection": {
+            "type": "boolean",
+            "default": false,
+            "description": "Check local Windows media playback, or Spotify when you explicitly connect it. Never records audio."
+          },
+          "codeBoy.animations": {
+            "type": "boolean",
+            "default": true,
+            "description": "Animate the character and room."
+          },
+          "codeBoy.reactions": {
+            "type": "boolean",
+            "default": true,
+            "description": "React to saves, tasks, and editor activity."
+          },
+          "codeBoy.idleAnimations": {
+            "type": "boolean",
+            "default": true,
+            "description": "Play occasional idle variations and random events."
+          },
+          "codeBoy.showDiagnosticsReaction": {
+            "type": "boolean",
+            "default": true,
+            "description": "React to changes in the local error count."
+          },
+          "codeBoy.vibeMode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Put on headphones and enter vibe coding mode."
+          },
+          "codeBoy.roomTheme": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "NIGHT",
+              "CYBER",
+              "FOREST",
+              "SPACE",
+              "RETRO_PC"
+            ],
+            "default": "DEFAULT",
+            "description": "Preferred room. Cosmetic themes become available as Code Boy levels up."
+          },
+          "codeBoy.animationSpeed": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 1.5,
+            "default": 1,
+            "description": "Sprite playback speed; capped at 12 FPS."
+          },
+          "codeBoy.reducedMotion": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use still poses and disable ambient effects. System reduced-motion preferences are also respected."
+          }
+        }
+      },
+      {
+        "title": "ContextBack",
+        "properties": {
+          "contextBack.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ContextBack session tracking."
+          },
+          "contextBack.sessionTimeoutMinutes": {
+            "type": "number",
+            "default": 20,
+            "enum": [5, 10, 20, 30, 60],
+            "description": "Minutes of inactivity before a session ends automatically."
+          },
+          "contextBack.welcomeBackAfterHours": {
+            "type": "number",
+            "default": 8,
+            "enum": [4, 8, 12, 24, 48, 168],
+            "description": "Show the Welcome Back card if the last session ended this many hours ago."
+          },
+          "contextBack.trackTerminalCommands": {
+            "type": "boolean",
+            "default": true,
+            "description": "Record terminal command names and exit codes (never outputs)."
+          },
+          "contextBack.trackDiagnostics": {
+            "type": "boolean",
+            "default": true,
+            "description": "Track TypeScript / ESLint errors and warnings."
+          },
+          "contextBack.trackGit": {
+            "type": "boolean",
+            "default": true,
+            "description": "Poll git for branch, commits, and changed files."
+          },
+          "contextBack.trackTodos": {
+            "type": "boolean",
+            "default": true,
+            "description": "Scan saved files for TODO / FIXME / HACK / XXX comments."
+          },
+          "contextBack.ai.enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use AI to generate session summaries."
+          },
+          "contextBack.ai.provider": {
+            "type": "string",
+            "enum": ["disabled", "openai", "ollama"],
+            "default": "disabled",
+            "description": "AI provider for session summarization."
+          },
+          "contextBack.exclude": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": ["**/.env*", "**/secrets/**", "**/credentials/**", "**/*.pem", "**/*.key"],
+            "description": "Glob patterns for files that ContextBack will never record."
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "npm run check && node scripts/build.mjs",
+    "check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
+    "watch": "node scripts/build.mjs --watch",
+    "test": "tsc -p tsconfig.test.json && node --test .test/test/*.test.js",
+    "test:host": "npm run compile && tsc -p tsconfig.test.json && node scripts/test-host.cjs",
+    "test:webview": "npm run compile && playwright test",
+    "preview": "npm run compile && node scripts/preview.mjs",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package --allow-missing-repository --out code-boy-1.0.0.vsix"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.15.0",
+    "@types/vscode": "1.96.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3"
+  }
+}

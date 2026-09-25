@@ -1,0 +1,10 @@
+{
+  "name": "very_sad",
+  "src": "assets/character/sad/codeboy_very_sad.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": true,
+  "priority": 10
+}

@@ -1,0 +1,10 @@
+{
+  "name": "sleep",
+  "src": "assets/character/sleep/codeboy_sleep.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 6,
+  "loop": true,
+  "priority": 10
+}

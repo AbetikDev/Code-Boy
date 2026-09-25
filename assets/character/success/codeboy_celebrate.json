@@ -1,0 +1,11 @@
+{
+  "name": "celebrate",
+  "src": "assets/character/success/codeboy_celebrate.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 50,
+  "rarity": "LEGENDARY"
+}

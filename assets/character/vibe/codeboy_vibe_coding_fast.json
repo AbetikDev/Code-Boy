@@ -1,0 +1,10 @@
+{
+  "name": "vibe_coding_fast",
+  "src": "assets/character/vibe/codeboy_vibe_coding_fast.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 10,
+  "loop": true,
+  "priority": 20
+}

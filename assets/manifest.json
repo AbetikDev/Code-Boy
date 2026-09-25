@@ -1,0 +1,1068 @@
+{
+  "character": {
+    "idle": {
+      "name": "idle",
+      "src": "assets/character/idle/codeboy_idle.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 0,
+      "rarity": "COMMON"
+    },
+    "idle_blink": {
+      "name": "idle_blink",
+      "src": "assets/character/idle/codeboy_idle_blink.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 0,
+      "rarity": "COMMON"
+    },
+    "idle_look_left": {
+      "name": "idle_look_left",
+      "src": "assets/character/idle/codeboy_idle_look_left.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "COMMON"
+    },
+    "idle_look_right": {
+      "name": "idle_look_right",
+      "src": "assets/character/idle/codeboy_idle_look_right.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "COMMON"
+    },
+    "idle_stretch": {
+      "name": "idle_stretch",
+      "src": "assets/character/idle/codeboy_idle_stretch.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "COMMON"
+    },
+    "idle_yawn": {
+      "name": "idle_yawn",
+      "src": "assets/character/idle/codeboy_idle_yawn.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "COMMON"
+    },
+    "idle_check_phone": {
+      "name": "idle_check_phone",
+      "src": "assets/character/idle/codeboy_idle_check_phone.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_drink_coffee": {
+      "name": "idle_drink_coffee",
+      "src": "assets/character/idle/codeboy_idle_drink_coffee.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_fix_headphones": {
+      "name": "idle_fix_headphones",
+      "src": "assets/character/idle/codeboy_idle_fix_headphones.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_keyboard_clean": {
+      "name": "idle_keyboard_clean",
+      "src": "assets/character/idle/codeboy_idle_keyboard_clean.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_spin_chair": {
+      "name": "idle_spin_chair",
+      "src": "assets/character/idle/codeboy_idle_spin_chair.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "RARE"
+    },
+    "idle_sleepy": {
+      "name": "idle_sleepy",
+      "src": "assets/character/idle/codeboy_idle_sleepy.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_watch_window": {
+      "name": "idle_watch_window",
+      "src": "assets/character/idle/codeboy_idle_watch_window.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_play_game": {
+      "name": "idle_play_game",
+      "src": "assets/character/idle/codeboy_idle_play_game.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_read": {
+      "name": "idle_read",
+      "src": "assets/character/idle/codeboy_idle_read.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_small_dance": {
+      "name": "idle_small_dance",
+      "src": "assets/character/idle/codeboy_idle_small_dance.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_thinking": {
+      "name": "idle_thinking",
+      "src": "assets/character/idle/codeboy_idle_thinking.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "idle_bug_hunt": {
+      "name": "idle_bug_hunt",
+      "src": "assets/character/idle/codeboy_idle_bug_hunt.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "RARE"
+    },
+    "idle_snack": {
+      "name": "idle_snack",
+      "src": "assets/character/idle/codeboy_idle_snack.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": false,
+      "priority": 0,
+      "rarity": "UNCOMMON"
+    },
+    "coding_start": {
+      "name": "coding_start",
+      "src": "assets/character/coding/codeboy_coding_start.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 20,
+      "next": "coding_loop"
+    },
+    "coding_loop": {
+      "name": "coding_loop",
+      "src": "assets/character/coding/codeboy_coding.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 20
+    },
+    "coding_fast": {
+      "name": "coding_fast",
+      "src": "assets/character/coding/codeboy_fast_coding.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "priority": 20
+    },
+    "coding_stop": {
+      "name": "coding_stop",
+      "src": "assets/character/coding/codeboy_coding_stop.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 20,
+      "next": "idle"
+    },
+    "vibe_coding_start": {
+      "name": "vibe_coding_start",
+      "src": "assets/character/vibe/codeboy_vibe_coding_start.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 20,
+      "next": "vibe_coding_loop"
+    },
+    "vibe_coding_loop": {
+      "name": "vibe_coding_loop",
+      "src": "assets/character/vibe/codeboy_vibe.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 20
+    },
+    "vibe_coding_fast": {
+      "name": "vibe_coding_fast",
+      "src": "assets/character/vibe/codeboy_vibe_coding_fast.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "priority": 20
+    },
+    "vibe_coding_end": {
+      "name": "vibe_coding_end",
+      "src": "assets/character/vibe/codeboy_vibe_coding_end.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 20,
+      "next": "idle"
+    },
+    "music_loop": {
+      "name": "music_loop",
+      "src": "assets/character/music/codeboy_music.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 10
+    },
+    "dance_01": {
+      "name": "dance_01",
+      "src": "assets/character/dance/codeboy_dance01.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 40,
+      "rarity": "COMMON"
+    },
+    "dance_02": {
+      "name": "dance_02",
+      "src": "assets/character/dance/codeboy_dance02.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 40,
+      "rarity": "COMMON"
+    },
+    "dance_03": {
+      "name": "dance_03",
+      "src": "assets/character/dance/codeboy_dance03.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 40,
+      "rarity": "COMMON"
+    },
+    "dance_04": {
+      "name": "dance_04",
+      "src": "assets/character/dance/codeboy_dance_04.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 40,
+      "rarity": "RARE"
+    },
+    "dance_05": {
+      "name": "dance_05",
+      "src": "assets/character/dance/codeboy_dance_05.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "priority": 40,
+      "rarity": "RARE"
+    },
+    "sad": {
+      "name": "sad",
+      "src": "assets/character/sad/codeboy_sad.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "very_sad": {
+      "name": "very_sad",
+      "src": "assets/character/sad/codeboy_very_sad.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "happy": {
+      "name": "happy",
+      "src": "assets/character/happy/codeboy_happy.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 10
+    },
+    "very_happy": {
+      "name": "very_happy",
+      "src": "assets/character/happy/codeboy_very_happy.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 10
+    },
+    "sleep": {
+      "name": "sleep",
+      "src": "assets/character/sleep/codeboy_sleep.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "thinking": {
+      "name": "thinking",
+      "src": "assets/character/idle/codeboy_thinking.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "error_notice": {
+      "name": "error_notice",
+      "src": "assets/character/error/codeboy_error.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 50
+    },
+    "error_confused": {
+      "name": "error_confused",
+      "src": "assets/character/error/codeboy_error_confused.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 50
+    },
+    "error_panic": {
+      "name": "error_panic",
+      "src": "assets/character/error/codeboy_error_panic.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 50
+    },
+    "success": {
+      "name": "success",
+      "src": "assets/character/success/codeboy_success.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 50
+    },
+    "celebrate": {
+      "name": "celebrate",
+      "src": "assets/character/success/codeboy_celebrate.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 50,
+      "rarity": "LEGENDARY"
+    },
+    "tired": {
+      "name": "tired",
+      "src": "assets/character/sleep/codeboy_tired.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "bored": {
+      "name": "bored",
+      "src": "assets/character/idle/codeboy_bored.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "afk": {
+      "name": "afk",
+      "src": "assets/character/idle/codeboy_afk.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "loading": {
+      "name": "loading",
+      "src": "assets/character/interactions/codeboy_loading.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "error_loading": {
+      "name": "error_loading",
+      "src": "assets/character/interactions/codeboy_error_loading.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "no_workspace": {
+      "name": "no_workspace",
+      "src": "assets/character/interactions/codeboy_no_workspace.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 6,
+      "loop": true,
+      "priority": 10
+    },
+    "pet_start": {
+      "name": "pet_start",
+      "src": "assets/character/interactions/codeboy_pet_start.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 40,
+      "next": "pet_loop"
+    },
+    "pet_loop": {
+      "name": "pet_loop",
+      "src": "assets/character/interactions/codeboy_pet.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 40,
+      "next": "pet_happy"
+    },
+    "pet_happy": {
+      "name": "pet_happy",
+      "src": "assets/character/interactions/codeboy_pet_happy.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 40,
+      "next": "pet_end"
+    },
+    "pet_end": {
+      "name": "pet_end",
+      "src": "assets/character/interactions/codeboy_pet_end.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 40,
+      "next": "idle"
+    },
+    "random_bug": {
+      "name": "random_bug",
+      "src": "assets/character/interactions/codeboy_random_bug.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 30,
+      "rarity": "RARE"
+    },
+    "random_coffee": {
+      "name": "random_coffee",
+      "src": "assets/character/interactions/codeboy_random_coffee.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 30,
+      "rarity": "RARE"
+    },
+    "random_game": {
+      "name": "random_game",
+      "src": "assets/character/interactions/codeboy_random_game.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 30,
+      "rarity": "RARE"
+    },
+    "random_sleep": {
+      "name": "random_sleep",
+      "src": "assets/character/interactions/codeboy_random_sleep.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 30,
+      "rarity": "RARE"
+    },
+    "random_window": {
+      "name": "random_window",
+      "src": "assets/character/interactions/codeboy_random_window.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 30,
+      "rarity": "RARE"
+    },
+    "random_sunglasses": {
+      "name": "random_sunglasses",
+      "src": "assets/character/interactions/codeboy_random_sunglasses.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "frames": 8,
+      "fps": 8,
+      "loop": false,
+      "priority": 30,
+      "rarity": "LEGENDARY"
+    }
+  },
+  "room": {
+    "desk": {
+      "src": "assets/room/desk.png",
+      "width": 128,
+      "height": 64
+    },
+    "chair": {
+      "src": "assets/room/chair.png",
+      "width": 32,
+      "height": 48
+    },
+    "laptop": {
+      "src": "assets/room/laptop.png",
+      "width": 32,
+      "height": 32
+    },
+    "monitor": {
+      "src": "assets/room/monitor.png",
+      "width": 48,
+      "height": 48
+    },
+    "keyboard": {
+      "src": "assets/room/keyboard.png",
+      "width": 32,
+      "height": 16
+    },
+    "lamp": {
+      "src": "assets/room/lamp.png",
+      "width": 32,
+      "height": 48
+    },
+    "plant": {
+      "src": "assets/room/plant.png",
+      "width": 32,
+      "height": 48
+    },
+    "window_day": {
+      "src": "assets/room/window_day.png",
+      "width": 80,
+      "height": 48
+    },
+    "window_night": {
+      "src": "assets/room/window_night.png",
+      "width": 80,
+      "height": 48
+    },
+    "coffee": {
+      "src": "assets/room/coffee.png",
+      "width": 16,
+      "height": 16
+    },
+    "headphones": {
+      "src": "assets/room/headphones.png",
+      "width": 32,
+      "height": 32
+    },
+    "server": {
+      "src": "assets/room/server.png",
+      "width": 32,
+      "height": 48
+    },
+    "posters": {
+      "src": "assets/room/posters.png",
+      "width": 32,
+      "height": 48
+    },
+    "rug": {
+      "src": "assets/room/rug.png",
+      "width": 96,
+      "height": 32
+    },
+    "shelf": {
+      "src": "assets/room/shelf.png",
+      "width": 48,
+      "height": 64
+    },
+    "theme_default": {
+      "src": "assets/room/theme_default.png",
+      "width": 192,
+      "height": 160
+    },
+    "theme_night": {
+      "src": "assets/room/theme_night.png",
+      "width": 192,
+      "height": 160
+    },
+    "theme_cyber": {
+      "src": "assets/room/theme_cyber.png",
+      "width": 192,
+      "height": 160
+    },
+    "theme_forest": {
+      "src": "assets/room/theme_forest.png",
+      "width": 192,
+      "height": 160
+    },
+    "theme_space": {
+      "src": "assets/room/theme_space.png",
+      "width": 192,
+      "height": 160
+    },
+    "theme_retro_pc": {
+      "src": "assets/room/theme_retro_pc.png",
+      "width": 192,
+      "height": 160
+    },
+    "cosmetic_coffee_mug": {
+      "src": "assets/room/cosmetic_coffee_mug.png",
+      "width": 16,
+      "height": 16
+    },
+    "cosmetic_poster": {
+      "src": "assets/room/cosmetic_poster.png",
+      "width": 32,
+      "height": 48
+    },
+    "cosmetic_headphones": {
+      "src": "assets/room/cosmetic_headphones.png",
+      "width": 16,
+      "height": 16
+    },
+    "cosmetic_new_desk": {
+      "src": "assets/room/cosmetic_new_desk.png",
+      "width": 128,
+      "height": 16
+    },
+    "cosmetic_rgb_pc": {
+      "src": "assets/room/cosmetic_rgb_pc.png",
+      "width": 32,
+      "height": 48
+    },
+    "cosmetic_hoodie": {
+      "src": "assets/room/cosmetic_hoodie.png",
+      "width": 16,
+      "height": 32
+    },
+    "cosmetic_rare_room": {
+      "src": "assets/room/cosmetic_rare_room.png",
+      "width": 192,
+      "height": 160
+    }
+  },
+  "icons": {
+    "code": {
+      "src": "assets/icons/code.png",
+      "width": 16,
+      "height": 16
+    },
+    "music": {
+      "src": "assets/icons/music.png",
+      "width": 16,
+      "height": 16
+    },
+    "dance": {
+      "src": "assets/icons/dance.png",
+      "width": 16,
+      "height": 16
+    },
+    "sleep": {
+      "src": "assets/icons/sleep.png",
+      "width": 16,
+      "height": 16
+    },
+    "heart": {
+      "src": "assets/icons/heart.png",
+      "width": 16,
+      "height": 16
+    },
+    "energy": {
+      "src": "assets/icons/energy.png",
+      "width": 16,
+      "height": 16
+    },
+    "settings": {
+      "src": "assets/icons/settings.png",
+      "width": 16,
+      "height": 16
+    },
+    "stats": {
+      "src": "assets/icons/stats.png",
+      "width": 16,
+      "height": 16
+    },
+    "level": {
+      "src": "assets/icons/level.png",
+      "width": 16,
+      "height": 16
+    },
+    "error": {
+      "src": "assets/icons/error.png",
+      "width": 16,
+      "height": 16
+    },
+    "warning": {
+      "src": "assets/icons/warning.png",
+      "width": 16,
+      "height": 16
+    },
+    "success": {
+      "src": "assets/icons/success.png",
+      "width": 16,
+      "height": 16
+    },
+    "coffee": {
+      "src": "assets/icons/coffee.png",
+      "width": 16,
+      "height": 16
+    },
+    "terminal": {
+      "src": "assets/icons/terminal.png",
+      "width": 16,
+      "height": 16
+    },
+    "pet": {
+      "src": "assets/icons/pet.png",
+      "width": 16,
+      "height": 16
+    },
+    "play": {
+      "src": "assets/icons/play.png",
+      "width": 16,
+      "height": 16
+    },
+    "room": {
+      "src": "assets/icons/room.png",
+      "width": 16,
+      "height": 16
+    },
+    "c": {
+      "src": "assets/icons/c.png",
+      "width": 16,
+      "height": 16
+    },
+    "cpp": {
+      "src": "assets/icons/cpp.png",
+      "width": 16,
+      "height": 16
+    },
+    "csharp": {
+      "src": "assets/icons/csharp.png",
+      "width": 16,
+      "height": 16
+    },
+    "javascript": {
+      "src": "assets/icons/javascript.png",
+      "width": 16,
+      "height": 16
+    },
+    "typescript": {
+      "src": "assets/icons/typescript.png",
+      "width": 16,
+      "height": 16
+    },
+    "python": {
+      "src": "assets/icons/python.png",
+      "width": 16,
+      "height": 16
+    },
+    "java": {
+      "src": "assets/icons/java.png",
+      "width": 16,
+      "height": 16
+    },
+    "kotlin": {
+      "src": "assets/icons/kotlin.png",
+      "width": 16,
+      "height": 16
+    },
+    "rust": {
+      "src": "assets/icons/rust.png",
+      "width": 16,
+      "height": 16
+    },
+    "html": {
+      "src": "assets/icons/html.png",
+      "width": 16,
+      "height": 16
+    },
+    "css": {
+      "src": "assets/icons/css.png",
+      "width": 16,
+      "height": 16
+    },
+    "scss": {
+      "src": "assets/icons/scss.png",
+      "width": 16,
+      "height": 16
+    },
+    "go": {
+      "src": "assets/icons/go.png",
+      "width": 16,
+      "height": 16
+    },
+    "php": {
+      "src": "assets/icons/php.png",
+      "width": 16,
+      "height": 16
+    },
+    "ruby": {
+      "src": "assets/icons/ruby.png",
+      "width": 16,
+      "height": 16
+    },
+    "swift": {
+      "src": "assets/icons/swift.png",
+      "width": 16,
+      "height": 16
+    },
+    "dart": {
+      "src": "assets/icons/dart.png",
+      "width": 16,
+      "height": 16
+    },
+    "lua": {
+      "src": "assets/icons/lua.png",
+      "width": 16,
+      "height": 16
+    },
+    "vue": {
+      "src": "assets/icons/vue.png",
+      "width": 16,
+      "height": 16
+    },
+    "javascriptreact": {
+      "src": "assets/icons/javascriptreact.png",
+      "width": 16,
+      "height": 16
+    },
+    "typescriptreact": {
+      "src": "assets/icons/typescriptreact.png",
+      "width": 16,
+      "height": 16
+    },
+    "sql": {
+      "src": "assets/icons/sql.png",
+      "width": 16,
+      "height": 16
+    },
+    "shellscript": {
+      "src": "assets/icons/shellscript.png",
+      "width": 16,
+      "height": 16
+    },
+    "powershell": {
+      "src": "assets/icons/powershell.png",
+      "width": 16,
+      "height": 16
+    },
+    "json": {
+      "src": "assets/icons/json.png",
+      "width": 16,
+      "height": 16
+    },
+    "yaml": {
+      "src": "assets/icons/yaml.png",
+      "width": 16,
+      "height": 16
+    },
+    "markdown": {
+      "src": "assets/icons/markdown.png",
+      "width": 16,
+      "height": 16
+    },
+    "plaintext": {
+      "src": "assets/icons/plaintext.png",
+      "width": 16,
+      "height": 16
+    }
+  },
+  "effects": {
+    "hearts": {
+      "name": "hearts",
+      "src": "assets/effects/hearts.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "notes": {
+      "name": "notes",
+      "src": "assets/effects/notes.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "confetti": {
+      "name": "confetti",
+      "src": "assets/effects/confetti.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "bug": {
+      "name": "bug",
+      "src": "assets/effects/bug.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "sparkles": {
+      "name": "sparkles",
+      "src": "assets/effects/sparkles.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "rain": {
+      "name": "rain",
+      "src": "assets/effects/rain.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    }
+  }
+}

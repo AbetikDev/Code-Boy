@@ -1,0 +1,10 @@
+{
+  "name": "coding_fast",
+  "src": "assets/character/coding/codeboy_fast_coding.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 10,
+  "loop": true,
+  "priority": 20
+}

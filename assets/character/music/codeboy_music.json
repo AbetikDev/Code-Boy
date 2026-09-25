@@ -1,0 +1,10 @@
+{
+  "name": "music_loop",
+  "src": "assets/character/music/codeboy_music.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": true,
+  "priority": 10
+}

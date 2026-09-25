@@ -1,0 +1,11 @@
+{
+  "name": "dance_05",
+  "src": "assets/character/dance/codeboy_dance_05.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": true,
+  "priority": 40,
+  "rarity": "RARE"
+}

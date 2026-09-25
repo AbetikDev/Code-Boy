@@ -1,0 +1,10 @@
+{
+  "name": "very_happy",
+  "src": "assets/character/happy/codeboy_very_happy.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "fps": 8,
+  "loop": false,
+  "priority": 10
+}
