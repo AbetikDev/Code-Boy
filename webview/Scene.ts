@@ -33,7 +33,9 @@ export class Scene {
 
   private resize(): void {
     const width = this.stage.clientWidth;
-    const scale = Math.max(1, Math.min(4, width >= 240 && width < 384 ? 2 : Math.floor(width / 192)));
+    // In a narrow sidebar (< 300px) keep scale=1 to save vertical space.
+    // At 300–500px allow scale=2. Wider panels may go up to scale=3.
+    const scale = width < 300 ? 1 : width < 500 ? 2 : Math.min(3, Math.floor(width / 192));
     this.canvas.width = 192;
     this.canvas.height = 160;
     this.canvas.style.width = `${192 * scale}px`;
