@@ -8,12 +8,13 @@ export async function startPreview(receive: (message: HostMessage) => void): Pro
   const manifest = await response.json() as AssetManifest;
   for (const section of [manifest.character, manifest.room, manifest.icons, manifest.effects]) { for (const asset of Object.values(section)) { asset.src = `/${asset.src}`; } }
   let snapshot: Snapshot = {
-    state: 'IDLE', animation: 'idle', stats: { mood: 88, happiness: 92, energy: 76, focus: 84, boredom: 12, xp: 2080, level: 7 },
+    state: 'IDLE', animation: 'idle', stats: { mood: 88, happiness: 92, energy: 76, focus: 84, boredom: 12, xp: 2080, level: 7, iq: 78 },
     daily: { date: new Date().toISOString().slice(0, 10), codingSeconds: 5640, filesSaved: 24, errorsFixed: 8, buildsCompleted: 3 },
     unlockedItems: ['coffee_mug', 'poster', 'headphones', 'new_desk'], room: 'DEFAULT', streak: 5,
     language: { id: 'typescript', displayName: 'TypeScript', icon: 'typescript', color: '#3b82f6', reactions: ['TypeScript time.'] },
     bubble: "let's make something.", bubbleKind: 'TOP', musicPlaying: false, musicStatus: 'Manual music is ready.',
-    settings: { ...DEFAULT_SETTINGS }, hasWorkspace: true, development: true, typingSpeed: 0, nextLevelXp: 2450
+    settings: { ...DEFAULT_SETTINGS }, hasWorkspace: true, development: true, typingSpeed: 0, nextLevelXp: 2450,
+    autoVibe: false, deepFocusSessions: 3, iqLabel: 'SENIOR DEV',
   };
   let returnTimer: ReturnType<typeof setTimeout> | undefined;
   const emit = (): void => receive({ type: 'snapshot', snapshot: structuredClone(snapshot) });

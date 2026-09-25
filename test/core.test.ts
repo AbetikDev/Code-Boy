@@ -17,7 +17,7 @@ function setup(settings: Partial<Settings> = {}, saved?: unknown, development = 
 
 function savedAt(now: number, xp = 0): SavedState {
   return { version: 1, stats: { ...INITIAL_STATS, xp }, daily: emptyDaily(localDate(now)),
-    unlockedItems: [], room: 'DEFAULT', streak: 0, lastCodingDate: '', savedAt: now };
+    unlockedItems: [], room: 'DEFAULT', streak: 0, lastCodingDate: '', savedAt: now, deepFocusSessions: 0 };
 }
 
 test('coding transitions do not restart for every keystroke, and idle starts at 30 seconds', () => {

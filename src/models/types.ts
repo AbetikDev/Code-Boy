@@ -2,7 +2,7 @@ export const CHARACTER_STATES = ['IDLE', 'CODING', 'VIBE_CODING', 'THINKING', 'H
 export type CharacterState = typeof CHARACTER_STATES[number];
 export const ROOM_THEMES = ['DEFAULT', 'NIGHT', 'CYBER', 'FOREST', 'SPACE', 'RETRO_PC'] as const;
 export type RoomTheme = typeof ROOM_THEMES[number];
-export interface Stats { mood: number; energy: number; focus: number; boredom: number; happiness: number; xp: number; level: number }
+export interface Stats { mood: number; energy: number; focus: number; boredom: number; happiness: number; xp: number; level: number; iq: number }
 export interface DailyStats { date: string; codingSeconds: number; filesSaved: number; errorsFixed: number; buildsCompleted: number }
 export interface Settings {
   enabled: boolean; soundEnabled: boolean; musicDetection: boolean; animations: boolean; reactions: boolean;
@@ -11,12 +11,13 @@ export interface Settings {
 }
 export const DEFAULT_SETTINGS: Settings = { enabled: true, soundEnabled: false, musicDetection: false, animations: true, reactions: true, idleAnimations: true, showDiagnosticsReaction: true, vibeMode: false, roomTheme: 'DEFAULT', animationSpeed: 1, reducedMotion: false };
 export interface LanguageProfile { id: string; displayName: string; icon: string; color: string; reactions: string[] }
-export interface SavedState { version: 1; stats: Stats; daily: DailyStats; unlockedItems: string[]; room: RoomTheme; streak: number; lastCodingDate: string; savedAt: number; progression?: { date: string; xpEarned: number; cooldowns: Record<string, number>; codingRemainder: number } }
+export interface SavedState { version: 1; stats: Stats; daily: DailyStats; unlockedItems: string[]; room: RoomTheme; streak: number; lastCodingDate: string; savedAt: number; deepFocusSessions: number; progression?: { date: string; xpEarned: number; cooldowns: Record<string, number>; codingRemainder: number } }
 export interface Snapshot {
   state: CharacterState; animation: string; stats: Stats; daily: DailyStats; unlockedItems: string[];
   room: RoomTheme; streak: number; language: LanguageProfile; bubble: string; bubbleKind: 'TOP' | 'LEFT' | 'RIGHT' | 'BOTTOM' | 'THOUGHT' | 'WARNING' | 'HAPPY';
   musicPlaying: boolean; musicStatus: string; settings: Settings; hasWorkspace: boolean; development: boolean;
   typingSpeed: number; nextLevelXp: number;
+  autoVibe: boolean; deepFocusSessions: number; iqLabel: string;
 }
 export type Action = 'pet' | 'look' | 'music' | 'dance' | 'sleep' | 'wake' | 'play' | 'vibe';
 export type ActivityEvent =

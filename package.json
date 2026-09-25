@@ -5,6 +5,10 @@
   "version": "1.0.0",
   "publisher": "code-boy-local",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/local/code-boy"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },

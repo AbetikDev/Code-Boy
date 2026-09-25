@@ -1,7 +1,7 @@
 import { Action, ActivityEvent, CHARACTER_STATES, CharacterState, DEFAULT_SETTINGS, ROOM_THEMES, RoomTheme, SavedState, Settings, Snapshot, Stats } from '../models/types';
 import { ActivityTracker } from './ActivityTracker';
 import { getLanguageProfile } from './LanguageProfiles';
-import { clamp, INITIAL_STATS, MoodEngine } from './MoodEngine';
+import { clamp, INITIAL_STATS, MoodEngine, iqLabel } from './MoodEngine';
 import { emptyDaily, localDate, ProgressionSystem, validDate } from './ProgressionSystem';
 import { StateMachine } from './StateMachine';
 
@@ -40,6 +40,7 @@ function restore(value: unknown, now: number): SavedState | undefined {
   const rawStats = record(data.stats);
   const stats = { ...INITIAL_STATS };
   for (const key of ['mood', 'energy', 'focus', 'boredom', 'happiness'] as const) { stats[key] = safeNumber(rawStats[key], INITIAL_STATS[key], 0, 100); }
+  stats.iq = safeNumber(rawStats.iq, INITIAL_STATS.iq, 0, 100);
   stats.xp = Math.floor(safeNumber(rawStats.xp, 0, 0, 10_000_000));
   const rawDaily = record(data.daily);
   const daily = emptyDaily(validDate(rawDaily.date) ? rawDaily.date : localDate(now));
@@ -51,6 +52,7 @@ function restore(value: unknown, now: number): SavedState | undefined {
     streak: Math.floor(safeNumber(data.streak, 0, 0, 36_500)),
     lastCodingDate: validDate(data.lastCodingDate) && data.lastCodingDate <= localDate(now) ? data.lastCodingDate : '',
     savedAt: safeNumber(data.savedAt, now, 0, now),
+    deepFocusSessions: Math.floor(safeNumber(data.deepFocusSessions, 0, 0, 100_000)),
   };
   const rawLedger = record(data.progression);
   if (validDate(rawLedger.date)) {
@@ -96,6 +98,8 @@ export class CodeBoyEngine {
   private lastEmission = '';
   private greetingAt: number | undefined;
   private announcedLevel: number;
+  private autoVibeActive = false;
+  private deepFocusSessions = 0;
 
   constructor(saved: unknown, settings: Settings, options: EngineOptions = {}) {
     this.clock = options.now ?? Date.now;
@@ -108,6 +112,7 @@ export class CodeBoyEngine {
     this.mood = new MoodEngine(restored?.stats ?? INITIAL_STATS);
     this.progression = new ProgressionSystem(this.mood.stats, now, restored);
     this.announcedLevel = this.mood.stats.level;
+    this.deepFocusSessions = restored?.deepFocusSessions ?? 0;
     this.activity = new ActivityTracker(now);
     this.lastTick = now;
     this.nextIdleAt = now + 8_000;
@@ -124,6 +129,7 @@ export class CodeBoyEngine {
     const visible = this.machine.view(now);
     const stats = { ...this.mood.stats };
     for (const key of ['mood', 'energy', 'focus', 'boredom', 'happiness'] as const) { stats[key] = Math.round(stats[key] * 100) / 100; }
+    stats.iq = Math.round(stats.iq * 10) / 10;
     return {
       ...visible, stats, daily: { ...this.progression.daily, codingSeconds: Math.floor(this.progression.daily.codingSeconds) },
       unlockedItems: this.progression.unlockedItems, room: this.room, streak: this.progression.streak,
@@ -131,6 +137,8 @@ export class CodeBoyEngine {
       musicPlaying: this.musicPlaying, musicStatus: this.manualMusic ? 'Manual music on' : this.musicStatus,
       settings: { ...this.settings }, hasWorkspace: this.hasWorkspace, development: this.development,
       typingSpeed: Math.round(this.activity.speed(now) * 10) / 10, nextLevelXp: this.progression.nextLevelXp,
+      autoVibe: this.autoVibeActive, deepFocusSessions: this.deepFocusSessions + this.activity.deepFocusSessions,
+      iqLabel: iqLabel(stats.iq),
     };
   }
 
@@ -331,7 +339,8 @@ export class CodeBoyEngine {
     this.progression.rollover(this.clock());
     return { version: 1, stats: { ...this.mood.stats }, daily: { ...this.progression.daily }, unlockedItems: this.progression.unlockedItems,
       room: this.room, streak: this.progression.streak, lastCodingDate: this.progression.lastCodingDate,
-      savedAt: this.clock(), progression: this.progression.serialize() };
+      savedAt: this.clock(), deepFocusSessions: this.deepFocusSessions + this.activity.deepFocusSessions,
+      progression: this.progression.serialize() };
   }
 
   reset(): void {
@@ -348,6 +357,8 @@ export class CodeBoyEngine {
     this.manualSleep = false;
     this.manualMusic = false;
     this.settings.vibeMode = false;
+    this.autoVibeActive = false;
+    this.deepFocusSessions = 0;
     this.taskCount = 0;
     this.debugging = false;
     this.language = getLanguageProfile('plaintext');
@@ -419,7 +430,17 @@ export class CodeBoyEngine {
     if (!this.settings.enabled) { return 'IDLE'; }
     if (this.manualSleep || inactivity >= ActivityTracker.SLEEP_AFTER) { state = 'SLEEPING'; }
     else if (inactivity >= ActivityTracker.BORED_AFTER) { state = 'BORED'; }
-    else if (this.activity.isTyping(now)) { state = this.musicPlaying || this.settings.vibeMode ? 'VIBE_CODING' : 'CODING'; }
+    else if (this.activity.isTyping(now)) {
+      // Auto-vibe: if user is in deep sustained flow + music, kick in vibe coding automatically
+      const inFlow = this.activity.isAutoVibe(now);
+      if (inFlow && !this.autoVibeActive) {
+        this.autoVibeActive = true;
+        if (this.allow('autovibe', now, 600_000)) { this.say('flow state detected.', 'THOUGHT', now); }
+      } else if (!inFlow && this.autoVibeActive) {
+        this.autoVibeActive = false;
+      }
+      state = this.musicPlaying || this.settings.vibeMode || this.autoVibeActive ? 'VIBE_CODING' : 'CODING';
+    }
     else if (!this.activity.isFocused && inactivity >= ActivityTracker.IDLE_AFTER) { state = 'AFK'; }
     else if (this.settings.vibeMode && this.hasWorkspace) { state = 'VIBE_CODING'; }
     else if (this.musicPlaying) { state = 'LISTENING_MUSIC'; }

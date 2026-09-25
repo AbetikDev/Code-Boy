@@ -133,7 +133,8 @@ function update(next: Snapshot): void {
   const vibe = next.settings.vibeMode || next.state === 'VIBE_CODING';
   $('vibe-toggle').setAttribute('aria-checked', String(vibe));
   $('vibe-toggle').querySelector('span')!.textContent = vibe ? 'ON' : 'OFF';
-  $('vibe-caption').textContent = vibe ? 'in the flow. keep going.' : 'headphones on. world off.';
+  const autoVibeText = next.autoVibe ? '<span class="autovibe-badge">AUTO</span>' : '';
+  $('vibe-caption').innerHTML = (vibe ? 'in the flow. keep going.' : 'headphones on. world off.') + autoVibeText;
   $('footer-status').textContent = next.musicPlaying ? 'MUSIC / ON' : 'NO CLOUD. JUST CODE.';
   const sleepButton = document.querySelector<HTMLButtonElement>('[data-action="sleep"]')!;
   sleepButton.querySelector('span')!.textContent = next.state === 'SLEEPING' ? 'WAKE' : 'SLEEP';
@@ -195,11 +196,67 @@ function closePanel(): void {
   previousFocus?.focus();
 }
 
-function statRow(label: string, value: number, type = ''): string { return `<div class="stat-row ${type}"><span>${label}</span><meter min="0" max="100" value="${Math.round(value)}" aria-label="${label}"></meter><strong>${Math.round(value)}</strong></div>`; }
+function statRow(label: string, value: number, type = ''): string {
+  return `<div class="stat-row ${type}"><span>${label}</span><meter min="0" max="100" value="${Math.round(value)}" aria-label="${label}"></meter><strong>${Math.round(value)}</strong></div>`;
+}
+
+function iqDescription(iq: number): string {
+  if (iq >= 96) return 'Peak performance. You\'re in the zone.';
+  if (iq >= 88) return 'Sharp and focused. Keep the streak going.';
+  if (iq >= 76) return 'Solid session. Deep work is paying off.';
+  if (iq >= 60) return 'Warming up. More deep focus = higher IQ.';
+  if (iq >= 40) return 'Needs more flow sessions. Step away from TikTok.';
+  return 'Take a break. Rubber duck mode activated.';
+}
+
 function renderStats(): void {
   if (!snapshot) { return; }
   const { stats, daily } = snapshot;
-  $('drawer-content').innerHTML = `<div class="stats-hero">${icon('level')}<span>LEVEL <strong>${String(stats.level).padStart(2, '0')}</strong></span><div><strong>${stats.xp} XP</strong><span>A LITTLE MORE EVERY DAY</span></div></div><div class="stat-rows">${statRow('HAPPINESS', stats.happiness, 'pink')}${statRow('MOOD', stats.mood, 'pink')}${statRow('ENERGY', stats.energy, 'yellow')}${statRow('FOCUS', stats.focus, 'cyan')}${statRow('BOREDOM', stats.boredom, 'muted')}</div><div class="section-heading"><h3>TODAY</h3><span>JUST FOR YOU</span></div><div class="daily-grid"><div><strong>${Math.floor(daily.codingSeconds / 3600)}<small>h</small> ${Math.floor(daily.codingSeconds % 3600 / 60)}<small>m</small></strong><span>CODING TOGETHER</span></div><div><strong>${daily.filesSaved}</strong><span>FILES SAVED</span></div><div><strong>${daily.errorsFixed}</strong><span>BUGS FIXED</span></div><div><strong>${daily.buildsCompleted}</strong><span>BUILDS COMPLETED</span></div></div><p class="streak-note">${icon('coffee')} ${snapshot.streak} DAY${snapshot.streak === 1 ? '' : 'S'} OF LITTLE ADVENTURES</p><p class="quiet-note">Saved on this device. Your code and filenames stay yours.</p><div class="section-heading"><h3>COLLECTED</h3><span>${snapshot.unlockedItems.length} ITEMS</span></div><div class="collectibles">${snapshot.unlockedItems.length ? snapshot.unlockedItems.map(item => `<span class="collectible">${escapeHtml(item.replaceAll('_', ' '))}</span>`).join('') : '<p class="quiet-note">Your first coffee mug unlocks at level 2.</p>'}</div>`;
+  const iq = Math.round(stats.iq);
+  const deepSessions = snapshot.deepFocusSessions;
+  $('drawer-content').innerHTML = `
+    <div class="stats-hero">${icon('level')}<span>LEVEL <strong>${String(stats.level).padStart(2, '0')}</strong></span><div><strong>${stats.xp} XP</strong><span>A LITTLE MORE EVERY DAY</span></div></div>
+
+    <div class="stat-rows">
+      ${statRow('HAPPINESS', stats.happiness, 'pink')}
+      ${statRow('MOOD', stats.mood, 'pink')}
+      ${statRow('ENERGY', stats.energy, 'yellow')}
+      ${statRow('FOCUS', stats.focus, 'cyan')}
+      ${statRow('BOREDOM', stats.boredom, 'muted')}
+    </div>
+
+    <div class="iq-section">
+      <div class="section-heading"><h3>IQ SYSTEM</h3><span>BRAIN POWER</span></div>
+      <div class="iq-card" aria-label="IQ score ${iq}">
+        <div class="iq-left">
+          <span class="iq-value">${iq}</span>
+          <span class="iq-label">${snapshot.iqLabel}</span>
+        </div>
+        <div class="iq-right">
+          <div class="iq-bar-wrap"><meter min="0" max="100" value="${iq}" aria-label="IQ meter"></meter></div>
+          <p class="iq-desc">${iqDescription(iq)}<br>Rises during deep focus. Falls during AFK.</p>
+        </div>
+      </div>
+      <div class="deep-focus-row">
+        <div><span class="deep-focus-count">${deepSessions}</span></div>
+        <div style="text-align:right"><span class="deep-focus-label">DEEP FOCUS SESSIONS<br>THIS DEVICE</span></div>
+      </div>
+    </div>
+
+    <div class="section-heading" style="margin-top:16px"><h3>TODAY</h3><span>JUST FOR YOU</span></div>
+    <div class="daily-grid">
+      <div><strong>${Math.floor(daily.codingSeconds / 3600)}<small>h</small> ${Math.floor(daily.codingSeconds % 3600 / 60)}<small>m</small></strong><span>CODING TOGETHER</span></div>
+      <div><strong>${daily.filesSaved}</strong><span>FILES SAVED</span></div>
+      <div><strong>${daily.errorsFixed}</strong><span>BUGS FIXED</span></div>
+      <div><strong>${daily.buildsCompleted}</strong><span>BUILDS DONE</span></div>
+    </div>
+
+    <p class="streak-note">${icon('coffee')} ${snapshot.streak} DAY${snapshot.streak === 1 ? '' : 'S'} OF LITTLE ADVENTURES</p>
+    <p class="quiet-note">Saved on this device. Your code and filenames stay yours.</p>
+
+    <div class="section-heading"><h3>COLLECTED</h3><span>${snapshot.unlockedItems.length} ITEMS</span></div>
+    <div class="collectibles">${snapshot.unlockedItems.length ? snapshot.unlockedItems.map(item => `<span class="collectible">${escapeHtml(item.replaceAll('_', ' '))}</span>`).join('') : '<p class="quiet-note">Your first coffee mug unlocks at level 2.</p>'}</div>
+  `;
   setIcons();
 }
 
