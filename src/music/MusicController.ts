@@ -20,7 +20,7 @@ export class MusicController implements vscode.Disposable {
     if (generation !== this.generation) return;
     if (token) this.providers.push(new SpotifyMusicProvider(() => this.context.secrets.get(SPOTIFY_TOKEN_KEY)));
     if (!this.providers.length) { this.report(false, 'Use MUSIC or connect Spotify'); return; }
-    this.timer = setInterval(() => { void this.poll(generation); }, 15000);
+    this.timer = setInterval(() => { void this.poll(generation); }, 5000);
     void this.poll(generation);
   }
   private async poll(generation: number): Promise<void> {

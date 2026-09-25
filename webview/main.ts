@@ -34,27 +34,57 @@ function mount(): void {
   $('app').innerHTML = `
     <main class="device" aria-label="Code Boy virtual companion">
       <div class="preview-banner" id="preview-banner" hidden>BROWSER PREVIEW <span>sample activity</span></div>
-      <header class="device-header"><div class="wordmark"><span class="brand-mark" aria-hidden="true">&gt;_</span><div><h1>CODE BOY<span class="brand-dot">.</span></h1><p>YOUR LITTLE CODING COMPANION</p></div></div><button class="level-badge" id="level-button" aria-label="View character level and stats"><span>LV.</span><strong id="level">01</strong></button></header>
-      <div class="vitals" aria-label="Companion vitals"><div class="vital mood-vital">${icon('heart')}<span class="vital-name">MOOD</span><meter id="mood-meter" min="0" max="100" value="75" aria-label="Mood"></meter><span id="mood-value">75</span></div><div class="vital">${icon('energy')}<span class="vital-name">ENERGY</span><meter id="energy-meter" min="0" max="100" value="85" aria-label="Energy"></meter><span id="energy-value">85</span></div></div>
-      <section class="world-frame" aria-label="Code Boy's room"><div class="world-top"><span class="world-location"><span class="status-dot" id="status-dot"></span><span id="room-name">HOME SWEET CODE</span></span><span id="time-label">DAY / 01</span></div>
-      <div class="speech-area"><p class="speech bubble-top" id="speech" role="status" aria-live="polite">assembling the little world...</p></div>
-      <div class="stage" id="stage"><canvas id="scene" width="192" height="160" role="img" aria-label="Code Boy in a cozy pixel art coding room"></canvas><button id="character-target" class="character-target" aria-label="Look at Code Boy. Double click or press Enter to pet." title="Click to say hi · Double click to pet"></button></div>
-      <div class="world-bottom"><span class="state-label"><span class="state-marker" aria-hidden="true"></span><span id="state">BOOTING</span></span><span id="language" class="language-badge">LOCAL ONLY</span></div></section>
+
+      <div class="compact-header">
+        <button class="level-badge" id="level-button" aria-label="View stats"><span>LV.</span><strong id="level">01</strong></button>
+        <div class="compact-vitals" aria-label="Companion vitals">
+          <div class="cvital">${icon('heart')}<meter id="mood-meter" min="0" max="100" value="75" aria-label="Mood"></meter><span id="mood-value">75</span></div>
+          <div class="cvital">${icon('energy')}<meter id="energy-meter" min="0" max="100" value="85" aria-label="Energy"></meter><span id="energy-value">85</span></div>
+        </div>
+        <span id="vibe-dot" class="vibe-dot" title="Vibe mode" aria-hidden="true"></span>
+      </div>
+
+      <section class="world-frame" aria-label="Code Boy's room">
+        <div class="world-top"><span class="world-location"><span class="status-dot" id="status-dot"></span><span id="room-name">HOME SWEET CODE</span></span><span id="time-label">DAY / 01</span></div>
+        <div class="speech-area"><p class="speech bubble-top" id="speech" role="status" aria-live="polite">assembling the little world...</p></div>
+        <div class="stage" id="stage"><canvas id="scene" width="192" height="160" role="img" aria-label="Code Boy in a cozy pixel art coding room"></canvas><button id="character-target" class="character-target" aria-label="Click to interact. Hold for menu." title="Click to pet · Hold for actions"></button></div>
+        <div class="world-bottom"><span class="state-label"><span class="state-marker" aria-hidden="true"></span><span id="state">BOOTING</span></span><span id="language" class="language-badge">LOCAL ONLY</span></div>
+      </section>
+
       <div class="connection-note" id="connection-note" role="status" hidden></div>
-      <div class="vibe-strip"><div><span class="vibe-label">${icon('music')}VIBE MODE</span><span class="vibe-caption" id="vibe-caption">headphones on. world off.</span></div><button id="vibe-toggle" role="switch" aria-checked="false" aria-label="Vibe coding mode"><span>OFF</span><i aria-hidden="true"></i></button></div>
-      <nav class="interaction-grid" aria-label="Interact with Code Boy">${control('pet', 'PET')}${control('music', 'MUSIC')}${control('dance', 'DANCE')}${control('sleep', 'SLEEP')}<button class="pixel-button action-button" data-action="play" aria-label="Play a game with Code Boy">${icon('play')}<span>PLAY</span></button><button class="pixel-button" data-panel="room" aria-label="Customize room">${icon('room')}<span>ROOM</span></button><button class="pixel-button" data-panel="stats" aria-label="Show character statistics">${icon('stats')}<span>STATS</span></button><button class="pixel-button" id="settings-button" aria-label="Open Code Boy settings" title="Settings and sound">${icon('settings')}<span>SETUP</span></button></nav>
-      <div class="xp-strip"><div class="xp-heading"><span id="xp-label">NEXT LITTLE ADVENTURE</span><span id="xp-value">0 / 100 XP</span></div><progress id="xp-progress" max="100" value="0" aria-label="Experience toward next level"></progress></div>
-      <footer class="device-footer"><span><i class="tiny-dot" aria-hidden="true"></i>LOCAL LITTLE LIFE</span><span id="footer-status">NO CLOUD. JUST CODE.</span><button id="dev-toggle" aria-label="Open sprite development tools" hidden>DEV</button></footer>
+
+      <div class="xp-strip"><div class="xp-heading"><span id="xp-label">LV.2</span><span id="xp-value">0 / 100 XP</span></div><progress id="xp-progress" max="100" value="0" aria-label="Experience toward next level"></progress></div>
+
+      <button id="dev-toggle" aria-label="Open sprite development tools" hidden style="position:absolute;bottom:6px;right:8px;font-size:8px;padding:2px 5px;background:transparent;border:1px solid var(--edge);color:var(--muted)">DEV</button>
       <section id="debug-panel" class="debug-panel" aria-label="Development tools" hidden><div class="section-heading"><h2>SPRITE LAB</h2><span>DEVELOPMENT ONLY</span></div><label>State<select id="debug-state" aria-label="Preview character state">${CHARACTER_STATES.map(state => `<option value="${state}">${state}</option>`).join('')}</select></label><label>Mood<input id="debug-mood" type="range" min="0" max="100" value="75"></label><label>Energy<input id="debug-energy" type="range" min="0" max="100" value="85"></label><label>FPS<input id="debug-fps" type="range" min="4" max="12" value="8"><output id="debug-fps-value">8</output></label><div class="debug-actions"><button class="pixel-button" id="random-event">RANDOM EVENT</button><button class="pixel-button" data-panel="gallery">SPRITE GALLERY</button></div></section>
     </main>
-    <div class="drawer-shade" id="drawer-shade" hidden></div><section class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden><div class="drawer-heading"><div><span class="eyebrow">CODE BOY / PERSONAL SPACE</span><h2 id="drawer-title">LITTLE STATS</h2></div><button class="close-button" id="close-drawer" aria-label="Close panel">×</button></div><div id="drawer-content"></div></section>
+
+    <!-- Pop-up action menu (shown on long-press / right-click of character) -->
+    <div class="action-menu" id="action-menu" hidden role="menu" aria-label="Code Boy actions">
+      <button class="am-btn" data-action="pet" role="menuitem">🐾 Pet</button>
+      <button class="am-btn" data-action="music" role="menuitem" id="am-music">🎵 Music</button>
+      <button class="am-btn" data-action="dance" role="menuitem">💃 Dance</button>
+      <button class="am-btn" data-action="vibe" role="menuitem" id="am-vibe">⚡ Vibe</button>
+      <button class="am-btn" data-action="sleep" role="menuitem" id="am-sleep">💤 Sleep</button>
+      <button class="am-btn" data-action="play" role="menuitem">🎮 Play</button>
+      <div class="am-sep"></div>
+      <button class="am-btn" data-panel="stats" role="menuitem">📊 Stats</button>
+      <button class="am-btn" data-panel="room" role="menuitem">🏠 Room</button>
+      <button class="am-btn" id="am-settings" role="menuitem">⚙ Setup</button>
+    </div>
+
+    <div class="drawer-shade" id="drawer-shade" hidden></div>
+    <section class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+      <div class="drawer-heading"><div><span class="eyebrow">CODE BOY / PERSONAL SPACE</span><h2 id="drawer-title">LITTLE STATS</h2></div><button class="close-button" id="close-drawer" aria-label="Close panel">×</button></div>
+      <div id="drawer-content"></div>
+    </section>
   `;
   $('preview-banner').hidden = !!host;
-  document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => button.addEventListener('click', () => action(button.dataset.action as Action)));
-  document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(button => button.addEventListener('click', () => openPanel(button.dataset.panel as 'stats' | 'room' | 'gallery')));
-  $('vibe-toggle').addEventListener('click', () => action('vibe'));
+  // action buttons inside popup menu + any [data-action] elsewhere
+  document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => button.addEventListener('click', () => { closeActionMenu(); action(button.dataset.action as Action); }));
+  document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(button => button.addEventListener('click', () => { closeActionMenu(); openPanel(button.dataset.panel as 'stats' | 'room' | 'gallery'); }));
+  $('am-settings').addEventListener('click', () => { closeActionMenu(); sound.play(); send({ type: 'command', command: 'settings' }); });
   $('level-button').addEventListener('click', () => openPanel('stats'));
-  $('settings-button').addEventListener('click', () => { sound.play(); send({ type: 'command', command: 'settings' }); });
   $('close-drawer').addEventListener('click', closePanel);
   $('drawer-shade').addEventListener('click', closePanel);
   $('dev-toggle').addEventListener('click', () => { if (snapshot?.development) { $('debug-panel').hidden = !$('debug-panel').hidden; } });
@@ -62,14 +92,33 @@ function mount(): void {
   for (const key of ['mood', 'energy'] as const) { $(`debug-${key}`).addEventListener('change', event => send({ type: 'debug', [key]: Number((event.target as HTMLInputElement).value) })); }
   $('debug-fps').addEventListener('input', event => { const fps = Number((event.target as HTMLInputElement).value); $('debug-fps-value').textContent = String(fps); animator?.setFPS(fps); galleryAnimator?.setFPS(fps); send({ type: 'debug', fps }); });
   $('random-event').addEventListener('click', () => send({ type: 'debug', random: true }));
-  $('character-target').addEventListener('click', event => {
+
+  // Long-press / right-click on character → action menu
+  let longPressTimer: ReturnType<typeof setTimeout> | undefined;
+  const charBtn = $('character-target');
+  charBtn.addEventListener('pointerdown', () => {
+    longPressTimer = setTimeout(() => { longPressTimer = undefined; openActionMenu(); }, 500);
+  });
+  charBtn.addEventListener('pointerup', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = undefined; } });
+  charBtn.addEventListener('pointercancel', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = undefined; } });
+  charBtn.addEventListener('contextmenu', event => { event.preventDefault(); openActionMenu(); });
+  charBtn.addEventListener('click', event => {
     if (event.detail === 0) { action('pet'); return; }
     if (tapTimer) { clearTimeout(tapTimer); }
     tapTimer = setTimeout(() => action('look'), 240);
   });
-  $('character-target').addEventListener('dblclick', () => { if (tapTimer) { clearTimeout(tapTimer); } action('pet'); });
+  charBtn.addEventListener('dblclick', () => { if (tapTimer) { clearTimeout(tapTimer); } action('pet'); });
+
+  // Close action menu on outside click
+  document.addEventListener('click', event => {
+    const menu = $('action-menu');
+    if (!menu.hidden && !(event.target as HTMLElement).closest('#action-menu') && !(event.target as HTMLElement).closest('#character-target')) {
+      closeActionMenu();
+    }
+  });
+
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && activePanel) { event.preventDefault(); closePanel(); }
+    if (event.key === 'Escape') { if (!$('action-menu').hidden) { closeActionMenu(); return; } if (activePanel) { event.preventDefault(); closePanel(); } }
     if (event.key === 'Tab' && activePanel) {
       const controls = [...$('drawer').querySelectorAll<HTMLElement>('button:not(:disabled), input, select, [tabindex="0"]')];
       const first = controls[0]; const last = controls[controls.length - 1];
@@ -77,6 +126,29 @@ function mount(): void {
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     }
   });
+}
+
+function openActionMenu(): void {
+  const menu = $('action-menu');
+  const stage = $('stage');
+  const rect = stage.getBoundingClientRect();
+  menu.style.top = `${rect.bottom + 4}px`;
+  menu.style.left = `${rect.left}px`;
+  menu.hidden = false;
+  (menu.querySelector('.am-btn') as HTMLElement | null)?.focus();
+  // Update labels
+  if (snapshot) {
+    const amSleep = document.getElementById('am-sleep');
+    if (amSleep) amSleep.textContent = snapshot.state === 'SLEEPING' ? '☀ Wake' : '💤 Sleep';
+    const amVibe = document.getElementById('am-vibe');
+    if (amVibe) amVibe.textContent = snapshot.settings.vibeMode ? '⚡ Vibe ON' : '⚡ Vibe';
+    const amMusic = document.getElementById('am-music');
+    if (amMusic) amMusic.textContent = snapshot.musicPlaying ? '🎵 Music ON' : '🎵 Music';
+  }
+}
+
+function closeActionMenu(): void {
+  $('action-menu').hidden = true;
 }
 
 function action(requested: Action): void {
@@ -131,16 +203,14 @@ function update(next: Snapshot): void {
   $('language').textContent = next.hasWorkspace ? next.language.displayName : 'NO PROJECT';
   $('language').style.setProperty('--language-color', next.language.color);
   const vibe = next.settings.vibeMode || next.state === 'VIBE_CODING';
-  $('vibe-toggle').setAttribute('aria-checked', String(vibe));
-  $('vibe-toggle').querySelector('span')!.textContent = vibe ? 'ON' : 'OFF';
-  const autoVibeText = next.autoVibe ? '<span class="autovibe-badge">AUTO</span>' : '';
-  $('vibe-caption').innerHTML = (vibe ? 'in the flow. keep going.' : 'headphones on. world off.') + autoVibeText;
-  $('footer-status').textContent = next.musicPlaying ? 'MUSIC / ON' : 'NO CLOUD. JUST CODE.';
-  const sleepButton = document.querySelector<HTMLButtonElement>('[data-action="sleep"]')!;
-  sleepButton.querySelector('span')!.textContent = next.state === 'SLEEPING' ? 'WAKE' : 'SLEEP';
-  sleepButton.setAttribute('aria-label', next.state === 'SLEEPING' ? 'Wake Code Boy' : 'Let Code Boy sleep');
-  document.querySelector<HTMLButtonElement>('[data-action="music"]')!.setAttribute('aria-pressed', String(next.musicPlaying));
-  document.querySelectorAll<HTMLButtonElement>('[data-action], #vibe-toggle').forEach(button => { button.disabled = !next.settings.enabled; });
+  // Update vibe dot indicator in compact header
+  const vibeDot = document.getElementById('vibe-dot');
+  if (vibeDot) {
+    vibeDot.classList.toggle('active', vibe || next.autoVibe);
+    vibeDot.title = next.autoVibe ? 'Flow state AUTO' : vibe ? 'Vibe mode ON' : 'Vibe mode';
+  }
+  // Disable all action buttons when companion is paused
+  document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => { button.disabled = !next.settings.enabled; });
   const previousThreshold = Math.max(0, Math.pow(next.stats.level - 1, 2) * 50);
   const xpMin = next.nextLevelXp > previousThreshold && next.stats.xp >= previousThreshold ? previousThreshold : 0;
   $<HTMLProgressElement>('xp-progress').max = Math.max(1, next.nextLevelXp - xpMin);

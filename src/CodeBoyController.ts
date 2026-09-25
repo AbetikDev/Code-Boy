@@ -80,7 +80,7 @@ export class CodeBoyController implements vscode.Disposable {
     });
   }
   private async open(): Promise<void> {
-    await vscode.commands.executeCommand('workbench.view.extension.codeBoy');
+    await vscode.commands.executeCommand('workbench.view.explorer');
     await vscode.commands.executeCommand('codeBoy.companion.focus');
   }
   private async act(action: Action): Promise<void> {

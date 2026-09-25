@@ -40,11 +40,6 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "codeBoy",
-          "title": "Code Boy",
-          "icon": "assets/icons/activity.svg"
-        },
-        {
           "id": "contextback",
           "title": "ContextBack",
           "icon": "assets/icons/contextback.svg"
@@ -52,11 +47,12 @@
       ]
     },
     "views": {
-      "codeBoy": [
+      "explorer": [
         {
           "id": "codeBoy.companion",
           "name": "Code Boy",
-          "type": "webview"
+          "type": "webview",
+          "initialSize": 3
         }
       ],
       "contextback": [
@@ -194,8 +190,8 @@
           },
           "codeBoy.musicDetection": {
             "type": "boolean",
-            "default": false,
-            "description": "Check local Windows media playback, or Spotify when you explicitly connect it. Never records audio."
+            "default": true,
+            "description": "Check local Windows media playback (SMTC), or Spotify when you explicitly connect it. Never records audio."
           },
           "codeBoy.animations": {
             "type": "boolean",

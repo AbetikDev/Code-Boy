@@ -122,3 +122,67 @@ body.vscode-high-contrast,body.vscode-high-contrast-light{--bg:var(--vscode-edit
 .daily-grid>div strong{font-size:22px;line-height:1;color:var(--text)}
 .daily-grid>div strong small{font-size:13px;color:var(--muted)}
 .daily-grid>div span{font-size:8px;color:var(--muted);letter-spacing:.5px;margin-top:2px}
+
+/* ═══════════════════════════════════════════════════════
+   COMPACT LAYOUT — убраны кнопки и футер
+   ═══════════════════════════════════════════════════════ */
+
+/* Компактный заголовок: LV + две полосы + виб-точка */
+.compact-header{display:flex;align-items:center;gap:8px;padding:7px 10px 6px;border-bottom:1px solid var(--panel-light)}
+.compact-header .level-badge{padding:3px 6px;gap:3px;border:1px solid #614550;background:#251b38;color:var(--orange);white-space:nowrap;flex-shrink:0}
+.compact-header .level-badge span{font-size:7px}
+.compact-header .level-badge strong{font-size:13px}
+.compact-vitals{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.cvital{display:flex;align-items:center;gap:5px}
+.cvital meter{flex:1;height:4px}
+.cvital span{font-size:9px;min-width:20px;text-align:right;color:var(--muted)}
+.cvital .pixel-icon{width:10px;height:10px;flex-shrink:0}
+
+/* Вайб-точка */
+.vibe-dot{width:8px;height:8px;border-radius:50%;background:var(--edge);flex-shrink:0;transition:background .3s}
+.vibe-dot.active{background:var(--purple);box-shadow:0 0 6px var(--purple)}
+
+/* Убираем device padding сверху, он теперь в compact-header */
+.device{padding:0 0 6px;position:relative}
+.device:before{display:none}
+
+/* XP strip компактнее */
+.xp-strip{padding:5px 10px 4px}
+.xp-heading{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-bottom:3px}
+#xp-progress{width:100%;height:3px;appearance:none;background:var(--panel-light);border:none;display:block}
+#xp-progress::-webkit-progress-bar{background:var(--panel-light)}
+#xp-progress::-webkit-progress-value{background:var(--purple)}
+#xp-progress::-moz-progress-bar{background:var(--purple)}
+
+/* world-frame без лишних отступов */
+.world-frame{border-left:none;border-right:none;border-radius:0}
+
+/* ─── Action Popup Menu ─── */
+.action-menu{
+  position:fixed;
+  z-index:200;
+  background:var(--panel);
+  border:1px solid var(--edge);
+  box-shadow:0 4px 16px rgba(0,0,0,.5);
+  padding:4px 0;
+  min-width:140px;
+  display:flex;
+  flex-direction:column;
+}
+.am-btn{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding:7px 14px;
+  font-size:11px;
+  color:var(--text);
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.am-btn:hover,.am-btn:focus{background:var(--panel-light);color:var(--cyan);outline:none}
+.am-sep{height:1px;background:var(--edge);margin:3px 0}
+
+/* hide old elements that no longer exist in DOM */
+.device-header,.vitals,.vibe-strip,.interaction-grid,.device-footer{display:none!important}
