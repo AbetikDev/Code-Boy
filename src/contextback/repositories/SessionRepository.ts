@@ -33,11 +33,11 @@ export class SessionRepository {
     return session;
   }
 
-  endSession(sessionId: string): CBSession | undefined {
+  endSession(sessionId: string, endedAt = Date.now()): CBSession | undefined {
     const sessions = this.db.get('sessions');
     const session = sessions.find(s => s.id === sessionId);
     if (!session) return undefined;
-    session.endedAt = Date.now();
+    session.endedAt = Math.max(session.startedAt, endedAt);
     session.durationSecs = Math.round((session.endedAt - session.startedAt) / 1000);
     this.db.set('sessions', sessions);
     return session;

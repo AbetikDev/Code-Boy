@@ -27,7 +27,7 @@ import { WelcomeBackProvider } from './ui/WelcomeBackProvider';
 import { SidebarProvider } from './ui/SidebarProvider';
 import type { AIProvider } from './ai/AIProvider';
 import { DisabledAIProvider } from './ai/AIProvider';
-import { OpenAIProvider } from './ai/OpenAIProvider';
+import { BobShellProvider } from './ai/BobShellProvider';
 
 function readCBSettings(): CBSettings {
   const config = vscode.workspace.getConfiguration('contextBack');
@@ -41,13 +41,13 @@ function readCBSettings(): CBSettings {
   s.trackDiagnostics = bool('trackDiagnostics', true);
   s.trackGit = bool('trackGit', true);
   s.trackTodos = bool('trackTodos', true);
-  s.aiEnabled = bool('aiEnabled' as keyof CBSettings, false);
+  s.aiEnabled = bool('ai.enabled' as keyof CBSettings, false);
   const timeout = config.get<unknown>('sessionTimeoutMinutes');
   if (typeof timeout === 'number') s.sessionTimeoutMinutes = timeout;
   const threshold = config.get<unknown>('welcomeBackAfterHours');
   if (typeof threshold === 'number') s.welcomeBackAfterHours = threshold;
   const provider = config.get<unknown>('ai.provider');
-  if (provider === 'openai' || provider === 'ollama' || provider === 'disabled') s.aiProvider = provider;
+  if (provider === 'bob' || provider === 'disabled') s.aiProvider = provider;
   const exclude = config.get<unknown>('exclude');
   if (Array.isArray(exclude)) s.exclude = exclude as string[];
   return s;
@@ -98,8 +98,8 @@ export class ContextBackController implements vscode.Disposable {
     this.bus = new EventBus<CBEvents>();
     this.analyzer = new SessionAnalyzer();
     this.threads = new ThreadDetector();
-    this.ai = this.buildAI();
     this.projectMgr = new ProjectManager(this.db, this.git);
+    this.ai = this.buildAI();
     this.sessionMgr = new SessionManager(this.db, this.git, this.settings, session => {
       this.bus.emit('sessionEnd', { sessionId: session.id });
       this.db.prune();
@@ -141,6 +141,7 @@ export class ContextBackController implements vscode.Disposable {
     if (!project) return;
 
     const root = this.projectMgr.root!;
+    this.sessionMgr.recoverPrevious(project.id);
     const lastSession = this.sessionRepo.getLastCompleted(project.id);
 
     await this.sessionMgr.startForProject(project.id, root);
@@ -161,10 +162,24 @@ export class ContextBackController implements vscode.Disposable {
     this.fileCollector = new FileCollector(this.eventRepo, this.fileRepo, ctxNoRoot, this.settings);
     this.terminalCollector = new TerminalCollector(this.db, this.eventRepo, ctxNoRoot, this.settings, projectId => this.bus.emit('healthChanged', { projectId }));
     this.diagCollector = new DiagnosticCollector(this.errorRepo, this.eventRepo, ctxNoRoot, this.settings, projectId => this.bus.emit('healthChanged', { projectId }));
-    this.todoCollector = new TodoCollector(this.todoRepo, ctxNoRoot, this.settings);
-    this.gitCollector = new GitCollector(this.db, this.eventRepo, this.git, ctx, this.settings, (projectId, hash, message) => this.bus.emit('commitRecorded', { projectId, hash, message }));
+    this.todoCollector = new TodoCollector(this.todoRepo, ctxNoRoot, this.settings,
+      projectId => this.bus.emit('healthChanged', { projectId }));
+    this.gitCollector = new GitCollector(this.db, this.eventRepo, this.git, ctx, this.settings,
+      (projectId, hash, message) => this.bus.emit('commitRecorded', { projectId, hash, message }),
+      projectId => this.bus.emit('healthChanged', { projectId }));
 
     this.disposables.push(this.fileCollector, this.terminalCollector, this.diagCollector, this.todoCollector);
+    if (this.settings.trackTodos) {
+      const files = new Set(this.db.get('todos')
+        .filter(todo => todo.projectId === project.id && todo.status === 'open')
+        .map(todo => todo.file));
+      for (const file of files) {
+        const relative = path.relative(root, file);
+        if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+          await this.todoCollector.scanPath(project.id, file);
+        }
+      }
+    }
     this.gitCollector.start();
 
     this.sidebar.refresh();
@@ -220,11 +235,13 @@ export class ContextBackController implements vscode.Disposable {
   async getTopThreads(): Promise<CBOpenThread[]> {
     const project = this.projectMgr.current;
     if (!project) return [];
+    const changed = this.settings.trackGit && this.projectMgr.root
+      ? await this.git.getChangedFiles(this.projectMgr.root) : [];
     const sessions = this.sessionRepo.getForProject(project.id);
     const session = this.sessionMgr.current ?? sessions[0];
     const threads = session ? this.threads.detect([{
       sessionId: session.id, session, errors: this.errorRepo.openForProject(project.id),
-      todos: this.todoRepo.openForProject(project.id), hasUncommittedChanges: false,
+      todos: this.todoRepo.openForProject(project.id), hasUncommittedChanges: changed.length > 0,
       hasSuccessfulTestAfterError: false,
     }]) : [];
 
@@ -232,6 +249,14 @@ export class ContextBackController implements vscode.Disposable {
     const events = this.db.get('events').filter(e => sessionIds.has(e.sessionId) && e.type === 'terminal_command')
       .sort((a, b) => b.timestamp - a.timestamp);
     threads.push(...failedTestThreads(project.id, events));
+    if (changed.length) {
+      threads.push({
+        id: `git:${project.id}`, title: `Uncommitted changes (${changed.length} files)`,
+        blockerIds: [], lastTouched: Date.now(),
+        lastError: changed.slice(0, 3).join(', '), unfinishedScore: 0.4,
+        signal: 'yellow', todoCount: 0,
+      });
+    }
     return threads.sort((a, b) => b.unfinishedScore - a.unfinishedScore);
   }
 
@@ -347,6 +372,7 @@ export class ContextBackController implements vscode.Disposable {
       );
       const aiResult = await this.ai.summarize(dump);
       if (aiResult) analysis = { ...aiResult, topics: analysis.topics };
+      else vscode.window.showWarningMessage('ContextBack: IBM Bob Shell did not return a summary. Install and authenticate Bob Shell, or disable Bob summaries. Showing the local summary.');
     }
 
     vscode.window.showInformationMessage(
@@ -395,11 +421,7 @@ export class ContextBackController implements vscode.Disposable {
 
   private buildAI(): AIProvider {
     if (!this.settings.aiEnabled || this.settings.aiProvider === 'disabled') return new DisabledAIProvider();
-    if (this.settings.aiProvider === 'openai') {
-      const key = this.context.globalState.get<string>('contextBack.openaiKey') ?? this.settings.aiApiKey;
-      return new OpenAIProvider(key);
-    }
-    return new DisabledAIProvider();
+    return new BobShellProvider(this.projectMgr.root ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd());
   }
 
   private registerCommands(): void {
@@ -411,19 +433,12 @@ export class ContextBackController implements vscode.Disposable {
     cmd('showOpenThreads', () => this.showOpenThreads());
     cmd('pauseTracking', () => this.pauseTracking());
     cmd('clearHistory', () => this.clearHistory());
-    cmd('setOpenAIKey', async () => {
-      const key = await vscode.window.showInputBox({ title: 'ContextBack: OpenAI API Key', prompt: 'Enter your OpenAI API key (stored in VS Code SecretStorage)', password: true, ignoreFocusOut: true });
-      if (key) {
-        await this.context.globalState.update('contextBack.openaiKey', key.trim());
-        this.ai = this.buildAI();
-        vscode.window.showInformationMessage('ContextBack: OpenAI key saved.');
-      }
-    });
   }
 
   dispose(): void {
     clearInterval(this.sidebarRefreshTimer);
     this.gitCollector?.dispose();
+    this.sessionMgr.endCurrent();
     this.sessionMgr.dispose();
     for (const d of [...this.disposables].reverse()) d.dispose();
     this.db.flush();

@@ -36,6 +36,21 @@ export class TodoRepository {
     if (todo) { todo.status = 'resolved'; this.db.set('todos', todos); }
   }
 
+  /** Reconcile one successfully scanned file without touching other files. */
+  resolveMissingForFile(projectId: string, file: string, active: ReadonlySet<string>): boolean {
+    const todos = this.db.get('todos');
+    let changed = false;
+    for (const todo of todos) {
+      if (todo.projectId === projectId && todo.file === file && todo.status === 'open'
+        && !active.has(`${todo.line}:${todo.tag}`)) {
+        todo.status = 'resolved';
+        changed = true;
+      }
+    }
+    if (changed) this.db.set('todos', todos);
+    return changed;
+  }
+
   openForProject(projectId: string, limit = 20): CBTodo[] {
     return [...this.db.get('todos')]
       .filter(t => t.projectId === projectId && t.status === 'open')

@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/local/code-boy"
+    "url": "https://github.com/AbetikDev/Code-Boy.git"
   },
   "engines": {
     "vscode": "^1.96.0"
@@ -169,11 +169,6 @@
         "command": "contextBack.clearHistory",
         "title": "Clear Project History",
         "category": "ContextBack"
-      },
-      {
-        "command": "contextBack.setOpenAIKey",
-        "title": "Set OpenAI API Key",
-        "category": "ContextBack"
       }
     ],
     "menus": {
@@ -298,13 +293,13 @@
           "contextBack.ai.enabled": {
             "type": "boolean",
             "default": false,
-            "description": "Use AI to generate session summaries."
+            "description": "Use IBM Bob Shell for session summaries. Requires an installed and authenticated bob command; session metadata is sent to Bob."
           },
           "contextBack.ai.provider": {
             "type": "string",
-            "enum": ["disabled", "openai", "ollama"],
-            "default": "disabled",
-            "description": "AI provider for session summarization."
+            "enum": ["disabled", "bob"],
+            "default": "bob",
+            "description": "Session summary provider. Bob Shell is called only when IBM Bob summaries are enabled."
           },
           "contextBack.exclude": {
             "type": "array",

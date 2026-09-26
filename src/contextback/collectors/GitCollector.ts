@@ -13,9 +13,11 @@ export class GitCollector {
     private readonly git: GitService,
     private getContext: () => { projectId: string; sessionId: string; root: string } | null,
     private settings: CBSettings,
-    private onCommit?: (projectId: string, hash: string, message: string) => void
+    private onCommit?: (projectId: string, hash: string, message: string) => void,
+    private onHealthChanged?: (projectId: string) => void,
   ) {}
   private baselineLoaded = false;
+  private changedFilesKey: string | undefined;
 
   start(): void {
     if (!this.settings.trackGit) return;
@@ -59,6 +61,11 @@ export class GitCollector {
         }
       }
       this.baselineLoaded = true;
+      const changedFilesKey = (await this.git.getChangedFiles(root)).sort().join('\n');
+      if (this.changedFilesKey !== changedFilesKey) {
+        this.changedFilesKey = changedFilesKey;
+        this.onHealthChanged?.(projectId);
+      }
     } catch { /* git not available */ }
   }
 

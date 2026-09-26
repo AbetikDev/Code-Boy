@@ -13,7 +13,8 @@ export class TodoCollector implements vscode.Disposable {
   constructor(
     private readonly todos: TodoRepository,
     private getContext: () => { projectId: string; sessionId: string } | null,
-    private settings: CBSettings
+    private settings: CBSettings,
+    private onChange?: (projectId: string) => void,
   ) {
     this.subs.push(
       vscode.workspace.onDidSaveTextDocument(doc => this.scheduleScan(doc)),
@@ -34,9 +35,12 @@ export class TodoCollector implements vscode.Disposable {
   private scanFile(doc: vscode.TextDocument): void {
     const ctx = this.getContext();
     if (!ctx) return;
-    const { projectId } = ctx;
-    const text = doc.getText();
+    this.scanText(ctx.projectId, doc.uri.fsPath, doc.getText());
+  }
+
+  private scanText(projectId: string, file: string, text: string): void {
     const lines = text.split('\n');
+    const active = new Set<string>();
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!;
       TODO_RE.lastIndex = 0;
@@ -44,9 +48,12 @@ export class TodoCollector implements vscode.Disposable {
       if (match) {
         const tag = (match[1]?.toUpperCase() ?? 'TODO') as CBTodo['tag'];
         const text = match[2]?.trim().slice(0, 200) ?? '';
-        this.todos.upsert(projectId, doc.uri.fsPath, i, text, tag);
+        active.add(`${i}:${tag}`);
+        this.todos.upsert(projectId, file, i, text, tag);
       }
     }
+    this.todos.resolveMissingForFile(projectId, file, active);
+    this.onChange?.(projectId);
   }
 
   /** Scan a file from disk (used on startup for recently changed files). */
@@ -54,18 +61,13 @@ export class TodoCollector implements vscode.Disposable {
     if (!this.settings.trackTodos) return;
     try {
       const text = fs.readFileSync(filePath, 'utf8');
-      const lines = text.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i]!;
-        TODO_RE.lastIndex = 0;
-        const match = TODO_RE.exec(line);
-        if (match) {
-          const tag = (match[1]?.toUpperCase() ?? 'TODO') as CBTodo['tag'];
-          const todoText = match[2]?.trim().slice(0, 200) ?? '';
-          this.todos.upsert(projectId, filePath, i, todoText, tag);
-        }
+      this.scanText(projectId, filePath, text);
+    } catch {
+      // A deleted file cannot contain an open TODO. Preserve entries for unreadable files.
+      if (!fs.existsSync(filePath) && this.todos.resolveMissingForFile(projectId, filePath, new Set())) {
+        this.onChange?.(projectId);
       }
-    } catch { /* file may be binary or inaccessible */ }
+    }
   }
 
   dispose(): void {

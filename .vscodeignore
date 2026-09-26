@@ -1,4 +1,8 @@
 .vscode/**
+.env
+.env.*
+.kilo/**
+rebuild.bat
 .vscode-test/**
 .test/**
 .git/**

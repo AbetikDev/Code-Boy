@@ -174,8 +174,7 @@ export interface CBSettings {
   trackGit: boolean;
   trackTodos: boolean;
   aiEnabled: boolean;
-  aiProvider: 'openai' | 'ollama' | 'disabled';
-  aiApiKey: string;
+  aiProvider: 'bob' | 'disabled';
   exclude: string[];
 }
 
@@ -188,8 +187,7 @@ export const DEFAULT_CB_SETTINGS: CBSettings = {
   trackGit: true,
   trackTodos: true,
   aiEnabled: false,
-  aiProvider: 'disabled',
-  aiApiKey: '',
+  aiProvider: 'bob',
   exclude: ['**/.env*', '**/secrets/**', '**/credentials/**', '**/*.pem', '**/*.key'],
 };
 

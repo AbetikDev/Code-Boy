@@ -1,171 +1,81 @@
 # Code Boy & ContextBack
 
-> **The Ambient Flow & Intelligent Context Recovery Dev Companion for VS Code**  
-> *Built for the **IBM Bob 2.0 Hackathon** on [lablab.ai](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon)*
+A VS Code pixel companion that reflects project health and helps you resume interrupted work. Built for the [IBM Bob 2.0 Hackathon](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon).
 
-[![IBM Bob 2.0 Hackathon](https://img.shields.io/badge/IBM%20Bob%202.0-Hackathon%20Project-blue?style=for-the-badge&logo=ibm)](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.96.0-007ACC.svg?style=for-the-badge&logo=visual-studio-code)](https://code.visualstudio.com/)
-[![Tests](https://img.shields.io/badge/Tests-58%20Passed-brightgreen.svg?style=for-the-badge)](test/)
-[![Core Coverage](https://img.shields.io/badge/Coverage-%3E90%25%20Core-blue?style=for-the-badge)](docs/TESTING_REPORT.md)
-[![Runtime Dependencies](https://img.shields.io/badge/Dependencies-0%20npm%20runtime-success.svg?style=for-the-badge)](package.json)
+## What it does
 
----
+- **ContextBack** records local session metadata: recent files, diagnostics, recognized test command exit codes, TODO comments, git commits, and uncommitted files. Its dashboard and Welcome Back card show what needs attention.
+- **Code Boy** reacts to coding, builds, music, and project health. A current error or failing test can make it concerned; verified blocker resolution earns a celebration. A commit is a separate milestone and does not resolve blockers.
+- **IBM Bob Shell summaries** are optional. When enabled, ContextBack sends a bounded metadata summary to the installed `bob run` command in Ask mode and displays Bob's response. If Bob is unavailable, the local deterministic summary remains available.
+- **Resolve Blocker with Bob** previews a prompt containing the latest red blocker's file path and error, then copies it to the clipboard after confirmation. Paste it into IBM Bob IDE or Shell to ask Bob to investigate and fix the issue. The extension does not dispatch this command automatically.
 
-## 💡 The Problem: The High Cost of Context Switching
+## Architecture
 
-Every developer knows the friction of returning to an IDE after a meeting, overnight break, or weekend:
-* **"Where was I?"** It takes an average of **23+ minutes** to regain deep focus after every interruption.
-* **Invisible Blockers:** Forgotten compiler errors, failing unit tests, and loose TODOs/FIXMEs get lost in git diff noise.
-* **Onboarding & Branch Friction:** Switching between complex feature branches causes mental fatigue and cognitive overload.
-* **Dry Tools:** Existing productivity trackers are either passive timesheets or terminal dumps that offer no interactive engagement.
+```text
+VS Code activity -> ContextBack collectors -> local JSON store
+                                    |             |
+                                    v             v
+                            health snapshots   dashboard / Welcome Back
+                                    |
+                            ContextBoyBridge
+                                    |
+                            Code Boy companion
 
----
-
-## 🚀 The Solution: Two Powerful Engines in One Extension
-
-**Code Boy & ContextBack** combines **autonomous developer context tracking** and **agentic IBM Bob 2.0 intelligence** with a **delightful ambient visual companion**:
-
-```
- ┌────────────────────────────────────────────────────────────────────────┐
- │                           VS Code Workspace                            │
- └───────────────────┬────────────────────────────────┬───────────────────┘
-                     │                                │
-         [ Local Activity Stream ]         [ Ambient UI Interaction ]
-                     │                                │
-                     ▼                                ▼
-       ┌───────────────────────────┐    ┌───────────────────────────┐
-       │     ContextBack Engine    │    │      Code Boy Canvas      │
-       │                           │    │                           │
-       │ • File & Git Collectors   │    │ • 60 FPS Pixel Art Engine │
-       │ • Diagnostics Tracker     │◄───┤ • Real-time Flow Feedback │
-       │ • Terminal & TODO Scanner │    │ • Vibe Coding & Music     │
-       │ • Thread Detector (R/Y/G) │    │ • Gamified Focus & Levels │
-       └─────────────┬─────────────┘    └───────────────────────────┘
-                     │
-                     ▼
-       ┌───────────────────────────────────────────────────────────┐
-       │               IBM Bob 2.0 Agentic Partner                 │
-       │                                                           │
-       │  • Repository-Wide Context Analysis                       │
-       │  • Intelligent Session Summarization & Next Steps         │
-       │  • 1-Click Handoff: Package & Dispatch to IBM Bob Agent   │
-       └───────────────────────────────────────────────────────────┘
+Optional session summary: ContextBack -> bob run (Ask mode) -> summary
+Manual blocker handoff: preview -> clipboard -> IBM Bob IDE / Shell
 ```
 
-### 1. 🧠 ContextBack: Zero-Friction Developer Continuity
-* **Continuous Local Tracking:** Monitors active files, branch checkouts, compiler diagnostics, and terminal exit codes with **zero runtime npm dependencies**.
-* **Welcome Back Card:** Reconstructs your working memory immediately upon returning to the editor. Shows what was accomplished, hot files, and open errors.
-* **Open Thread Detection:** Categorizes unfinished tasks with deterministic traffic-light signals (🔴 Red: Broken compiler/tests, 🟡 Yellow: Uncommitted edits/TODOs, 🟢 Green: Ready to commit).
-* **Privacy-First & Secure:** Source code and sensitive keys (`.env`, secrets, credentials) are **never exported**. Only localized operational metadata is processed.
+ContextBack stores data in `~/.contextback/context.json`. With Bob summaries disabled, it does not send session metadata to Bob. When enabled, the prompt can include file paths, diagnostic messages, command names, TODO text, commit messages, and diff statistics. Review those fields before enabling Bob in a sensitive repository.
 
-### 2. 🤖 Powered by IBM Bob 2.0
-* **Repository-Aware Synthesis:** Leverages IBM Bob 2.0's full-repo comprehension to summarize sessions and recommend actionable **Next Steps**.
-* **1-Click Agent Handoff:** Instantly formats open error traces, affected files, and diagnostic contexts into an optimized prompt for **IBM Bob Agent mode**, allowing Bob's subagents to resolve complex bugs autonomously.
-* **Architected with Bob:** IBM Bob was used to design the decoupled event-bus collector architecture and verify test boundaries across 34 automated unit tests.
+## Run locally
 
-### 3. 🎮 Code Boy: Ambient Living Companion
-* **Flow State Reflection:** Sits unobtrusively in your VS Code sidebar. Types fast when you code, enters deep focus when uninterrupted, listens to music with you, and alerts you when builds fail.
-* **Vibe Mode:** Click **VIBE** to put on headphones, dim distractions, and enter calm coding mode.
-* **Cosmetic Progression:** Earn XP for clean coding sessions, fixed errors, and build successes to unlock retro themes (Forest, Cyber, Retro PC, Space) and desk items (Coffee, Posters, RGB setups).
-
----
-
-## ⚡ Quick Start
-
-### Prerequisites
-* **Node.js 22+**
-* **VS Code 1.96+**
-
-### Running in Development Host
+Requires VS Code 1.96+ and Node.js for development.
 
 ```sh
-# 1. Install dependencies
 npm install
-
-# 2. Compile TypeScript & bundle webview
 npm run compile
-
-# 3. Press F5 in VS Code (Run Code Boy)
 ```
 
-In the **[Extension Development Host]** window:
-* Click the **Code Boy** icon on the Activity Bar or press `Ctrl+Shift+P` → **`Code Boy: Open`**.
-* Open the **ContextBack** sidebar from the Activity Bar (`contextback.sidebar`) to view active session telemetry and open threads.
+Press F5 in VS Code to open the Extension Development Host. Use **ContextBack: Open Dashboard** and **Code Boy: Open** from the command palette.
 
-### Installing Prebuilt VSIX
+To build an installable extension:
 
-Download `code-boy-1.0.0.vsix` or package it locally:
 ```sh
 npm run package
 ```
-In VS Code: Extensions view (`Ctrl+Shift+X`) → Click `...` menu → **Install from VSIX...** → Select `code-boy-1.0.0.vsix`.
 
----
+Then choose **Extensions → … → Install from VSIX** and select `code-boy-1.0.0.vsix`. The package is generated locally; it is not a published release unless uploaded separately.
 
-## 🏆 IBM Bob 2.0 Hackathon Submission Deliverables
+## Connect IBM Bob
 
-Complete hackathon documentation and verification artifacts are located in the [`docs/`](docs/) directory:
+1. [Install IBM Bob Shell](https://bob.ibm.com/docs/shell/getting-started/install-and-setup) and authenticate it. Bob Shell currently requires Node.js 24+; the extension itself does not require Bob.
+2. Confirm `bob run --format json --mode ask "Summarize this project"` works in a terminal. Noninteractive use may require an IBM Bob API key configured for Bob Shell.
+3. In VS Code settings, enable `contextBack.ai.enabled`; `contextBack.ai.provider` defaults to `bob`.
+4. Run **ContextBack: Summarize Last Session**. Bob Shell receives session metadata and returns a structured summary. The call has a 45 second timeout and cost and turn limits.
 
-* 📄 **[Official Submission Kit](docs/SUBMISSION_KIT.md):** Contains the official **Problem & Solution Statement** (≤ 500 words), **IBM Bob Usage Statement** (≤ 500 words), **3-Minute Video Script** (with 105s live demo), and **Pitch Deck outline**.
-* 📸 **[IBM Bob Task Session Screenshots](docs/ibm-bob/):** Verification screenshots showcasing IBM Bob 2.0 task executions and agent interactions during development.
+The existing **Code Boy: Resolve Blocker with Bob** command uses a manual clipboard handoff. Bob Shell summarization and manual blocker fixing are separate flows. See the [IBM Bob Shell CLI documentation](https://bob.ibm.com/docs/shell/getting-started/start-bobshell-non-interactive).
 
----
+## Main commands
 
-## 🛠 Available Commands
+| Command | Purpose |
+| --- | --- |
+| `contextBack.openDashboard` | Show recent work and open threads |
+| `contextBack.continueSession` | Reopen recent files from the last session |
+| `contextBack.summarizeSession` | Show a local summary or ask Bob Shell when enabled |
+| `contextBack.showOpenThreads` | Inspect red and yellow threads |
+| `codeBoy.resolveBlockerWithBob` | Preview and copy a blocker prompt for Bob |
+| `codeBoy.resumeSession` | Open the ContextBack dashboard |
 
-### ContextBack (Workflow & Continuity)
-| Command | Palette Title | Purpose |
-| :--- | :--- | :--- |
-| `contextBack.openDashboard` | **ContextBack: Open Dashboard** | Open the full session and open-threads overview |
-| `contextBack.continueSession` | **ContextBack: Continue Last Session** | Reopen hot files, restore branch, and highlight pending errors |
-| `contextBack.summarizeSession`| **ContextBack: Summarize Last Session**| Trigger AI/IBM Bob session summarization |
-| `contextBack.showOpenThreads` | **ContextBack: Show Open Threads** | View all red/yellow unresolved task threads |
-| `contextBack.pauseTracking`   | **ContextBack: Pause Tracking** | Temporarily pause local telemetry collection |
-| `contextBack.clearHistory`    | **ContextBack: Clear Project History** | Purge local session history for the current workspace |
-
-### Code Boy (Ambient Companion)
-| Command | Palette Title | Purpose |
-| :--- | :--- | :--- |
-| `codeBoy.open` | **Code Boy: Open** | Focus companion in the sidebar |
-| `codeBoy.toggleVibeMode` | **Code Boy: Toggle Vibe Mode** | Toggle headphones & chill flow mode |
-| `codeBoy.pet` | **Code Boy: Pet** | Interactive click / mood boost |
-| `codeBoy.dance` | **Code Boy: Dance** | Celebrate build or test milestones |
-| `codeBoy.changeRoom` | **Code Boy: Change Room** | Select unlocked themes (Cyber, Forest, Retro PC, Space) |
-| `codeBoy.showStats` | **Code Boy: Show Stats** | Display coding hours, level, streak, and XP |
-
----
-
-## 🔒 Privacy & Local Security
-
-* **Zero Code Exfiltration:** Your proprietary code never leaves your machine. Telemetry only tracks event counters, filenames, line numbers, and error messages.
-* **Sensitive File Exclusion:** Files matching `.env*`, `**/secrets/**`, `**/*.pem`, and `**/*.key` are strictly ignored by collectors.
-* **Safe Local Storage:** Data is stored strictly on your local filesystem under `~/.contextback/` and VS Code `globalState`.
-
----
-
-## 🧪 Testing & Code Quality
+## Verification
 
 ```sh
-npm run check       # Strict TypeScript typechecking for host & webview
-npm test            # Run 40 unit tests (state machine, collectors, persistence, CSP)
-npm run test:host   # Integration run in real VS Code host
-npm run preview     # Webview interface preview at http://127.0.0.1:4173
+npm run check
+npm test
+npx playwright test
 ```
 
-All 40 test suites pass in sub-second time with 100% deterministic coverage (see full [QA Report](docs/TESTING_REPORT.md)):
-```
-✔ coding transitions do not restart for every keystroke, and idle starts at 30 seconds
-✔ Database initializes clean state and survives atomic disk flush & reload
-✔ ThreadDetector flags broken diagnostics as RED and open TODOs as YELLOW
-✔ SessionAnalyzer synthesizes completed tasks, open blockers, and nextStep
-✔ End-to-end ContextBack core lifecycle: start -> work -> error -> resolve -> end
-...
-ℹ pass 40, fail 0 (238ms)
-```
+Results and remaining limits are recorded in [docs/TESTING_REPORT.md](docs/TESTING_REPORT.md). Submission preparation is in [docs/SUBMISSION_KIT.md](docs/SUBMISSION_KIT.md). IBM Bob session evidence is tracked in [docs/ibm-bob/](docs/ibm-bob/).
 
----
+## License
 
-## 📜 License
-
-MIT License. Designed and developed for the **IBM Bob 2.0 Hackathon (2026)**.
+MIT. [Source repository](https://github.com/AbetikDev/Code-Boy).

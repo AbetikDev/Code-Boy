@@ -25,15 +25,23 @@ export class SessionManager {
 
   /** Must be called after ProjectManager.initWorkspace() returns a project. */
   async startForProject(projectId: string, root: string): Promise<CBSession> {
-    // End any dangling active session (e.g. crashed host)
-    const dangling = this.repo.getActive(projectId);
-    if (dangling) this.repo.endSession(dangling.id);
+    this.recoverPrevious(projectId);
 
     const branch = await this.git.getCurrentBranch(root).catch(() => 'main');
     const branchRec = this.repo.findOrCreateBranch(projectId, branch);
     this.currentSession = this.repo.startSession(projectId, branchRec.id);
     this.lastActivityAt = Date.now();
     return this.currentSession;
+  }
+
+  /** Recover a session left open by a crashed host at its last recorded activity. */
+  recoverPrevious(projectId: string): CBSession | undefined {
+    const dangling = this.repo.getActive(projectId);
+    if (!dangling) return undefined;
+    const lastEventAt = this.db.get('events')
+      .filter(event => event.sessionId === dangling.id)
+      .reduce((latest, event) => Math.max(latest, event.timestamp), dangling.startedAt);
+    return this.repo.endSession(dangling.id, Math.min(Date.now(), lastEventAt));
   }
 
   touch(): void {

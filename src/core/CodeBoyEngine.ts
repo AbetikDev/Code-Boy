@@ -456,8 +456,7 @@ export class CodeBoyEngine {
     const inactivity = this.activity.inactivity(now);
     let state: CharacterState = 'IDLE';
     if (!this.settings.enabled) { return 'IDLE'; }
-    if (this.manualSleep || inactivity >= ActivityTracker.SLEEP_AFTER) { state = 'SLEEPING'; }
-    else if (inactivity >= ActivityTracker.BORED_AFTER) { state = 'BORED'; }
+    if (this.manualSleep) { state = 'SLEEPING'; }
     else if (this.activity.isTyping(now)) {
       // Auto-vibe: if user is in deep sustained flow + music, kick in vibe coding automatically
       const inFlow = this.activity.isAutoVibe(now);
@@ -469,10 +468,12 @@ export class CodeBoyEngine {
       }
       state = this.musicPlaying || this.settings.vibeMode || this.autoVibeActive ? 'VIBE_CODING' : 'CODING';
     }
-    else if (!this.activity.isFocused && inactivity >= ActivityTracker.IDLE_AFTER) { state = 'AFK'; }
     else if (this.settings.vibeMode && this.hasWorkspace) { state = 'VIBE_CODING'; }
     else if (this.taskCount > 0 || this.debugging) { state = 'THINKING'; }
     else if (this.redBlockers > 0) { state = 'CONFUSED'; }
+    else if (inactivity >= ActivityTracker.SLEEP_AFTER) { state = 'SLEEPING'; }
+    else if (inactivity >= ActivityTracker.BORED_AFTER) { state = 'BORED'; }
+    else if (!this.activity.isFocused && inactivity >= ActivityTracker.IDLE_AFTER) { state = 'AFK'; }
     else if (this.musicPlaying) { state = 'LISTENING_MUSIC'; }
     else if (this.mood.stats.energy < 18) { state = 'TIRED'; }
     else if (this.mood.stats.mood < 15) { state = 'VERY_SAD'; }
