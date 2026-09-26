@@ -43,6 +43,7 @@ export function sidebarHtml(data: CBSidebarData, webview: vscode.Webview, assets
   return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   ${cspMeta(webview, n)}${assets.css ? `<link rel="stylesheet" href="${esc(assets.css)}">` : ''}</head><body>
   <main class="device">
+    <button class="back-link" id="back" aria-label="Back to Code Boy"><span aria-hidden="true">‹</span> BACK TO CODE BOY</button>
     <header class="brand"><div class="brand-mark">↶</div><div><span class="brand-name">Context<span>Back</span></span><small>YOUR DEV MEMORY</small></div></header>
     <div class="project-strip"><span class="status-light"></span><strong>${esc(data.project.name)}</strong><span class="branch">⎇ ${esc(data.branch.name)}</span></div>
     <section class="world-frame" aria-label="Yesterday's activity">
@@ -66,7 +67,7 @@ export function sidebarHtml(data: CBSidebarData, webview: vscode.Webview, assets
     <div class="actions"><button id="refresh">↻ SCAN AGAIN</button><button id="dashboard">▣ DASHBOARD</button></div>
     <footer>CONTEXTBACK <span>◆</span> YOUR WORK, REMEMBERED</footer>
   </main>
-  <script nonce="${n}">const vscode=acquireVsCodeApi();const state=vscode.getState()||{};document.querySelectorAll('[data-scan]').forEach(el=>{el.open=!!state[el.dataset.scan];el.addEventListener('toggle',()=>{state[el.dataset.scan]=el.open;vscode.setState(state)})});document.getElementById('refresh').addEventListener('click',()=>vscode.postMessage({command:'refresh'}));document.getElementById('dashboard').addEventListener('click',()=>vscode.postMessage({command:'dashboard'}));document.querySelectorAll('[data-file]').forEach(el=>el.addEventListener('click',()=>vscode.postMessage({command:'openFile',index:Number(el.dataset.file)})));</script>
+  <script nonce="${n}">const vscode=acquireVsCodeApi();const state=vscode.getState()||{};document.querySelectorAll('[data-scan]').forEach(el=>{el.open=!!state[el.dataset.scan];el.addEventListener('toggle',()=>{state[el.dataset.scan]=el.open;vscode.setState(state)})});document.getElementById('back').addEventListener('click',()=>vscode.postMessage({command:'back'}));document.getElementById('refresh').addEventListener('click',()=>vscode.postMessage({command:'refresh'}));document.getElementById('dashboard').addEventListener('click',()=>vscode.postMessage({command:'dashboard'}));document.querySelectorAll('[data-file]').forEach(el=>el.addEventListener('click',()=>vscode.postMessage({command:'openFile',index:Number(el.dataset.file)})));</script>
   </body></html>`;
 }
 
@@ -84,6 +85,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
     private readonly onRefresh: () => Promise<void>,
     private readonly onDashboard: () => void,
     private readonly onOpen: () => void,
+    private readonly onBack: () => void,
   ) {
     this.registration = vscode.window.registerWebviewViewProvider(SidebarProvider.viewId, this);
   }
@@ -99,6 +101,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
     view.onDidDispose(() => { this.view = undefined; });
     view.onDidChangeVisibility(() => { if (view.visible) { this.refresh(); this.onOpen(); } });
     view.webview.onDidReceiveMessage((message: { command: string; index?: number }) => {
+      if (message.command === 'back') this.onBack();
       if (message.command === 'refresh') void this.onRefresh();
       if (message.command === 'dashboard') this.onDashboard();
       if (message.command === 'openFile' && Number.isInteger(message.index)) {
@@ -121,8 +124,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
       this.files = data?.recap.files ?? [];
       const css = this.view.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'contextback.css')).toString();
       const sprite = this.view.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'assets', 'character', 'idle', 'codeboy_idle.png')).toString();
-      this.view.webview.html = data ? sidebarHtml(data, this.view.webview, { css, sprite })
-        : `<!doctype html><html><head>${cspMeta(this.view.webview, nonce())}<link rel="stylesheet" href="${css}"></head><body><div class="empty-project">Open a project to see your ContextBack log.</div></body></html>`;
+      if (data) {
+        this.view.webview.html = sidebarHtml(data, this.view.webview, { css, sprite });
+      } else {
+        const n = nonce();
+        this.view.webview.html = `<!doctype html><html lang="en"><head>${cspMeta(this.view.webview, n)}<link rel="stylesheet" href="${css}"></head><body><main class="device"><button class="back-link" id="back">‹ BACK TO CODE BOY</button><div class="empty-project"><strong>NO PROJECT OPEN</strong><p>Open a folder to see yesterday's work and code scans.</p></div></main><script nonce="${n}">document.getElementById('back').addEventListener('click',()=>acquireVsCodeApi().postMessage({command:'back'}));</script></body></html>`;
+      }
     } finally {
       this.loading = false;
       if (this.pending) { this.pending = false; this.refresh(); }

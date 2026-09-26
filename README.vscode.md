@@ -77,7 +77,7 @@ Personalize Code Boy's workspace backdrop as you level up:
 ### 🧭 5. ContextBack: Instant Session Recovery
 Ever open your editor on a Monday and ask *"Where was I?"*
 Code Boy includes **ContextBack**, an intelligent local workspace memory assistant:
-- Shows a compact **What I did yesterday** recap in the Activity Bar, with files, commits, test results, and a next step when available.
+- Shows a compact **What I did yesterday** recap behind the **ContextBack** button in Code Boy's Activity Bar panel, with files, commits, test results, and a next step when available.
 - Displays unresolved `TODO`s, compiler errors, and pending tasks in one glance.
 - Uses Bob Shell to score yesterday's code changes and a sample of current code from 0 to 100, with reasons and concrete findings. Add `BOB_API_KEY` to the workspace `.env` and install Bob Shell to enable reviews. Only bounded, filtered code samples are sent; older uncommitted work without a saved snapshot cannot be scored.
 - Restores your mental context in seconds so you can get straight to building.
@@ -107,8 +107,9 @@ code --install-extension code-boy-1.0.0.vsix
 ## 🕹️ How to Use
 
 1. **Locate Code Boy**:
-   - Open your **Explorer Sidebar** (`Ctrl+Shift+E`). Code Boy is docked at the top or bottom panel.
-   - Or click the **ContextBack** icon in the left Activity Bar.
+   - Click the **Code Boy** icon in the left Activity Bar.
+   - Click **ContextBack** below his room to see yesterday's work and code scans. Use **Back to Code Boy** to return.
+   - Floating Code Boy is on by default. Use **Floating Code Boy** below the room to turn him on or off; reload the window when prompted.
 2. **Start Coding**:
    - Open any file and type. Code Boy automatically wakes up and mirrors your activity!
 3. **Interact with Code Boy**:
@@ -125,6 +126,8 @@ Press `Ctrl+Shift+P` (or `Cmd+Shift+P`) and type `Code Boy`:
 | Command | Description |
 | :--- | :--- |
 | `Code Boy: Open` | Focus and show Code Boy in the sidebar |
+| `Code Boy: Toggle Floating Mascot` | Turn the editor mascot on or off (reload required) |
+| `ContextBack: Open in Code Boy Sidebar` | Switch the sidebar to the project memory screen |
 | `Code Boy: Pet` | Give Code Boy some appreciation |
 | `Code Boy: Dance` | Trigger an energetic celebratory dance |
 | `Code Boy: Toggle Vibe Mode` | Toggle headphones and chill music vibes |

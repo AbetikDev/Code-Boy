@@ -30,6 +30,7 @@ import { DisabledAIProvider } from './ai/AIProvider';
 import { BobShellProvider } from './ai/BobShellProvider';
 import { QualityContext, yesterdayRange, localDay, shouldReview, type QualityInput } from './analysis/QualityContext';
 import { buildDayRecap } from './analysis/DayRecap';
+import { openSidebarScreen } from '../SidebarNavigation';
 
 function readCBSettings(): CBSettings {
   const config = vscode.workspace.getConfiguration('contextBack');
@@ -111,7 +112,7 @@ export class ContextBackController implements vscode.Disposable {
 
     this.dashboard = new DashboardProvider(context, () => this.buildDashboardData(), cmd => this.handleDashboardCommand(cmd));
     this.welcome = new WelcomeBackProvider(cmd => this.handleWelcomeCommand(cmd));
-    this.sidebar = new SidebarProvider(context.extensionUri, () => this.buildSidebarData(), () => this.refreshQuality(true), () => void this.openDashboard(), () => void this.refreshQuality(false));
+    this.sidebar = new SidebarProvider(context.extensionUri, () => this.buildSidebarData(), () => this.refreshQuality(true), () => void this.openDashboard(), () => void this.refreshQuality(false), () => void vscode.commands.executeCommand('codeBoy.open'));
 
     this.disposables.push(
       this.db,
@@ -131,7 +132,7 @@ export class ContextBackController implements vscode.Disposable {
           this.ai = this.buildAI();
         }
       }),
-      vscode.workspace.onDidChangeWorkspaceFolders(e => this.projectMgr.refreshWorkspace(e.added)),
+      vscode.workspace.onDidChangeWorkspaceFolders(() => { void this.switchWorkspace(); }),
       vscode.workspace.onDidSaveTextDocument(() => this.scheduleSnapshot()),
     );
 
@@ -173,7 +174,6 @@ export class ContextBackController implements vscode.Disposable {
       (projectId, hash, message) => this.bus.emit('commitRecorded', { projectId, hash, message }),
       projectId => this.bus.emit('healthChanged', { projectId }));
 
-    this.disposables.push(this.fileCollector, this.terminalCollector, this.diagCollector, this.todoCollector);
     if (this.settings.trackTodos) {
       const files = new Set(this.db.get('todos')
         .filter(todo => todo.projectId === project.id && todo.status === 'open')
@@ -206,6 +206,34 @@ export class ContextBackController implements vscode.Disposable {
     const root = this.projectMgr.root;
     if (!project || !session || !root) return null;
     return { projectId: project.id, sessionId: session.id, root };
+  }
+
+  private async switchWorkspace(): Promise<void> {
+    const folders = vscode.workspace.workspaceFolders ?? [];
+    if (folders[0]?.uri.fsPath === this.projectMgr.root) return;
+    if (this.snapshotTimer) { clearTimeout(this.snapshotTimer); this.snapshotTimer = undefined; }
+    this.stopCollectors();
+    this.sessionMgr.endCurrent();
+    this.projectMgr.refreshWorkspace(folders);
+    this.bus.emit('projectChanged', { projectId: undefined });
+    this.sidebar.refresh();
+    if (folders.length) {
+      await this.init();
+      this.bus.emit('projectChanged', { projectId: this.projectMgr.current?.id });
+    }
+  }
+
+  private stopCollectors(): void {
+    this.gitCollector?.dispose();
+    this.fileCollector?.dispose();
+    this.terminalCollector?.dispose();
+    this.diagCollector?.dispose();
+    this.todoCollector?.dispose();
+    this.gitCollector = undefined;
+    this.fileCollector = undefined;
+    this.terminalCollector = undefined;
+    this.diagCollector = undefined;
+    this.todoCollector = undefined;
   }
 
   private async showWelcomeBack(lastSession: import('./types').CBSession): Promise<void> {
@@ -358,7 +386,11 @@ export class ContextBackController implements vscode.Disposable {
         this.db.set('qualityCache', [...rest, entry]);
         this.sidebar.refresh();
       }
-    } finally { this.qualityRunning = false; this.sidebar.refresh(); }
+    } finally {
+      this.qualityRunning = false;
+      this.sidebar.refresh();
+      if (project.id !== this.projectMgr.current?.id && this.sidebar.isVisible()) void this.refreshQuality(false);
+    }
   }
 
   async buildDashboardData(): Promise<CBDashboardData | null> {
@@ -532,6 +564,7 @@ export class ContextBackController implements vscode.Disposable {
     const cmd = (id: string, fn: () => unknown) =>
       this.disposables.push(vscode.commands.registerCommand(`contextBack.${id}`, fn));
     cmd('openDashboard', () => this.openDashboard());
+    cmd('openSidebar', () => openSidebarScreen('context'));
     cmd('continueSession', () => this.continueSession());
     cmd('summarizeSession', () => this.summarizeSession());
     cmd('showOpenThreads', () => this.showOpenThreads());
@@ -542,7 +575,7 @@ export class ContextBackController implements vscode.Disposable {
   dispose(): void {
     clearInterval(this.sidebarRefreshTimer);
     if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
-    this.gitCollector?.dispose();
+    this.stopCollectors();
     this.sessionMgr.endCurrent();
     this.sessionMgr.dispose();
     for (const d of [...this.disposables].reverse()) d.dispose();

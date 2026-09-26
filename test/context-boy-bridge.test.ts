@@ -19,12 +19,13 @@ function fixture() {
   const engine = new CodeBoyEngine(undefined, DEFAULT_SETTINGS, { now: () => now });
   const bus = new EventBus<CBEvents>();
   let threads: CBOpenThread[] = [];
+  let projectId: string | undefined = 'project';
   let copied = '';
   const commands = new Map<string, () => unknown>();
   const source = {
     getBus: () => bus,
     getTopThreads: async () => threads,
-    getActiveProjectId: () => 'project',
+    getActiveProjectId: () => projectId,
     openDashboard: async () => undefined,
   };
   const host = {
@@ -38,6 +39,7 @@ function fixture() {
   return {
     bridge, bus, engine, commands,
     setThreads: async (next: CBOpenThread[]) => { threads = next; await bridge.refreshHealth(); },
+    setProject: async (next: string | undefined) => { projectId = next; threads = []; bus.emit('projectChanged', { projectId: next }); await bridge.refreshHealth(); },
     advance: (ms: number) => { now += ms; engine.tick(); },
     copied: () => copied,
     dispose: () => { bridge.dispose(); bus.dispose(); engine.dispose(); },
@@ -70,6 +72,17 @@ test('downgrading a blocker to yellow does not award resolution XP', async () =>
     const xp = f.engine.snapshot().stats.xp;
     await f.setThreads([{ ...blocker, signal: 'yellow' }]);
     assert.equal(f.engine.snapshot().stats.xp, xp);
+  } finally { f.dispose(); }
+});
+
+test('switching projects clears old blocker state without awarding resolution XP', async () => {
+  const f = fixture();
+  try {
+    await f.setThreads([red('old')]);
+    const xp = f.engine.snapshot().stats.xp;
+    await f.setProject('new-project');
+    assert.equal(f.engine.snapshot().stats.xp, xp);
+    assert.notEqual(f.engine.snapshot().state, 'CONFUSED');
   } finally { f.dispose(); }
 });
 

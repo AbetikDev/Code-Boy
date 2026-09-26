@@ -26,6 +26,7 @@ export class ContextBoyBridge implements vscode.Disposable {
     const bus = contextBack.getBus();
     this.disposables.push(
       bus.on('healthChanged', event => { if (event.projectId === contextBack.getActiveProjectId()) void this.refreshHealth(); }),
+      bus.on('projectChanged', () => { void this.refreshHealth(); }),
       bus.on('sessionEnd', () => { void this.refreshHealth(); }),
       bus.on('welcomeBack', event => {
         if (event.projectId === contextBack.getActiveProjectId()) this.codeBoy.engine.handle({

@@ -319,36 +319,6 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     showSpeechBubble('Вернулся в угол редактора! 📍');
   }
 
-  // VS Code activity-bar items normally activate a view container. Code Boy uses
-  // its icon as a direct editor-overlay launcher instead, so consume the click
-  // during capture before the workbench can open the sidebar webview.
-  function isCodeBoyActivityClick(target: EventTarget | null): boolean {
-    if (!(target instanceof Element)) return false;
-    const activityBar = target.closest('#workbench\\.parts\\.activitybar, .part.activitybar');
-    if (!activityBar) return false;
-    const action = target.closest('.action-item, [role="tab"], [role="button"]');
-    if (!action) return false;
-    const labelled = action.querySelector<HTMLElement>('[aria-label], [title], [data-id]');
-    const identity = [
-      action.getAttribute('aria-label'),
-      action.getAttribute('title'),
-      action.getAttribute('data-id'),
-      labelled?.getAttribute('aria-label'),
-      labelled?.getAttribute('title'),
-      labelled?.getAttribute('data-id'),
-      action.textContent
-    ].filter(Boolean).join(' ').toLowerCase();
-    return identity.includes('code boy') || identity.includes('workbench.view.extension.codeboy');
-  }
-
-  document.addEventListener('click', event => {
-    if (!isCodeBoyActivityClick(event.target)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    showMascot();
-  }, true);
-
   // 4. Drag & Click logic using Pointer Events (smooth across iframes and windows)
   let isDragging = false;
   let startX = 0;

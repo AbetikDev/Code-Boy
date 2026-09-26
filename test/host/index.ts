@@ -22,7 +22,7 @@ export async function run(): Promise<void> {
   await vscode.commands.executeCommand('codeBoy.pet');
   assert.ok(['HAPPY', 'VERY_HAPPY'].includes(api.getSnapshot().state), 'Pet command responds');
   const root = vscode.workspace.workspaceFolders![0].uri;
-  const uri = vscode.Uri.joinPath(root, 'smoke.ts');
+  const uri = vscode.Uri.joinPath(root, `smoke-${process.pid}.ts`);
   await vscode.workspace.fs.writeFile(uri, Buffer.from('const answer = 42;\n'));
   const document = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(document);
@@ -41,7 +41,9 @@ export async function run(): Promise<void> {
   assert.ok(api.getSnapshot().daily.errorsFixed > beforeFix, 'Real diagnostics change tracked');
   diagnostics.dispose();
   await vscode.commands.executeCommand('codeBoy.showStats');
-  await vscode.commands.executeCommand('workbench.view.extension.contextback');
+  await vscode.commands.executeCommand('contextBack.openSidebar');
   await vscode.commands.executeCommand('contextback.sidebar.focus');
-  console.log('CODE BOY HOST SMOKE PASSED: activation, companion and ContextBack webviews, commands, coding, sleep, pet, document save, diagnostics.');
+  await vscode.commands.executeCommand('codeBoy.open');
+  await vscode.commands.executeCommand('contextBack.openSidebar');
+  console.log('CODE BOY HOST SMOKE PASSED: activation, shared sidebar navigation, companion and ContextBack webviews, commands, coding, sleep, pet, document save, diagnostics.');
 }

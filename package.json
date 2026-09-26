@@ -42,30 +42,25 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "codeBoy",
+          "id": "codeboy",
           "title": "Code Boy",
           "icon": "assets/icons/activity.svg"
-        },
-        {
-          "id": "contextback",
-          "title": "ContextBack",
-          "icon": "assets/icons/contextback.svg"
         }
       ]
     },
     "views": {
-      "codeBoy": [
+      "codeboy": [
         {
           "id": "codeBoy.companion",
           "name": "Code Boy",
-          "type": "webview"
-        }
-      ],
-      "contextback": [
+          "type": "webview",
+          "when": "codeBoy.screen != context"
+        },
         {
           "id": "contextback.sidebar",
-          "name": "Context",
-          "type": "webview"
+          "name": "ContextBack",
+          "type": "webview",
+          "when": "codeBoy.screen == context"
         }
       ]
     },
@@ -74,6 +69,11 @@
         "command": "codeBoy.open",
         "title": "Open",
         "category": "Code Boy"
+      },
+      {
+        "command": "contextBack.openSidebar",
+        "title": "Open in Code Boy Sidebar",
+        "category": "ContextBack"
       },
       {
         "command": "codeBoy.resolveBlockerWithBob",
@@ -145,6 +145,11 @@
         "title": "Sprite Gallery",
         "category": "Code Boy",
         "enablement": "codeBoy.development"
+      },
+      {
+        "command": "codeBoy.toggleFloatingMascot",
+        "title": "Toggle Floating Mascot",
+        "category": "Code Boy"
       },
       {
         "command": "codeBoy.enableFloatingOverlay",

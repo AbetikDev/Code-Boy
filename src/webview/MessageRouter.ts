@@ -2,7 +2,7 @@ import { CHARACTER_STATES, ROOM_THEMES } from '../models/types';
 import type { Action, CharacterState, ClientMessage, RoomTheme } from '../models/types';
 
 const actions = new Set<Action>(['pet', 'look', 'music', 'dance', 'sleep', 'wake', 'play', 'vibe']);
-const commands = new Set(['stats', 'room', 'settings', 'gallery']);
+const commands = new Set(['stats', 'room', 'settings', 'gallery', 'context', 'toggleOverlay']);
 const ownKeys = (value: Record<string, unknown>, keys: string[]): boolean => Object.keys(value).every(key => keys.includes(key));
 
 /** Treat messages as untrusted even though the webview is local. */
@@ -17,7 +17,7 @@ export function parseClientMessage(input: unknown, development: boolean, animati
       return ownKeys(value, ['type', 'room']) && ROOM_THEMES.includes(value.room as RoomTheme) ? { type: 'room', room: value.room as RoomTheme } : undefined;
     case 'command':
       if (!ownKeys(value, ['type', 'command']) || typeof value.command !== 'string' || !commands.has(value.command) || (value.command === 'gallery' && !development)) { return; }
-      return { type: 'command', command: value.command as 'stats' | 'room' | 'settings' | 'gallery' };
+      return { type: 'command', command: value.command as 'stats' | 'room' | 'settings' | 'gallery' | 'context' | 'toggleOverlay' };
     case 'debug': {
       if (!development || !ownKeys(value, ['type', 'state', 'mood', 'energy', 'random', 'animation', 'fps'])) { return; }
       if (value.state !== undefined && !CHARACTER_STATES.includes(value.state as CharacterState)) { return; }

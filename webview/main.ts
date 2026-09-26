@@ -51,6 +51,17 @@ function mount(): void {
         <div class="world-bottom"><span class="state-label"><span class="state-marker" aria-hidden="true"></span><span id="state">BOOTING</span></span><span id="language" class="language-badge">LOCAL ONLY</span></div>
       </section>
 
+      <button class="memory-link" id="open-contextback" aria-label="Open ContextBack project memory">
+        <span class="memory-icon" aria-hidden="true">↶</span>
+        <span class="memory-copy"><strong>CONTEXTBACK</strong><small>YESTERDAY'S WORK &amp; CODE SCAN</small></span>
+        <span class="memory-arrow" aria-hidden="true">›</span>
+      </button>
+      <button class="memory-link overlay-link" id="toggle-overlay" type="button" aria-pressed="true">
+        <span class="memory-icon" aria-hidden="true">★</span>
+        <span class="memory-copy"><strong>FLOATING CODE BOY</strong><small id="overlay-label">ON · IN YOUR EDITOR</small></span>
+        <span class="overlay-switch" aria-hidden="true"><span></span></span>
+      </button>
+
       <div class="connection-note" id="connection-note" role="status" hidden></div>
 
       <div class="xp-strip"><div class="xp-heading"><span id="xp-label">LV.2</span><span id="xp-value">0 / 100 XP</span></div><progress id="xp-progress" max="100" value="0" aria-label="Experience toward next level"></progress></div>
@@ -84,6 +95,8 @@ function mount(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => button.addEventListener('click', () => { closeActionMenu(); action(button.dataset.action as Action); }));
   document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(button => button.addEventListener('click', () => { closeActionMenu(); openPanel(button.dataset.panel as 'stats' | 'room' | 'gallery'); }));
   $('am-settings').addEventListener('click', () => { closeActionMenu(); sound.play(); send({ type: 'command', command: 'settings' }); });
+  $('open-contextback').addEventListener('click', () => { sound.play(); send({ type: 'command', command: 'context' }); });
+  $('toggle-overlay').addEventListener('click', () => { sound.play(); send({ type: 'command', command: 'toggleOverlay' }); });
   $('level-button').addEventListener('click', () => openPanel('stats'));
   $('close-drawer').addEventListener('click', closePanel);
   $('drawer-shade').addEventListener('click', closePanel);
@@ -196,6 +209,9 @@ function update(next: Snapshot): void {
   $('speech').className = `speech bubble-${next.bubbleKind.toLowerCase()}`;
   $('state').textContent = next.state.replaceAll('_', ' ');
   $('status-dot').classList.toggle('asleep', next.state === 'SLEEPING' || !next.settings.enabled);
+  $('toggle-overlay').setAttribute('aria-pressed', String(next.settings.floatingOverlay));
+  $('toggle-overlay').setAttribute('aria-label', `${next.settings.floatingOverlay ? 'Hide' : 'Show'} floating Code Boy`);
+  $('overlay-label').textContent = next.settings.floatingOverlay ? 'ON · IN YOUR EDITOR' : 'OFF · CLICK TO SHOW';
   $('room-name').textContent = roomNames[next.room].toUpperCase();
   const now = new Date();
   const night = next.room === 'NIGHT' || now.getHours() >= 19 || now.getHours() < 7;

@@ -4,7 +4,7 @@ import * as path from 'node:path';
 
 export const INJECTION_START = '/* -- CODE-BOY-OVERLAY-START -- */';
 export const INJECTION_END = '/* -- CODE-BOY-OVERLAY-END -- */';
-const INJECTION_VERSION = '__CODE_BOY_NATIVE_MASCOT_V5__';
+const INJECTION_VERSION = '__CODE_BOY_NATIVE_MASCOT_V6__';
 
 export class WorkbenchInjector {
   static getWorkbenchJsPath(): string | undefined {
@@ -127,7 +127,7 @@ export class WorkbenchInjector {
       draw(); setInterval(draw, ${Math.round(1000 / fps)});
     };
     image.src = ${JSON.stringify(spriteDataUrl)};
-    try { var saved = localStorage.getItem('codeboy_native_pos'); if (saved) { var pos = JSON.parse(saved); place(root, pos.left, pos.top); } if (localStorage.getItem(VISIBILITY_KEY) === 'false') root.style.display = 'none'; } catch (_) {}
+    try { var saved = localStorage.getItem('codeboy_native_pos'); if (saved) { var pos = JSON.parse(saved); place(root, pos.left, pos.top); } } catch (_) {}
     var dragging = false, moved = false, startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
     root.addEventListener('pointerdown', function(e) { if (e.button !== 0) return; var rect = root.getBoundingClientRect(); dragging = true; moved = false; startX = e.clientX; startY = e.clientY; initialLeft = rect.left; initialTop = rect.top; root.style.cursor = 'grabbing'; root.setPointerCapture(e.pointerId); e.preventDefault(); });
     root.addEventListener('pointermove', function(e) { if (!dragging) return; var dx = e.clientX - startX, dy = e.clientY - startY; if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true; if (moved) place(root, initialLeft + dx, initialTop + dy); });
@@ -145,16 +145,6 @@ export class WorkbenchInjector {
   window.__CODE_BOY_TOGGLE__ = toggleMascot;
   function boot() { ensureMascot(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
-  document.addEventListener('click', function(e) {
-    var target = e.target instanceof Element ? e.target : null;
-    var bar = target && target.closest('#workbench\\.parts\\.activitybar, .part.activitybar');
-    var action = target && target.closest('.action-item, [role="tab"], [role="button"]');
-    if (!bar || !action) return;
-    var labelled = action.querySelector('[aria-label], [title], [data-id]');
-    var identity = [action.getAttribute('aria-label'), action.getAttribute('title'), action.getAttribute('data-id'), labelled && labelled.getAttribute('aria-label'), labelled && labelled.getAttribute('title'), labelled && labelled.getAttribute('data-id'), action.textContent].filter(Boolean).join(' ').toLowerCase();
-    if (identity.indexOf('code boy') < 0 && identity.indexOf('workbench.view.extension.codeboy') < 0) return;
-    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); toggleMascot();
-  }, true);
 })();
 ${INJECTION_END}
 `;

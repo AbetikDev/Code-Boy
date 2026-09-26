@@ -53,6 +53,14 @@ for (const width of [200, 250, 300, 400]) {
     await page.keyboard.press('Escape');
     await expect(page.locator('#drawer')).toBeHidden();
 
+    await page.locator('#open-contextback').click();
+    await expect(page.locator('#speech')).toHaveText('ContextBack opens inside VS Code.');
+    await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('#toggle-overlay').click();
+    await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('#toggle-overlay').click();
+    await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'true');
+
     await page.screenshot({ path: `artifacts/code-boy-${width}.png`, fullPage: true });
     expect(errors).toEqual([]);
   });

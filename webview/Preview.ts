@@ -22,7 +22,13 @@ export async function startPreview(receive: (message: HostMessage) => void): Pro
   receive({ type: 'init', manifest, snapshot: structuredClone(snapshot) });
   return (message: ClientMessage): void => {
     if (message.type === 'ready') { return; }
-    if (message.type === 'command') { if (message.command !== 'settings') { receive({ type: 'panel', panel: message.command }); } else { snapshot.settings.soundEnabled = !snapshot.settings.soundEnabled; snapshot.bubble = snapshot.settings.soundEnabled ? 'sound on. preview only.' : 'quiet mode. preview only.'; emit(); } return; }
+    if (message.type === 'command') {
+      if (message.command === 'context') { snapshot.bubble = 'ContextBack opens inside VS Code.'; emit(); }
+      else if (message.command === 'toggleOverlay') { snapshot.settings.floatingOverlay = !snapshot.settings.floatingOverlay; emit(); }
+      else if (message.command !== 'settings') { receive({ type: 'panel', panel: message.command }); }
+      else { snapshot.settings.soundEnabled = !snapshot.settings.soundEnabled; snapshot.bubble = snapshot.settings.soundEnabled ? 'sound on. preview only.' : 'quiet mode. preview only.'; emit(); }
+      return;
+    }
     if (message.type === 'room') { snapshot.room = message.room; snapshot.settings.roomTheme = message.room; emit(); return; }
     if (message.type === 'debug') {
       if (message.mood !== undefined) { snapshot.stats.mood = message.mood; }

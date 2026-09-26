@@ -295,6 +295,7 @@ ContextBack was engineered with a strict **Privacy-by-Design** standard:
 | Command ID | Title in Palette (`Ctrl+Shift+P`) | Description |
 | :--- | :--- | :--- |
 | `contextBack.openDashboard` | `ContextBack: Open Dashboard` | Opens the full webview dashboard with session history. |
+| `contextBack.openSidebar` | `ContextBack: Open in Code Boy Sidebar` | Switches the shared sidebar from Code Boy's room to the ContextBack journal. |
 | `contextBack.continueSession` | `ContextBack: Continue Last Session` | Reopens hot files, restores branch focus, highlights errors. |
 | `contextBack.summarizeSession`| `ContextBack: Summarize Last Session`| Invokes AI/Bob session summarization. |
 | `contextBack.showOpenThreads` | `ContextBack: Show Open Threads` | Inspects red/yellow blocker threads in the sidebar. |
@@ -305,7 +306,7 @@ ContextBack was engineered with a strict **Privacy-by-Design** standard:
 ### Code Boy Commands
 | Command ID | Title in Palette (`Ctrl+Shift+P`) | Description |
 | :--- | :--- | :--- |
-| `codeBoy.open` | `Code Boy: Open` | Focuses the companion in the activity bar. |
+| `codeBoy.open` | `Code Boy: Open` | Opens the shared Activity Bar panel and shows the companion. |
 | `codeBoy.resolveBlockerWithBob`| `Code Boy: Resolve Blocker with Bob` | Formats current blocker into an IBM Bob prompt. |
 | `codeBoy.pet` | `Code Boy: Pet` | Interacts with Code Boy for an instant mood boost. |
 | `codeBoy.dance` | `Code Boy: Dance` | Triggers a victory dance animation. |
@@ -379,7 +380,7 @@ npm run compile
 ### 2. Launching in VS Code Extension Host
 
 1. Open the project folder in VS Code.
-2. Press **`F5`** (or select **Run Extension** in the Debug menu).
+2. Select **Run Code Boy** and press **`F5`**. This starts the Extension Development Host without pausing for the JavaScript debugger.
 3. In the new *[Extension Development Host]* window, click the **Code Boy** icon on the Activity Bar.
 
 ### 3. Standalone Browser Preview

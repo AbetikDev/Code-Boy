@@ -10,6 +10,7 @@ import { TaskTracker } from './vscode/TaskTracker';
 import { CodeBoyViewProvider } from './webview/CodeBoyViewProvider';
 import { OverlayServer } from './overlay/OverlayServer';
 import { WorkbenchInjector } from './overlay/WorkbenchInjector';
+import { openSidebarScreen } from './SidebarNavigation';
 
 export class CodeBoyController implements vscode.Disposable {
   readonly engine: CodeBoyEngine;
@@ -34,8 +35,7 @@ export class CodeBoyController implements vscode.Disposable {
     this.view = new CodeBoyViewProvider(
       context,
       this.engine,
-      message => this.run(this.receive(message)),
-      () => this.handleActivityBarClick()
+      message => this.run(this.receive(message))
     );
     this.music = new MusicController(context, (playing, status) => this.engine.setMusic(playing, status));
     this.overlayServer = new OverlayServer(context, action => this.run(this.act(action)));
@@ -76,11 +76,17 @@ export class CodeBoyController implements vscode.Disposable {
     this.overlayServer.start()
       .then(() => this.overlayServer.broadcast(this.engine.snapshot()))
       .catch(err => this.output.appendLine('[Code Boy] Overlay server note: ' + err));
-
-    // The editor overlay is the primary Code Boy surface.
     if (settings.floatingOverlay && !WorkbenchInjector.isPatched()) {
-      WorkbenchInjector.patch(this.context.extensionPath);
+      const result = WorkbenchInjector.patch(this.context.extensionPath);
+      if (result.success) {
+        void vscode.window.showInformationMessage('Code Boy is ready to float over your editor. Reload the window to show him.', 'Reload Window').then(choice => {
+          if (choice === 'Reload Window') void vscode.commands.executeCommand('workbench.action.reloadWindow');
+        });
+      } else {
+        this.output.appendLine(`[Code Boy] Floating mascot unavailable: ${result.error}`);
+      }
     }
+
   }
   private run(work: PromiseLike<unknown>): void {
     void Promise.resolve(work).catch(() => this.output.appendLine('A Code Boy operation could not complete. Check that VS Code settings and local storage are writable.'));
@@ -165,42 +171,25 @@ export class CodeBoyController implements vscode.Disposable {
     command('hideFloatingOverlay', () => {
       this.overlayServer.sendCustomEvent('hide');
     });
+    command('toggleFloatingMascot', () => this.toggleFloatingMascot());
   }
-  private handleActivityBarClick(): void {
-    if (!WorkbenchInjector.isPatched()) {
-      const res = WorkbenchInjector.patch(this.context.extensionPath);
-      if (res.success) {
-        void vscode.window.showInformationMessage(
-          'Code Boy: Плавающий персонаж активирован! Перезагрузите окно, чтобы он появился в правом нижнем углу.',
-          'Перезагрузить окно'
-        ).then(choice => {
-          if (choice === 'Перезагрузить окно') {
-            void vscode.commands.executeCommand('workbench.action.reloadWindow');
-          }
-        });
-      }
+  private async toggleFloatingMascot(): Promise<void> {
+    const enabled = !readSettings().floatingOverlay;
+    const result = enabled ? WorkbenchInjector.patch(this.context.extensionPath) : WorkbenchInjector.unpatch();
+    if (!result.success) {
+      void vscode.window.showErrorMessage(`Code Boy: ${result.error ?? 'Could not change floating mascot'}`);
       return;
     }
-    this.overlayServer.sendCustomEvent('show');
+    await updateSetting('floatingOverlay', enabled);
+    this.overlayServer.sendCustomEvent(enabled ? 'show' : 'hide');
+    const choice = await vscode.window.showInformationMessage(
+      `Floating Code Boy is ${enabled ? 'on' : 'off'}. Reload the window to apply the change.`,
+      'Reload Window'
+    );
+    if (choice === 'Reload Window') await vscode.commands.executeCommand('workbench.action.reloadWindow');
   }
   private async open(): Promise<void> {
-    if (!WorkbenchInjector.isPatched()) {
-      const result = WorkbenchInjector.patch(this.context.extensionPath);
-      if (!result.success) {
-        void vscode.window.showErrorMessage(`Code Boy: ${result.error ?? 'Could not enable the editor mascot'}`);
-        return;
-      }
-      await updateSetting('floatingOverlay', true);
-      const choice = await vscode.window.showInformationMessage(
-        'Code Boy готов жить прямо в редакторе. Перезагрузите окно, чтобы он появился.',
-        'Перезагрузить окно', 'Позже'
-      );
-      if (choice === 'Перезагрузить окно') {
-        await vscode.commands.executeCommand('workbench.action.reloadWindow');
-      }
-      return;
-    }
-    this.overlayServer.sendCustomEvent('show');
+    await openSidebarScreen('companion');
   }
   private async act(action: Action | string): Promise<void> {
     const knownActions: Action[] = ['pet', 'look', 'music', 'dance', 'sleep', 'wake', 'play', 'vibe'];
@@ -244,6 +233,8 @@ export class CodeBoyController implements vscode.Disposable {
         if (message.command === 'stats') this.view.showStats();
         else if (message.command === 'room') this.view.showRoom();
         else if (message.command === 'gallery' && this.context.extensionMode !== vscode.ExtensionMode.Production) this.view.showGallery();
+        else if (message.command === 'context') await vscode.commands.executeCommand('contextBack.openSidebar');
+        else if (message.command === 'toggleOverlay') await this.toggleFloatingMascot();
         else if (message.command === 'settings') await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:code-boy-local.code-boy');
         break;
       case 'ready': break;

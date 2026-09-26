@@ -4,6 +4,7 @@ import { parseClientMessage } from '../src/webview/MessageRouter';
 
 test('webview accepts only enumerated actions and commands', () => {
   assert.deepEqual(parseClientMessage({ type: 'action', action: 'pet' }, false), { type: 'action', action: 'pet' });
+  assert.deepEqual(parseClientMessage({ type: 'command', command: 'context' }, false), { type: 'command', command: 'context' });
   for (const input of [null, [], 'pet', { type: 'action', action: 'runShell' }, { type: 'command', command: 'workbench.action.terminal.new' }, { type: 'action', action: 'pet', script: 'unexpected' }]) assert.equal(parseClientMessage(input, false), undefined);
 });
 test('development tools cannot be requested by a production webview', () => {

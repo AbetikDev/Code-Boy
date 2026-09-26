@@ -40,6 +40,10 @@ export class ProjectManager {
   }
 
   refreshWorkspace(folders: readonly vscode.WorkspaceFolder[]): void {
-    if (!folders.length) { this.currentProject = undefined; this.workspaceRoot = undefined; }
+    const nextRoot = folders[0]?.uri.fsPath;
+    if (nextRoot !== this.workspaceRoot) {
+      this.currentProject = undefined;
+      this.workspaceRoot = undefined;
+    }
   }
 }

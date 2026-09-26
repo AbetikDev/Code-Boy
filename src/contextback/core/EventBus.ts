@@ -26,6 +26,7 @@ export interface CBEvents {
   sessionEnd: { sessionId: string };
   welcomeBack: { projectId: string; topic: string; hoursAgo: number; openBlockers: number };
   healthChanged: { projectId: string };
+  projectChanged: { projectId?: string };
   commitRecorded: { projectId: string; hash: string; message: string };
   analysisReady: { projectId: string; sessionId: string };
   [key: string]: unknown;
