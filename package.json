@@ -1,8 +1,8 @@
 {
   "name": "code-boy",
   "displayName": "Code Boy",
-  "description": "A tiny pixel programmer living in your editor. Code, vibe, and grow together.",
-  "version": "1.0.0",
+  "description": "Your cozy pixel-art programmer companion in VS Code. Types as you code, vibes to your music, levels up, and keeps you in flow.",
+  "version": "1.0.2",
   "publisher": "code-boy-local",
   "license": "MIT",
   "repository": {
@@ -319,7 +319,7 @@
     "test:webview": "npm run compile && playwright test",
     "preview": "npm run compile && node scripts/preview.mjs",
     "vscode:prepublish": "npm run compile",
-    "package": "vsce package --allow-missing-repository --out code-boy-1.0.0.vsix"
+    "package": "vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.0.2.vsix"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

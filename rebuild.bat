@@ -4,11 +4,11 @@ call npm run compile
 if errorlevel 1 ( echo BUILD FAILED & pause & exit /b 1 )
 
 echo === Package ===
-call npx vsce package --allow-missing-repository --no-dependencies --out code-boy-1.0.0.vsix
+call npx vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.0.2.vsix
 if errorlevel 1 ( echo PACKAGE FAILED & pause & exit /b 1 )
 
 echo === Install ===
-call code --install-extension code-boy-1.0.0.vsix
+call code --install-extension code-boy-1.0.2.vsix --force
 if errorlevel 1 ( echo INSTALL FAILED & pause & exit /b 1 )
 
 echo.

@@ -24,3 +24,5 @@ ui-tests/**
 playwright.config.ts
 test-results/**
 playwright-report/**
+README.md
+README.vscode.md
