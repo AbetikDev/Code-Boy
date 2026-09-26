@@ -19,7 +19,7 @@ For deeper analysis, the user can opt into IBM Bob Shell summaries. ContextBack 
 
 The shipped integration calls the documented Bob Shell noninteractive CLI for optional session summaries. This path requires the user to install and authenticate Bob Shell. The blocker workflow is currently manual: preview prompt, confirm copy, paste into Bob, review Bob's actions, then rerun the relevant check. There is no direct IBM Bob IDE chat API integration and no automatic agent dispatch from VS Code.
 
-Add a factual account of how IBM Bob was used to build this project only after reviewing real Bob task sessions. Include session screenshots in [ibm-bob/](ibm-bob/) and link them here. Do not attribute architecture, code, tests, subagents, or productivity measurements to Bob without that evidence.
+The captured Bob task summaries are in the required repository-root [bob_sessions/](../bob_sessions/) directory and described in [ibm-bob/](ibm-bob/). They show work on test coverage. Review any additional session evidence before attributing architecture, integration code, subagents, or productivity measurements to Bob.
 
 ## Demo sequence
 
@@ -36,5 +36,5 @@ Record the run end to end. If you claim time saved, measure a baseline and the p
 - [x] Verify the repository is publicly readable at the URL above.
 - [ ] Upload the built VSIX and add the actual download link.
 - [ ] Record and link a real product demo.
-- [ ] Add genuine IBM Bob session evidence.
+- [x] Add captured IBM Bob task summary screenshots to `bob_sessions/`.
 - [ ] Confirm required assets and format against the live hackathon rules.

@@ -1,11 +1,8 @@
 # IBM Bob evidence
 
-This directory currently contains instructions only. It contains no Bob task screenshots or session logs. Add evidence captured from actual IBM Bob sessions before making claims about Bob-assisted development in a hackathon submission.
+Captured task summary screenshots (UTC+3):
 
-Suggested evidence:
+1. [12:46 — coverage summary](codeboy_task01_coverage_summary.png): completed task view showing new tests for thread detection and utility functions.
+2. [12:51 — test suite summary](codeboy_task02_test_suite_summary.png): completed task view showing tests for engine events, repositories, and database resilience.
 
-1. A Bob Shell or Bob IDE session showing a real repository question and Bob's response.
-2. A blocker handoff: Code Boy warning, copied prompt, that prompt in Bob, and Bob's proposed or applied fix.
-3. The same diagnostic or test passing afterward and Code Boy celebrating.
-
-Capture the Bob task summary or session ID and the relevant file diff. Redact API keys, personal paths, and private content before publishing. Only describe subagents if the captured Bob session actually used them.
+The same screenshots are in the required repository-root [bob_sessions/](../../bob_sessions/) directory for the hackathon deliverable. These captures show task summaries; they do not by themselves document a Code Boy blocker handoff, a live Bob Shell summary, or an end-to-end product demo.

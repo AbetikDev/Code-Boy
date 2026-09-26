@@ -439,6 +439,19 @@ test('CONFUSED state when red blockers > 0 and not typing or sleeping', () => {
   assert.equal(e2.snapshot().state, 'CONFUSED');
 });
 
+test('red blocker yields to automatic sleep and returns after activity', () => {
+  const { engine, advance } = setup();
+  engine.handle({ type: 'threadStatus', hasRedThread: true, topThreadFile: 'main.ts', blockerCount: 1 });
+  advance(3_000);
+  assert.equal(engine.snapshot().state, 'CONFUSED');
+  advance(15 * 60_000);
+  assert.equal(engine.snapshot().state, 'SLEEPING');
+  engine.handle({ type: 'typing', characters: 1, languageId: 'typescript' });
+  assert.equal(engine.snapshot().state, 'CODING');
+  advance(31_000);
+  assert.equal(engine.snapshot().state, 'CONFUSED');
+});
+
 // ─── 15. vibeMode + workspace base state ─────────────────────────────────────
 
 test('vibeMode with a workspace and no typing enters VIBE_CODING', () => {

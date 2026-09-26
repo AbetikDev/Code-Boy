@@ -74,7 +74,7 @@ npm test
 npx playwright test
 ```
 
-Results and remaining limits are recorded in [docs/TESTING_REPORT.md](docs/TESTING_REPORT.md). Submission preparation is in [docs/SUBMISSION_KIT.md](docs/SUBMISSION_KIT.md). IBM Bob session evidence is tracked in [docs/ibm-bob/](docs/ibm-bob/).
+Results and remaining limits are recorded in [docs/TESTING_REPORT.md](docs/TESTING_REPORT.md). Submission preparation is in [docs/SUBMISSION_KIT.md](docs/SUBMISSION_KIT.md). IBM Bob task screenshots are in the required [bob_sessions/](bob_sessions/) directory, with descriptions in [docs/ibm-bob/](docs/ibm-bob/).
 
 ## License
 

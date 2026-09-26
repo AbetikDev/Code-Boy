@@ -2,6 +2,9 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { runTests } = require('@vscode/test-electron');
 (async () => {
+  // The VS Code Electron binary must start as an app, even when this runner
+  // inherited a Node-mode setting from the surrounding environment.
+  delete process.env.ELECTRON_RUN_AS_NODE;
   const root = path.resolve(__dirname, '..');
   const workspace = path.join(root, '.vscode-test', 'workspace');
   await fs.mkdir(workspace, { recursive: true });
