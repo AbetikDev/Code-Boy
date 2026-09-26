@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "outDir": ".test", "rootDir": "." },
+  "compilerOptions": { "outDir": ".test", "rootDir": ".", "types": ["node", "vscode"] },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }

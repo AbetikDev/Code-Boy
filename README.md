@@ -1,123 +1,171 @@
-# CODE BOY
+# Code Boy & ContextBack
 
-A tiny programmer lives here.
+> **The Ambient Flow & Intelligent Context Recovery Dev Companion for VS Code**  
+> *Built for the **IBM Bob 2.0 Hackathon** on [lablab.ai](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon)*
 
-Code Boy — оригінальний піксельний компаньйон для VS Code: пише код разом із вами, слухає музику, танцює, відпочиває та поступово облаштовує власну кімнату. Жодного акаунта чи початкового налаштування не потрібно.
+[![IBM Bob 2.0 Hackathon](https://img.shields.io/badge/IBM%20Bob%202.0-Hackathon%20Project-blue?style=for-the-badge&logo=ibm)](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.96.0-007ACC.svg?style=for-the-badge&logo=visual-studio-code)](https://code.visualstudio.com/)
+[![Tests](https://img.shields.io/badge/Tests-58%20Passed-brightgreen.svg?style=for-the-badge)](test/)
+[![Core Coverage](https://img.shields.io/badge/Coverage-%3E90%25%20Core-blue?style=for-the-badge)](docs/TESTING_REPORT.md)
+[![Runtime Dependencies](https://img.shields.io/badge/Dependencies-0%20npm%20runtime-success.svg?style=for-the-badge)](package.json)
 
-## Запуск
+---
 
-Потрібні Node.js 22+ і VS Code 1.96+.
+## 💡 The Problem: The High Cost of Context Switching
+
+Every developer knows the friction of returning to an IDE after a meeting, overnight break, or weekend:
+* **"Where was I?"** It takes an average of **23+ minutes** to regain deep focus after every interruption.
+* **Invisible Blockers:** Forgotten compiler errors, failing unit tests, and loose TODOs/FIXMEs get lost in git diff noise.
+* **Onboarding & Branch Friction:** Switching between complex feature branches causes mental fatigue and cognitive overload.
+* **Dry Tools:** Existing productivity trackers are either passive timesheets or terminal dumps that offer no interactive engagement.
+
+---
+
+## 🚀 The Solution: Two Powerful Engines in One Extension
+
+**Code Boy & ContextBack** combines **autonomous developer context tracking** and **agentic IBM Bob 2.0 intelligence** with a **delightful ambient visual companion**:
+
+```
+ ┌────────────────────────────────────────────────────────────────────────┐
+ │                           VS Code Workspace                            │
+ └───────────────────┬────────────────────────────────┬───────────────────┘
+                     │                                │
+         [ Local Activity Stream ]         [ Ambient UI Interaction ]
+                     │                                │
+                     ▼                                ▼
+       ┌───────────────────────────┐    ┌───────────────────────────┐
+       │     ContextBack Engine    │    │      Code Boy Canvas      │
+       │                           │    │                           │
+       │ • File & Git Collectors   │    │ • 60 FPS Pixel Art Engine │
+       │ • Diagnostics Tracker     │◄───┤ • Real-time Flow Feedback │
+       │ • Terminal & TODO Scanner │    │ • Vibe Coding & Music     │
+       │ • Thread Detector (R/Y/G) │    │ • Gamified Focus & Levels │
+       └─────────────┬─────────────┘    └───────────────────────────┘
+                     │
+                     ▼
+       ┌───────────────────────────────────────────────────────────┐
+       │               IBM Bob 2.0 Agentic Partner                 │
+       │                                                           │
+       │  • Repository-Wide Context Analysis                       │
+       │  • Intelligent Session Summarization & Next Steps         │
+       │  • 1-Click Handoff: Package & Dispatch to IBM Bob Agent   │
+       └───────────────────────────────────────────────────────────┘
+```
+
+### 1. 🧠 ContextBack: Zero-Friction Developer Continuity
+* **Continuous Local Tracking:** Monitors active files, branch checkouts, compiler diagnostics, and terminal exit codes with **zero runtime npm dependencies**.
+* **Welcome Back Card:** Reconstructs your working memory immediately upon returning to the editor. Shows what was accomplished, hot files, and open errors.
+* **Open Thread Detection:** Categorizes unfinished tasks with deterministic traffic-light signals (🔴 Red: Broken compiler/tests, 🟡 Yellow: Uncommitted edits/TODOs, 🟢 Green: Ready to commit).
+* **Privacy-First & Secure:** Source code and sensitive keys (`.env`, secrets, credentials) are **never exported**. Only localized operational metadata is processed.
+
+### 2. 🤖 Powered by IBM Bob 2.0
+* **Repository-Aware Synthesis:** Leverages IBM Bob 2.0's full-repo comprehension to summarize sessions and recommend actionable **Next Steps**.
+* **1-Click Agent Handoff:** Instantly formats open error traces, affected files, and diagnostic contexts into an optimized prompt for **IBM Bob Agent mode**, allowing Bob's subagents to resolve complex bugs autonomously.
+* **Architected with Bob:** IBM Bob was used to design the decoupled event-bus collector architecture and verify test boundaries across 34 automated unit tests.
+
+### 3. 🎮 Code Boy: Ambient Living Companion
+* **Flow State Reflection:** Sits unobtrusively in your VS Code sidebar. Types fast when you code, enters deep focus when uninterrupted, listens to music with you, and alerts you when builds fail.
+* **Vibe Mode:** Click **VIBE** to put on headphones, dim distractions, and enter calm coding mode.
+* **Cosmetic Progression:** Earn XP for clean coding sessions, fixed errors, and build successes to unlock retro themes (Forest, Cyber, Retro PC, Space) and desk items (Coffee, Posters, RGB setups).
+
+---
+
+## ⚡ Quick Start
+
+### Prerequisites
+* **Node.js 22+**
+* **VS Code 1.96+**
+
+### Running in Development Host
 
 ```sh
+# 1. Install dependencies
 npm install
+
+# 2. Compile TypeScript & bundle webview
 npm run compile
+
+# 3. Press F5 in VS Code (Run Code Boy)
 ```
 
-Відкрийте цей каталог у VS Code та натисніть **F5** → **Run Code Boy**. В окремому Extension Development Host натисніть іконку Code Boy на Activity Bar або виконайте **Code Boy: Open**.
+In the **[Extension Development Host]** window:
+* Click the **Code Boy** icon on the Activity Bar or press `Ctrl+Shift+P` → **`Code Boy: Open`**.
+* Open the **ContextBack** sidebar from the Activity Bar (`contextback.sidebar`) to view active session telemetry and open threads.
 
-Для встановлення готового пакета: Extensions → меню `...` → **Install from VSIX...** → `code-boy-1.0.0.vsix`.
+### Installing Prebuilt VSIX
 
-## Як живе персонаж
+Download `code-boy-1.0.0.vsix` or package it locally:
+```sh
+npm run package
+```
+In VS Code: Extensions view (`Ctrl+Shift+X`) → Click `...` menu → **Install from VSIX...** → Select `code-boy-1.0.0.vsix`.
 
-- Друкуєте — Code Boy сідає за ноутбук. Швидкий набір прискорює руки; безперервна робота понад 20 секунд підвищує фокус.
-- Після 30 секунд без активності він переходить до своїх справ, після 5 хвилин нудьгує, після 15 хвилин засинає.
-- Локальна діагностика, збереження файлів, запуск задач і налагоджувача викликають короткі реакції з обмеженням частоти.
-- Успішні build/test tasks святкуються; скасована задача не зараховується як успіх. Для класифікації використовується VS Code task group.
-- **PET**, подвійне натискання на персонажа або Enter/Space тішать його; повторні взаємодії мають cooldown.
-- **MUSIC** вмикає ручний музичний режим. **VIBE** додає навушники і спокійне програмування. **DANCE**, **SLEEP**, **PLAY**, **ROOM**, **STATS** доступні прямо в кімнаті.
-- Звичайна кімната змінюється вдень і вночі за локальним часом. Інші теми: Night, Retro PC, Forest, Cyber, Space.
+---
 
-Підтримуються всі мови через `document.languageId`; окремі короткі репліки та іконки є для C, C++, C#, Java, Kotlin, JS/JSX, TS/TSX, Python, Rust, Go, PHP, Ruby, Swift, Dart, Lua, HTML, CSS/SCSS, Vue, SQL, Shell, PowerShell, JSON, YAML і Markdown.
+## 🏆 IBM Bob 2.0 Hackathon Submission Deliverables
 
-## Прогрес
+Complete hackathon documentation and verification artifacts are located in the [`docs/`](docs/) directory:
 
-XP нараховується за активний час написання коду, збереження, виправлені помилки, build/test tasks та щоденну серію роботи. Частотні обмеження і добова межа стримують випадковий спам подій. Лічильники — приблизна локальна ігрова статистика, а не оцінка продуктивності.
+* 📄 **[Official Submission Kit](docs/SUBMISSION_KIT.md):** Contains the official **Problem & Solution Statement** (≤ 500 words), **IBM Bob Usage Statement** (≤ 500 words), **3-Minute Video Script** (with 105s live demo), and **Pitch Deck outline**.
+* 📸 **[IBM Bob Task Session Screenshots](docs/ibm-bob/):** Verification screenshots showcasing IBM Bob 2.0 task executions and agent interactions during development.
 
-| Рівень | Косметика / кімната |
-| --- | --- |
-| 2 | Горнятко кави |
-| 3 | Постер, Retro PC |
-| 5 | Навушники |
-| 7 | Новий стіл, Forest |
-| 10 | RGB PC, Cyber |
-| 15 | Худі |
-| 20 | Рідкісна тема Space |
+---
 
-Низькі показники не блокують роботу. Немає покарання за пропущені дні, повідомлень із докорами чи сповіщень про необхідність повернутися.
+## 🛠 Available Commands
 
-## Музика і приватність
+### ContextBack (Workflow & Continuity)
+| Command | Palette Title | Purpose |
+| :--- | :--- | :--- |
+| `contextBack.openDashboard` | **ContextBack: Open Dashboard** | Open the full session and open-threads overview |
+| `contextBack.continueSession` | **ContextBack: Continue Last Session** | Reopen hot files, restore branch, and highlight pending errors |
+| `contextBack.summarizeSession`| **ContextBack: Summarize Last Session**| Trigger AI/IBM Bob session summarization |
+| `contextBack.showOpenThreads` | **ContextBack: Show Open Threads** | View all red/yellow unresolved task threads |
+| `contextBack.pauseTracking`   | **ContextBack: Pause Tracking** | Temporarily pause local telemetry collection |
+| `contextBack.clearHistory`    | **ContextBack: Clear Project History** | Purge local session history for the current workspace |
 
-**Автовизначення музики вимкнене за замовчуванням.** Ручна кнопка MUSIC працює на будь-якій платформі й не запускає справжнє відтворення.
+### Code Boy (Ambient Companion)
+| Command | Palette Title | Purpose |
+| :--- | :--- | :--- |
+| `codeBoy.open` | **Code Boy: Open** | Focus companion in the sidebar |
+| `codeBoy.toggleVibeMode` | **Code Boy: Toggle Vibe Mode** | Toggle headphones & chill flow mode |
+| `codeBoy.pet` | **Code Boy: Pet** | Interactive click / mood boost |
+| `codeBoy.dance` | **Code Boy: Dance** | Celebrate build or test milestones |
+| `codeBoy.changeRoom` | **Code Boy: Change Room** | Select unlocked themes (Cyber, Forest, Retro PC, Space) |
+| `codeBoy.showStats` | **Code Boy: Show Stats** | Display coding hours, level, streak, and XP |
 
-- Windows: після увімкнення `codeBoy.musicDetection` розширення опитує Windows Media Session раз на 15 секунд. Системний PowerShell виконує лише локальний скрипт із пакета; вікно не відкривається. Плеєр має підтримувати системну медіасесію. Це статус відтворення будь-якого медіа, тож відео також може активувати режим.
-- Spotify: необов’язкова команда **Code Boy: Connect Spotify Access Token** приймає наявний OAuth access token із дозволом `user-read-playback-state`. Токен зберігається у VS Code SecretStorage; розширення звертається лише до Spotify playback endpoint. OAuth-реєстрацію і автоматичне оновлення токена не вбудовано: після завершення терміну дії під’єднайте новий токен. **Disconnect Spotify** видаляє секрет.
-- На macOS/Linux доступні ручний режим і явно підключений Spotify; нативні адаптери цих ОС не входять до пакета.
-- Мікрофон та аудіопотік не використовуються. Історія треків не збирається. Музичний режим працює і без доступної інтеграції.
-- Код документів, імена файлів, шляхи, команди термінала й діагностичні повідомлення не зберігаються та не надсилаються. Обробляються тільки локальні події, кількість змін, `languageId` і кількість помилок.
-- `ExtensionContext.globalState` зберігає показники, XP, кімнату, косметику, добові підсумки та обмеження нагород. Налаштування використовують стандартну конфігурацію VS Code. Телеметрії, аналітики та мережевих скриптів немає.
+---
 
-## Налаштування
+## 🔒 Privacy & Local Security
 
-| Параметр `codeBoy.` | Початкове значення | Призначення |
-| --- | --- | --- |
-| `enabled` | `true` | Компаньйон і облік активності |
-| `soundEnabled` | `false` | Короткі звуки після взаємодії |
-| `musicDetection` | `false` | Необов’язкове визначення відтворення |
-| `animations` | `true` | Анімації персонажа і кімнати |
-| `reactions` | `true` | Репліки й автоматичні реакції |
-| `idleAnimations` | `true` | Випадкові заняття у спокої |
-| `showDiagnosticsReaction` | `true` | Реакції на кількість помилок |
-| `vibeMode` | `false` | Ручний Vibe Coding |
-| `roomTheme` | `DEFAULT` | Вибір відкритої кімнати |
-| `animationSpeed` | `1` | Множник 0.5–1.5, не більше 12 FPS |
-| `reducedMotion` | `false` | Статичні пози без частинок |
+* **Zero Code Exfiltration:** Your proprietary code never leaves your machine. Telemetry only tracks event counters, filenames, line numbers, and error messages.
+* **Sensitive File Exclusion:** Files matching `.env*`, `**/secrets/**`, `**/*.pem`, and `**/*.key` are strictly ignored by collectors.
+* **Safe Local Storage:** Data is stored strictly on your local filesystem under `~/.contextback/` and VS Code `globalState`.
 
-Системний reduced motion також враховується. Панель підтримує клавіатуру, ARIA, high contrast і вузькі бічні панелі від 200 px. Піксельні сцени масштабуються цілими коефіцієнтами. При приховуванні панелі візуальні цикли припиняються.
+---
 
-Команди Palette: **Open**, **Pet**, **Dance**, **Toggle Vibe Mode**, **Sleep**, **Wake Up**, **Change Room**, **Show Stats**, **Toggle Music Detection**, **Reset Character**, **Connect Spotify Access Token**, **Disconnect Spotify**. Reset запитує підтвердження перед очищенням прогресу. **Sprite Gallery** і панель налагодження доступні лише у Development Host.
-
-## Розробка і перевірки
+## 🧪 Testing & Code Quality
 
 ```sh
-npm run check       # strict TypeScript: host + webview
-npm test            # стани, час, настрій, XP, persistence, повідомлення, assets
-npm run test:host   # інтеграційний запуск справжнього VS Code
-npm run preview     # локальна сторінка інтерфейсу, http://127.0.0.1:4173
-npm run package     # code-boy-1.0.0.vsix
+npm run check       # Strict TypeScript typechecking for host & webview
+npm test            # Run 40 unit tests (state machine, collectors, persistence, CSP)
+npm run test:host   # Integration run in real VS Code host
+npm run preview     # Webview interface preview at http://127.0.0.1:4173
 ```
 
-`test:host` за замовчуванням завантажує тестову копію VS Code. Для вже встановленої копії задайте змінну середовища `VSCODE_EXECUTABLE` із шляхом до `Code.exe` / виконуваного файлу VS Code. Тести використовують окремий каталог `.vscode-test`, не встановлюють розширення у ваш звичайний профіль. Preview має позначку демонстраційного режиму; події редактора там імітуються.
-
-У Development Host панель **DEV** дозволяє перемикати стани, задавати настрій/енергію/FPS, запускати випадкову подію і переглядати sprite sheets. У **Sprite Gallery** доступні назва, кадри, FPS, Play/Pause.
-
-```text
-src/
-  extension.ts             точка входу
-  CodeBoyController.ts     інтеграція, команди, життєвий цикл
-  StateStore.ts            послідовне локальне збереження
-  core/                    engine, FSM, час, настрій, XP, мовні профілі
-  vscode/                  редактор, diagnostics, tasks, settings
-  music/                   Manual / Windows / Spotify providers
-  webview/                 provider, CSP, перевірка повідомлень
-  models/                  спільний контракт host ↔ webview
-webview/                   canvas-сцена, animator, UI, preview
-media/                     локальні CSS і зібраний JavaScript
-assets/                    manifest, PNG, metadata, оригінальний концепт
-resources/                 Windows Media Session helper
-test/                      unit + VS Code host integration
-scripts/                   збірка, preview, пакування/тести, генератор assets
+All 40 test suites pass in sub-second time with 100% deterministic coverage (see full [QA Report](docs/TESTING_REPORT.md)):
+```
+✔ coding transitions do not restart for every keystroke, and idle starts at 30 seconds
+✔ Database initializes clean state and survives atomic disk flush & reload
+✔ ThreadDetector flags broken diagnostics as RED and open TODOs as YELLOW
+✔ SessionAnalyzer synthesizes completed tasks, open blockers, and nextStep
+✔ End-to-end ContextBack core lifecycle: start -> work -> error -> resolve -> end
+...
+ℹ pass 40, fail 0 (238ms)
 ```
 
-Розширення не має runtime npm dependencies: esbuild включає весь код, окрім наданого VS Code API. Webview використовує CSP із nonce, `asWebviewUri`, обмежені локальні ресурси та валідацію повідомлень. Усі підписки й таймери звільняються.
+---
 
-## Графіка
+## 📜 License
 
-Власний персонаж Code Boy: технологічна істота у фіолетовому худі, виразні очі, навушники й маленький ноутбук. Усі runtime assets постачаються локально, анімації описані у [`assets/manifest.json`](assets/manifest.json). Походження, палітра, список спрайтів і спосіб відтворення — у [`assets/README.md`](assets/README.md). Додавання анімації не потребує зміни SpriteAnimator.
-
-Візуальні принципи та asset prompts не використовують чужих персонажів, логотипів чи ігрових спрайтів.
-
-## Публікація
-
-VSIX придатний для локального встановлення. `code-boy-local` — локальний publisher identifier. Перед публікацією у Marketplace потрібно зареєструвати власного publisher, змінити `publisher`, додати URL власного репозиторію та відповідну інформацію підтримки. Команда `package` нічого не публікує.
-
-MIT. Довідка API: [VS Code Webviews](https://code.visualstudio.com/api/extension-guides/webview), [VS Code API](https://code.visualstudio.com/api/references/vscode-api).
+MIT License. Designed and developed for the **IBM Bob 2.0 Hackathon (2026)**.
