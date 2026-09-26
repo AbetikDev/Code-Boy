@@ -2,7 +2,7 @@
   "name": "code-boy",
   "displayName": "Code Boy",
   "description": "Your cozy pixel-art programmer companion in VS Code. Types as you code, vibes to your music, levels up, and keeps you in flow.",
-  "version": "1.0.2",
+  "version": "1.0.10",
   "publisher": "code-boy-local",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,9 @@
   "icon": "assets/icons/extension.png",
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onView:codeBoy.companion",
+    "onView:contextback.sidebar"
   ],
   "extensionKind": [
     "ui"
@@ -40,6 +42,11 @@
     "viewsContainers": {
       "activitybar": [
         {
+          "id": "codeBoy",
+          "title": "Code Boy",
+          "icon": "assets/icons/activity.svg"
+        },
+        {
           "id": "contextback",
           "title": "ContextBack",
           "icon": "assets/icons/contextback.svg"
@@ -47,7 +54,7 @@
       ]
     },
     "views": {
-      "explorer": [
+      "codeBoy": [
         {
           "id": "codeBoy.companion",
           "name": "Code Boy",
@@ -138,6 +145,36 @@
         "title": "Sprite Gallery",
         "category": "Code Boy",
         "enablement": "codeBoy.development"
+      },
+      {
+        "command": "codeBoy.enableFloatingOverlay",
+        "title": "Enable Floating Mascot (Включить плавающего персонажа)",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.disableFloatingOverlay",
+        "title": "Disable Floating Mascot (Отключить плавающего персонажа)",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.toggleFloatingOverlay",
+        "title": "Toggle Floating Mascot (Показать/Скрыть плавающего персонажа)",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.resetFloatingPosition",
+        "title": "Reset Mascot Position (Вернуть персонажа в правый нижний угол)",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.showFloatingOverlay",
+        "title": "Show Floating Mascot (Показать плавающего персонажа)",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.hideFloatingOverlay",
+        "title": "Hide Floating Mascot (Скрыть плавающего персонажа)",
+        "category": "Code Boy"
       },
       {
         "command": "contextBack.openDashboard",
@@ -246,6 +283,11 @@
             "type": "boolean",
             "default": false,
             "description": "Use still poses and disable ambient effects. System reduced-motion preferences are also respected."
+          },
+          "codeBoy.floatingOverlay": {
+            "type": "boolean",
+            "default": true,
+            "description": "Display Code Boy as a draggable mascot directly over the active code editor."
           }
         }
       },
@@ -319,7 +361,7 @@
     "test:webview": "npm run compile && playwright test",
     "preview": "npm run compile && node scripts/preview.mjs",
     "vscode:prepublish": "npm run compile",
-    "package": "vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.0.2.vsix"
+    "package": "vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.0.10.vsix"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

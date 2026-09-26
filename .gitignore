@@ -8,6 +8,8 @@ dist/
 *.vsix
 media/webview.js
 media/webview.js.map
+media/floatingOverlay.js
+media/floatingOverlay.js.map
 artifacts/
 test-results/
 playwright-report/

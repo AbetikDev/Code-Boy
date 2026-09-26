@@ -7,9 +7,9 @@ export interface DailyStats { date: string; codingSeconds: number; filesSaved: n
 export interface Settings {
   enabled: boolean; soundEnabled: boolean; musicDetection: boolean; animations: boolean; reactions: boolean;
   idleAnimations: boolean; showDiagnosticsReaction: boolean; vibeMode: boolean; roomTheme: RoomTheme;
-  animationSpeed: number; reducedMotion: boolean;
+  animationSpeed: number; reducedMotion: boolean; floatingOverlay: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { enabled: true, soundEnabled: false, musicDetection: true, animations: true, reactions: true, idleAnimations: true, showDiagnosticsReaction: true, vibeMode: false, roomTheme: 'DEFAULT', animationSpeed: 1, reducedMotion: false };
+export const DEFAULT_SETTINGS: Settings = { enabled: true, soundEnabled: false, musicDetection: true, animations: true, reactions: true, idleAnimations: true, showDiagnosticsReaction: true, vibeMode: false, roomTheme: 'DEFAULT', animationSpeed: 1, reducedMotion: false, floatingOverlay: true };
 export interface LanguageProfile { id: string; displayName: string; icon: string; color: string; reactions: string[] }
 export interface SavedState { version: 1; stats: Stats; daily: DailyStats; unlockedItems: string[]; room: RoomTheme; streak: number; lastCodingDate: string; savedAt: number; deepFocusSessions: number; progression?: { date: string; xpEarned: number; cooldowns: Record<string, number>; codingRemainder: number } }
 export interface Snapshot {

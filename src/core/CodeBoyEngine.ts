@@ -25,7 +25,7 @@ const record = (value: unknown): Record<string, unknown> => value !== null && ty
 
 function settingsFrom(input: Settings): Settings {
   const result = { ...DEFAULT_SETTINGS };
-  for (const key of ['enabled', 'soundEnabled', 'musicDetection', 'animations', 'reactions', 'idleAnimations', 'showDiagnosticsReaction', 'vibeMode', 'reducedMotion'] as const) {
+  for (const key of ['enabled', 'soundEnabled', 'musicDetection', 'animations', 'reactions', 'idleAnimations', 'showDiagnosticsReaction', 'vibeMode', 'reducedMotion', 'floatingOverlay'] as const) {
     if (typeof input[key] === 'boolean') { result[key] = input[key]; }
   }
   if (ROOM_THEMES.includes(input.roomTheme)) { result.roomTheme = input.roomTheme; }

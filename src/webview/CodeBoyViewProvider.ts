@@ -14,7 +14,12 @@ export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.D
   private viewSubscriptions: vscode.Disposable[] = [];
   private readonly development: boolean;
 
-  constructor(private readonly context: vscode.ExtensionContext, private readonly engine: CodeBoyEngine, private readonly onMessage: (message: ClientMessage) => void) {
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private readonly engine: CodeBoyEngine,
+    private readonly onMessage: (message: ClientMessage) => void,
+    private readonly onActivityBarClick?: () => void
+  ) {
     this.development = context.extensionMode === vscode.ExtensionMode.Development;
     this.subscriptions.push(engine.onChange(snapshot => { if (this.ready && this.view?.visible) { this.post({ type: 'snapshot', snapshot: this.safeSnapshot(snapshot) }); } }));
   }
@@ -25,6 +30,19 @@ export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.D
     this.ready = false;
     this.view = view;
     view.webview.options = { enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'media'), vscode.Uri.joinPath(this.context.extensionUri, 'assets')] };
+
+    const handleVisible = () => {
+      if (view.visible) {
+        // Automatically close the sidebar so there is no square panel on the left!
+        void vscode.commands.executeCommand('workbench.action.closeSidebar');
+        this.onActivityBarClick?.();
+      }
+    };
+
+    if (view.visible) {
+      handleVisible();
+    }
+
     this.viewSubscriptions.push(view.webview.onDidReceiveMessage((input: unknown) => {
       const message = parseClientMessage(input, this.development, new Set(Object.keys(this.manifest?.character ?? {})));
       if (!message) { return; }
@@ -41,6 +59,7 @@ export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.D
       this.onMessage(message);
     }));
     this.viewSubscriptions.push(view.onDidChangeVisibility(() => {
+      handleVisible();
       this.post({ type: 'visibility', visible: view.visible });
       if (view.visible && this.ready) { this.post({ type: 'snapshot', snapshot: this.safeSnapshot(this.engine.snapshot()) }); }
     }));
