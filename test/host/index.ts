@@ -6,11 +6,11 @@ interface TestApi { getSnapshot(): Snapshot; dispatch(event: ActivityEvent): voi
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension<TestApi>('code-boy-local.code-boy');
   assert.ok(extension, 'Extension discovered');
-  const api = await extension.activate();
-  assert.equal(extension.isActive, true);
+  await vscode.commands.executeCommand('codeBoy.open');
+  assert.equal(extension.isActive, true, 'Contributed command activates the extension');
+  const api = extension.exports;
   const commands = await vscode.commands.getCommands(true);
   for (const command of ['open', 'pet', 'dance', 'toggleVibeMode', 'sleep', 'wakeUp', 'changeRoom', 'showStats', 'toggleMusicDetection', 'resetCharacter']) assert.ok(commands.includes(`codeBoy.${command}`), command);
-  await vscode.commands.executeCommand('codeBoy.open');
   await delay(1500);
   assert.equal(api.getSnapshot().hasWorkspace, true);
   api.dispatch({ type: 'focus', focused: true });

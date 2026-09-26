@@ -51,8 +51,7 @@
         {
           "id": "codeBoy.companion",
           "name": "Code Boy",
-          "type": "webview",
-          "initialSize": 3
+          "type": "webview"
         }
       ],
       "contextback": [

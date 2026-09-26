@@ -36,7 +36,7 @@ npm install
 npm run compile
 ```
 
-Press F5 in VS Code to open the Extension Development Host. Use **ContextBack: Open Dashboard** and **Code Boy: Open** from the command palette.
+Use **Ctrl+F5** in VS Code to run the **Run Code Boy** configuration without a debugger, or **F5** when debugging the extension. The Extension Development Host opens this project folder. Use **ContextBack: Open Dashboard** and **Code Boy: Open** from the command palette.
 
 To build an installable extension:
 
