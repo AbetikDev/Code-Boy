@@ -154,13 +154,13 @@ test('ThreadDetector flags broken diagnostics as RED and open TODOs as YELLOW', 
 
     assert.equal(threads.length, 2);
 
-    const authThread = threads.find(t => t.id === 'auth.ts');
+    const authThread = threads.find(t => t.id === '/src/auth.ts');
     assert.ok(authThread);
     // Active error on recent file produces score > 0.6 -> RED
     assert.equal(authThread.signal, 'red');
     assert.match(authThread.lastError, /Cannot find name Token/);
 
-    const utilsThread = threads.find(t => t.id === 'utils.ts');
+    const utilsThread = threads.find(t => t.id === '/src/utils.ts');
     assert.ok(utilsThread);
     // Open TODO produces yellow signal
     assert.equal(utilsThread.signal, 'yellow');
@@ -180,7 +180,7 @@ test('ThreadDetector flags broken diagnostics as RED and open TODOs as YELLOW', 
     ]);
 
     // auth.ts thread disappears once error is resolved
-    assert.equal(updatedThreads.some(t => t.id === 'auth.ts'), false);
+    assert.equal(updatedThreads.some(t => t.id === '/src/auth.ts'), false);
   } finally {
     cleanup();
   }

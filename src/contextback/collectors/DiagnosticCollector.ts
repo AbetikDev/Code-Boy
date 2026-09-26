@@ -13,7 +13,8 @@ export class DiagnosticCollector implements vscode.Disposable {
     private readonly errors: ErrorRepository,
     private readonly events: EventRepository,
     private getContext: () => { projectId: string; sessionId: string } | null,
-    private settings: CBSettings
+    private settings: CBSettings,
+    private onHealthChanged?: (projectId: string) => void
   ) {
     this.sub = vscode.languages.onDidChangeDiagnostics(() => {
       if (this.timer) clearTimeout(this.timer);
@@ -28,6 +29,7 @@ export class DiagnosticCollector implements vscode.Disposable {
     const ctx = this.getContext();
     if (!ctx) return;
     const { projectId, sessionId } = ctx;
+    let changed = false;
 
     for (const [uri, diagnostics] of vscode.languages.getDiagnostics()) {
       if (uri.scheme !== 'file') continue;
@@ -40,6 +42,7 @@ export class DiagnosticCollector implements vscode.Disposable {
         if (this.knownFingerprints.has(fp)) continue;
         this.knownFingerprints.add(fp);
         const rec = this.errors.upsert(projectId, sessionId, file, d.range.start.line, d.message.slice(0, 300), severity);
+        changed = true;
         this.events.add(sessionId, 'diagnostic', file, { fingerprint: fp, line: d.range.start.line, severity, message: rec.message });
       }
     }
@@ -50,9 +53,11 @@ export class DiagnosticCollector implements vscode.Disposable {
       const still = diagnostics.some(d => ErrorRepository.fingerprint(e.file, d.range.start.line, d.message) === e.fingerprint);
       if (!still) {
         this.errors.resolveByFingerprint(projectId, e.fingerprint);
+        changed = true;
         this.knownFingerprints.delete(e.fingerprint);
       }
     }
+    if (changed) this.onHealthChanged?.(projectId);
   }
 
   dispose(): void {

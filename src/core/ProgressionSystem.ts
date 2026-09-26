@@ -1,10 +1,11 @@
 import { DailyStats, SavedState, Stats } from '../models/types';
 import { clamp } from './MoodEngine';
 
-type Reward = 'save' | 'build' | 'fix' | 'coding' | 'daily';
+type Reward = 'save' | 'build' | 'fix' | 'thread' | 'coding' | 'daily';
 const rewards: Record<Reward, { xp: number; cooldown: number }> = {
   save: { xp: 2, cooldown: 30_000 }, build: { xp: 15, cooldown: 60_000 },
   fix: { xp: 5, cooldown: 15_000 }, coding: { xp: 2, cooldown: 0 }, daily: { xp: 15, cooldown: 0 },
+  thread: { xp: 5, cooldown: 0 },
 };
 export const UNLOCKS = [
   { level: 2, item: 'coffee_mug' }, { level: 3, item: 'poster' }, { level: 5, item: 'headphones' },

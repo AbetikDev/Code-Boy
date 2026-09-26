@@ -12,8 +12,10 @@ export class GitCollector {
     private readonly events: EventRepository,
     private readonly git: GitService,
     private getContext: () => { projectId: string; sessionId: string; root: string } | null,
-    private settings: CBSettings
+    private settings: CBSettings,
+    private onCommit?: (projectId: string, hash: string, message: string) => void
   ) {}
+  private baselineLoaded = false;
 
   start(): void {
     if (!this.settings.trackGit) return;
@@ -36,7 +38,7 @@ export class GitCollector {
     if (!this.settings.trackGit) return;
     const ctx = this.getContext();
     if (!ctx) return;
-    const { sessionId, root } = ctx;
+    const { projectId, sessionId, root } = ctx;
 
     try {
       const commits = await this.git.getRecentCommits(root, 5);
@@ -53,8 +55,10 @@ export class GitCollector {
             timestamp: commit.timestamp,
             filesChanged: commit.filesChanged,
           });
+          if (this.baselineLoaded) this.onCommit?.(projectId, commit.hash, commit.message);
         }
       }
+      this.baselineLoaded = true;
     } catch { /* git not available */ }
   }
 

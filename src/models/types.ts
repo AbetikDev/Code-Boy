@@ -30,6 +30,10 @@ export type ActivityEvent =
   | { type: 'taskCancel' }
   | { type: 'debug'; active: boolean }
   | { type: 'terminal' }
+  | { type: 'threadStatus'; hasRedThread: boolean; topThreadFile?: string; blockerCount: number }
+  | { type: 'sessionWelcome'; topic: string; hoursAgo: number; openBlockers: number }
+  | { type: 'threadResolved'; topic?: string }
+  | { type: 'gitMilestone'; message: string }
   | { type: 'focus'; focused: boolean };
 export interface AnimationDefinition { name: string; src: string; frameWidth: number; frameHeight: number; frames: number; fps: number; loop: boolean; priority?: number; rarity?: 'COMMON' | 'UNCOMMON' | 'RARE' | 'LEGENDARY'; next?: string }
 export interface AssetImage { src: string; width: number; height: number }

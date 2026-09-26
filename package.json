@@ -70,6 +70,16 @@
         "category": "Code Boy"
       },
       {
+        "command": "codeBoy.resolveBlockerWithBob",
+        "title": "Resolve Blocker with Bob",
+        "category": "Code Boy"
+      },
+      {
+        "command": "codeBoy.resumeSession",
+        "title": "Resume Session",
+        "category": "Code Boy"
+      },
+      {
         "command": "codeBoy.pet",
         "title": "Pet",
         "category": "Code Boy"

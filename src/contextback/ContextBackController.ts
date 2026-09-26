@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import type { CBSettings, CBDashboardData, CBWelcomeData } from './types';
+import type { CBSettings, CBDashboardData, CBWelcomeData, CBOpenThread } from './types';
 import { DEFAULT_CB_SETTINGS } from './types';
 import { Database } from './Database';
 import { ProjectRepository } from './repositories/ProjectRepository';
@@ -13,6 +13,7 @@ import { FileActivityRepository } from './repositories/FileActivityRepository';
 import { ProjectManager } from './core/ProjectManager';
 import { SessionManager } from './core/SessionManager';
 import { EventBus, type CBEvents } from './core/EventBus';
+import { failedTestThreads } from './core/TestCommands';
 import { FileCollector } from './collectors/FileCollector';
 import { GitCollector } from './collectors/GitCollector';
 import { TerminalCollector } from './collectors/TerminalCollector';
@@ -158,10 +159,10 @@ export class ContextBackController implements vscode.Disposable {
     };
 
     this.fileCollector = new FileCollector(this.eventRepo, this.fileRepo, ctxNoRoot, this.settings);
-    this.terminalCollector = new TerminalCollector(this.db, this.eventRepo, ctxNoRoot, this.settings);
-    this.diagCollector = new DiagnosticCollector(this.errorRepo, this.eventRepo, ctxNoRoot, this.settings);
+    this.terminalCollector = new TerminalCollector(this.db, this.eventRepo, ctxNoRoot, this.settings, projectId => this.bus.emit('healthChanged', { projectId }));
+    this.diagCollector = new DiagnosticCollector(this.errorRepo, this.eventRepo, ctxNoRoot, this.settings, projectId => this.bus.emit('healthChanged', { projectId }));
     this.todoCollector = new TodoCollector(this.todoRepo, ctxNoRoot, this.settings);
-    this.gitCollector = new GitCollector(this.db, this.eventRepo, this.git, ctx, this.settings);
+    this.gitCollector = new GitCollector(this.db, this.eventRepo, this.git, ctx, this.settings, (projectId, hash, message) => this.bus.emit('commitRecorded', { projectId, hash, message }));
 
     this.disposables.push(this.fileCollector, this.terminalCollector, this.diagCollector, this.todoCollector);
     this.gitCollector.start();
@@ -209,6 +210,29 @@ export class ContextBackController implements vscode.Disposable {
       git,
     };
     this.welcome.show(data);
+    this.bus.emit('welcomeBack', { projectId: project.id, topic: analysis.topic, hoursAgo,
+      openBlockers: (await this.getTopThreads()).filter(thread => thread.signal === 'red').reduce((count, thread) => count + (thread.blockerIds?.length ?? 1), 0) });
+  }
+
+  getBus(): EventBus<CBEvents> { return this.bus; }
+  getActiveProjectId(): string | undefined { return this.projectMgr.current?.id; }
+
+  async getTopThreads(): Promise<CBOpenThread[]> {
+    const project = this.projectMgr.current;
+    if (!project) return [];
+    const sessions = this.sessionRepo.getForProject(project.id);
+    const session = this.sessionMgr.current ?? sessions[0];
+    const threads = session ? this.threads.detect([{
+      sessionId: session.id, session, errors: this.errorRepo.openForProject(project.id),
+      todos: this.todoRepo.openForProject(project.id), hasUncommittedChanges: false,
+      hasSuccessfulTestAfterError: false,
+    }]) : [];
+
+    const sessionIds = new Set(sessions.map(s => s.id));
+    const events = this.db.get('events').filter(e => sessionIds.has(e.sessionId) && e.type === 'terminal_command')
+      .sort((a, b) => b.timestamp - a.timestamp);
+    threads.push(...failedTestThreads(project.id, events));
+    return threads.sort((a, b) => b.unfinishedScore - a.unfinishedScore);
   }
 
   async buildDashboardData(): Promise<CBDashboardData | null> {
@@ -226,17 +250,9 @@ export class ContextBackController implements vscode.Disposable {
     const todayMinutes = Math.round(todaySessions.reduce((a, s) => a + s.durationSecs, 0) / 60);
     const weekMinutes = Math.round(weekSessions.reduce((a, s) => a + s.durationSecs, 0) / 60);
 
-    // Build open threads from recent sessions
+    // Build open threads from the same health snapshot used by the bridge.
     const recent = sessions.slice(0, 10);
-    const threadInputs = recent.map(s => ({
-      sessionId: s.id,
-      errors: this.errorRepo.recentForSession(s.id),
-      todos: this.todoRepo.openForProject(project.id),
-      session: s,
-      hasUncommittedChanges: false,
-      hasSuccessfulTestAfterError: false,
-    }));
-    const openThreads = this.threads.detect(threadInputs);
+    const openThreads = await this.getTopThreads();
 
     // Aggregate work by topic
     const recentWork: Array<{ topic: string; minutes: number }> = [];

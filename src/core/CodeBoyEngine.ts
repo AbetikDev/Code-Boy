@@ -58,7 +58,7 @@ function restore(value: unknown, now: number): SavedState | undefined {
   if (validDate(rawLedger.date)) {
     const rawCooldowns = record(rawLedger.cooldowns);
     const cooldowns: Record<string, number> = {};
-    for (const key of ['save', 'build', 'fix']) { if (typeof rawCooldowns[key] === 'number') { cooldowns[key] = rawCooldowns[key] as number; } }
+    for (const key of ['save', 'build', 'fix', 'thread']) { if (typeof rawCooldowns[key] === 'number') { cooldowns[key] = rawCooldowns[key] as number; } }
     result.progression = { date: rawLedger.date, xpEarned: safeNumber(rawLedger.xpEarned, 0, 0, ProgressionSystem.DAILY_XP_CAP),
       cooldowns, codingRemainder: safeNumber(rawLedger.codingRemainder, 0, 0, 29.999) };
   }
@@ -100,6 +100,8 @@ export class CodeBoyEngine {
   private announcedLevel: number;
   private autoVibeActive = false;
   private deepFocusSessions = 0;
+  private redBlockers = 0;
+  private topRedFile = '';
 
   constructor(saved: unknown, settings: Settings, options: EngineOptions = {}) {
     this.clock = options.now ?? Date.now;
@@ -212,6 +214,30 @@ export class CodeBoyEngine {
       this.activity.touch(now);
       this.say(event.active ? 'bug hunt.' : 'interesting...', 'THOUGHT', now);
     } else if (event.type === 'terminal') { this.activity.touch(now); }
+    else if (event.type === 'threadStatus') {
+      const count = Math.max(0, Math.floor(event.blockerCount));
+      const previous = this.redBlockers;
+      const previousFile = this.topRedFile;
+      this.redBlockers = event.hasRedThread ? count : 0;
+      this.topRedFile = this.redBlockers > 0 ? event.topThreadFile ?? '' : '';
+      if (this.redBlockers > 0 && (previous === 0 || this.redBlockers > previous || this.topRedFile !== previousFile)) {
+        this.mood.change({ mood: -2, happiness: -1 });
+        const warning = `⚠️ Blocker in ${event.topThreadFile ?? 'project'}! Ask IBM Bob to fix?`;
+        if (this.baseStateAt(now) === 'CONFUSED') this.react('CONFUSED', 'error_confused', 2_500, 10, now,
+          warning, 'WARNING', true);
+        else if (!this.manualSleep) this.say(warning, 'WARNING', now, true);
+      } else if (this.redBlockers === 0 && previous > 0) {
+        this.react('SUCCESS', 'success', 2_500, 60, now, 'all clear!', 'HAPPY', true);
+      }
+    } else if (event.type === 'sessionWelcome') {
+      this.react('HAPPY', 'happy', 2_500, 60, now,
+        `Welcome back! Last time: ${event.topic}. ${event.openBlockers > 0 ? `${event.openBlockers} blocker(s) waiting.` : 'Ready to build?'}`, 'TOP', true);
+    } else if (event.type === 'threadResolved') {
+      this.progression.award('thread', now);
+      this.react('CELEBRATING', 'celebrate', 4_000, 70, now, 'blocker crushed!', 'HAPPY', true);
+    } else if (event.type === 'gitMilestone') {
+      this.react('HAPPY', 'happy', 2_500, 50, now, 'commit made!', 'HAPPY');
+    }
     this.refresh(now);
     this.emit();
   }
@@ -364,6 +390,8 @@ export class CodeBoyEngine {
     this.language = getLanguageProfile('plaintext');
     this.idleAnimation = 'idle_blink';
     this.failedBuilds = 0;
+    this.redBlockers = 0;
+    this.topRedFile = '';
     this.lastTick = now;
     this.nextIdleAt = now + 8_000;
     this.say('fresh start.', 'TOP', now, true);
@@ -443,8 +471,9 @@ export class CodeBoyEngine {
     }
     else if (!this.activity.isFocused && inactivity >= ActivityTracker.IDLE_AFTER) { state = 'AFK'; }
     else if (this.settings.vibeMode && this.hasWorkspace) { state = 'VIBE_CODING'; }
-    else if (this.musicPlaying) { state = 'LISTENING_MUSIC'; }
     else if (this.taskCount > 0 || this.debugging) { state = 'THINKING'; }
+    else if (this.redBlockers > 0) { state = 'CONFUSED'; }
+    else if (this.musicPlaying) { state = 'LISTENING_MUSIC'; }
     else if (this.mood.stats.energy < 18) { state = 'TIRED'; }
     else if (this.mood.stats.mood < 15) { state = 'VERY_SAD'; }
     else if (this.mood.stats.mood < 32) { state = 'SAD'; }
@@ -452,9 +481,9 @@ export class CodeBoyEngine {
     return state;
   }
 
-  private react(state: CharacterState, animation: string, duration: number, priority: number, now: number, bubble: string, kind: BubbleKind): void {
+  private react(state: CharacterState, animation: string, duration: number, priority: number, now: number, bubble: string, kind: BubbleKind, forceBubble = false): void {
     if (!this.settings.reactions || this.manualSleep) { return; }
-    if (this.machine.react(state, animation, duration, priority, now)) { this.say(bubble, kind, now); }
+    if (this.machine.react(state, animation, duration, priority, now)) { this.say(bubble, kind, now, forceBubble); }
   }
 
   private setLanguage(languageId: string, now: number): void {

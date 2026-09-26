@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import type { CBSettings, CBTerminalCommand } from '../types';
 import type { Database } from '../Database';
 import type { EventRepository } from '../repositories/EventRepository';
+import { testCommandKey } from '../core/TestCommands';
 
 /** Records terminal command metadata (command string, exit code, duration).
  *  NEVER reads terminal output. */
@@ -13,7 +14,8 @@ export class TerminalCollector implements vscode.Disposable {
     private readonly db: Database,
     private readonly events: EventRepository,
     private getContext: () => { projectId: string; sessionId: string } | null,
-    private settings: CBSettings
+    private settings: CBSettings,
+    private onHealthChanged?: (projectId: string) => void
   ) {
     this.subs.push(
       vscode.window.onDidStartTerminalShellExecution(e => this.onStart(e)),
@@ -51,7 +53,10 @@ export class TerminalCollector implements vscode.Disposable {
     };
     const cmds = this.db.get('terminalCommands');
     this.db.set('terminalCommands', [...cmds, rec]);
-    if (ctx) this.events.add(ctx.sessionId, 'terminal_command', '', { command: rec.command, exitCode: rec.exitCode, duration: rec.duration });
+    if (ctx) {
+      this.events.add(ctx.sessionId, 'terminal_command', '', { command: rec.command, exitCode: rec.exitCode, duration: rec.duration });
+      if (rec.exitCode !== null && testCommandKey(rec.command)) this.onHealthChanged?.(ctx.projectId);
+    }
   }
 
   private terminalKey(terminal: vscode.Terminal): string {

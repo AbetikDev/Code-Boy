@@ -128,6 +128,8 @@ export interface CBSessionAnalysis {
 export interface CBOpenThread {
   id: string;
   title: string;
+  filePath?: string;
+  blockerIds?: string[];
   lastTouched: number;
   lastError: string;
   unfinishedScore: number;  // 0..1

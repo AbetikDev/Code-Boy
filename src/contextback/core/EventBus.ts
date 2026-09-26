@@ -24,7 +24,9 @@ export class EventBus<Events extends Record<string, any>> {
 export interface CBEvents {
   activity: { projectId: string; sessionId: string };
   sessionEnd: { sessionId: string };
-  welcomeBack: { projectId: string };
+  welcomeBack: { projectId: string; topic: string; hoursAgo: number; openBlockers: number };
+  healthChanged: { projectId: string };
+  commitRecorded: { projectId: string; hash: string; message: string };
   analysisReady: { projectId: string; sessionId: string };
   [key: string]: unknown;
 }
