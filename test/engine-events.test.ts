@@ -319,6 +319,18 @@ test('setMusic false stops listening when no manual music', () => {
   assert.equal(engine.snapshot().state, 'IDLE');
 });
 
+test('detected music keeps an inactive character listening until playback stops', () => {
+  const { engine, advance } = setup();
+  engine.setMusic(true, 'Windows media');
+  advance(16 * 60_000);
+  assert.equal(engine.snapshot().state, 'LISTENING_MUSIC');
+  assert.equal(engine.snapshot().animation, 'music_loop');
+  engine.setMusic(false, 'Paused');
+  assert.equal(engine.snapshot().musicPlaying, false);
+  assert.equal(engine.snapshot().state, 'SLEEPING');
+  engine.dispose();
+});
+
 test('setMusic truncates status strings longer than 160 characters', () => {
   const { engine } = setup();
   engine.setMusic(true, 'x'.repeat(200));

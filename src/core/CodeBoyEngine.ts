@@ -611,11 +611,11 @@ export class CodeBoyEngine {
     }
     else if (this.settings.vibeMode && this.hasWorkspace) { state = 'VIBE_CODING'; }
     else if (this.taskCount > 0 || this.debugging) { state = 'THINKING'; }
+    else if (this.musicPlaying) { state = 'LISTENING_MUSIC'; }
     else if (inactivity >= ActivityTracker.SLEEP_AFTER) { state = 'SLEEPING'; }
     else if (this.redBlockers > 0) { state = 'CONFUSED'; }
     else if (inactivity >= ActivityTracker.BORED_AFTER) { state = 'BORED'; }
     else if (!this.activity.isFocused && inactivity >= ActivityTracker.IDLE_AFTER) { state = 'AFK'; }
-    else if (this.musicPlaying) { state = 'LISTENING_MUSIC'; }
     else if (this.mood.stats.energy < 18) { state = 'TIRED'; }
     else if (this.mood.stats.mood < 15) { state = 'VERY_SAD'; }
     else if (this.mood.stats.mood < 32) { state = 'SAD'; }

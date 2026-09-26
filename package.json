@@ -25,9 +25,7 @@
   "icon": "assets/icons/extension.png",
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onStartupFinished",
-    "onView:codeBoy.companion",
-    "onView:contextback.sidebar"
+    "onStartupFinished"
   ],
   "extensionKind": [
     "ui"
@@ -53,12 +51,14 @@
         {
           "id": "codeBoy.companion",
           "name": "Code Boy",
+          "icon": "assets/icons/activity.svg",
           "type": "webview",
           "when": "codeBoy.screen != context"
         },
         {
           "id": "contextback.sidebar",
           "name": "ContextBack",
+          "icon": "assets/icons/activity.svg",
           "type": "webview",
           "when": "codeBoy.screen == context"
         }

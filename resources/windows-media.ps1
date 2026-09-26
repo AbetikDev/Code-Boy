@@ -3,8 +3,7 @@ try {
     Add-Type -AssemblyName System.Runtime.WindowsRuntime
 
     # Load WinRT types
-    $null = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager,
-             Windows.Media.Control, ContentType = WindowsRuntime]
+    $null = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime]
 
     # Find AsTask helper for IAsyncOperation<T>
     $asTask = [System.WindowsRuntimeSystemExtensions].GetMethods() |
@@ -21,8 +20,7 @@ try {
     $task    = $generic.Invoke($null, @($op))
 
     if (-not $task.Wait(5000)) {
-        [Console]::Write('false')
-        exit 0
+        throw 'Windows media session request timed out.'
     }
 
     $manager  = $task.Result
@@ -40,20 +38,7 @@ try {
 
     if ($playing) { [Console]::Write('true') } else { [Console]::Write('false') }
 } catch {
-    # Fallback: check if any known media process is running
-    $mediaProcesses = @(
-        'chrome','msedge','firefox','spotify','vlc','wmplayer',
-        'groove','music.ui','Videos.UI','foobar2000','aimp','mpc-hc','mpc-be'
-    )
-    $found = $false
-    foreach ($proc in $mediaProcesses) {
-        if (Get-Process -Name $proc -ErrorAction SilentlyContinue) {
-            # Process running but can't confirm playing — return false to avoid false positives
-            $found = $true
-            break
-        }
-    }
-    # Return false on error — manual MUSIC button is always available
-    [Console]::Write('false')
-    exit 0
+    # Let the provider distinguish unavailable access from paused playback.
+    [Console]::Error.Write('Windows playback status is unavailable.')
+    exit 1
 }

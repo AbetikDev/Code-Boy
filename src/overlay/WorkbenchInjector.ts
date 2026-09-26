@@ -1,12 +1,17 @@
 import * as vscode from 'vscode';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { hasOverlayCsp, patchWorkbenchCsp, unpatchWorkbenchCsp } from './WorkbenchCsp';
 
 export const INJECTION_START = '/* -- CODE-BOY-OVERLAY-START -- */';
 export const INJECTION_END = '/* -- CODE-BOY-OVERLAY-END -- */';
 const INJECTION_VERSION = '__CODE_BOY_TRUSTED_OVERLAY_V8__';
 
 export class WorkbenchInjector {
+  static getWorkbenchHtmlPath(): string | undefined {
+    return findFileRecursively(path.join(vscode.env.appRoot, 'out', 'vs', 'code'), 'workbench.html', 5);
+  }
+
   static getWorkbenchJsPath(): string | undefined {
     const appRoot = vscode.env.appRoot;
     const candidates = [
@@ -33,7 +38,8 @@ export class WorkbenchInjector {
       const content = fs.readFileSync(jsPath, 'utf8');
       return content.includes(INJECTION_START)
         && content.includes(INJECTION_VERSION)
-        && content.includes('codeboy-floating-panel');
+        && content.includes('codeboy-floating-panel')
+        && Boolean(this.getWorkbenchHtmlPath() && hasOverlayCsp(fs.readFileSync(this.getWorkbenchHtmlPath()!, 'utf8')));
     } catch {
       return false;
     }
@@ -52,9 +58,12 @@ export class WorkbenchInjector {
         return { success: false, error: 'The compiled Code Boy overlay is out of date. Rebuild the extension first.' };
       }
 
+      const htmlPath = this.getWorkbenchHtmlPath();
+      if (!htmlPath) return { success: false, error: 'Could not locate VS Code workbench.html file.' };
+      const originalHtml = fs.readFileSync(htmlPath, 'utf8');
+      const patchedHtml = patchWorkbenchCsp(originalHtml);
       let content = fs.readFileSync(jsPath, 'utf8');
       if (content.includes(INJECTION_START)) {
-        if (content.includes(INJECTION_VERSION) && content.includes('codeboy-floating-panel')) return { success: true };
         const clean = removeInjection(content);
         if (clean === undefined) return { success: false, error: 'The previous Code Boy injection is incomplete.' };
         content = clean;
@@ -64,7 +73,15 @@ export class WorkbenchInjector {
       if (!fs.existsSync(backupPath)) fs.writeFileSync(backupPath, content, 'utf8');
       const snippet = `\n${INJECTION_START}\nwindow.${INJECTION_VERSION} = true;\nsetTimeout(function codeBoySafeStart() {\n  try {\n${indent(overlayBundle, 4)}\n  } catch (error) {\n    console.error('[Code Boy Floating] Safe loader failed:', error);\n  }\n}, 0);\n${INJECTION_END}\n`;
       new Function(snippet);
-      fs.writeFileSync(jsPath, content.trimEnd() + snippet, 'utf8');
+      // Update both files together; repair an existing loader whose HTTP requests
+      // were blocked by the workbench CSP, and refresh its bundled overlay.
+      fs.writeFileSync(htmlPath, patchedHtml, 'utf8');
+      try {
+        fs.writeFileSync(jsPath, content.trimEnd() + snippet, 'utf8');
+      } catch (error) {
+        fs.writeFileSync(htmlPath, originalHtml, 'utf8');
+        throw error;
+      }
       return { success: true };
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : String(err);
@@ -80,6 +97,12 @@ export class WorkbenchInjector {
     if (!jsPath) return { success: false, error: 'Could not locate VS Code workbench.desktop.main.js file.' };
     try {
       const content = fs.readFileSync(jsPath, 'utf8');
+      const htmlPath = this.getWorkbenchHtmlPath();
+      if (htmlPath) {
+        const html = fs.readFileSync(htmlPath, 'utf8');
+        const cleanHtml = unpatchWorkbenchCsp(html);
+        if (cleanHtml !== html) fs.writeFileSync(htmlPath, cleanHtml, 'utf8');
+      }
       if (!content.includes(INJECTION_START)) return { success: true };
       const clean = removeInjection(content);
       if (clean === undefined) return { success: false, error: 'The Code Boy injection markers are incomplete.' };
