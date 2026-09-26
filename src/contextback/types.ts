@@ -163,6 +163,57 @@ export interface CBDashboardData {
   openTodos: CBTodo[];
 }
 
+export interface CBDayRecap {
+  date: string;
+  active: boolean;
+  summary: string;
+  nextStep: string;
+  minutes: number;
+  files: string[];
+  changedFilesCount: number;
+  areas: Array<{ name: string; count: number }>;
+  commits: string[];
+  tests: { passed: number; failed: number };
+  problems: string[];
+  sources: Array<'Git' | 'ContextBack'>;
+}
+
+export interface CBQualityResult {
+  score: number;
+  rationale: string;
+  findings: string[];
+  checkedAt: number;
+  inputHash: string;
+}
+
+export interface CBQualityCacheEntry {
+  projectId: string;
+  kind: 'yesterday' | 'current';
+  day: string;
+  result: CBQualityResult | null;
+  inputHash: string;
+  checkedAt: number;
+}
+
+export interface CBDiffSnapshot {
+  projectId: string;
+  day: string;
+  patch: string;
+  capturedAt: number;
+}
+
+export interface CBSidebarData {
+  project: CBProject;
+  branch: CBBranch;
+  recap: CBDayRecap;
+  yesterdayQuality: CBQualityCacheEntry | null;
+  currentQuality: CBQualityCacheEntry | null;
+  qualityEnabled: boolean;
+  yesterdayReviewable: boolean;
+  currentReviewable: boolean;
+  openThreads: CBOpenThread[];
+}
+
 // ─── Settings ──────────────────────────────────────────────────────────────
 
 export interface CBSettings {
@@ -194,7 +245,7 @@ export const DEFAULT_CB_SETTINGS: CBSettings = {
 // ─── Persistence snapshot ──────────────────────────────────────────────────
 
 export interface CBStore {
-  version: 1;
+  version: 2;
   projects: CBProject[];
   branches: CBBranch[];
   sessions: CBSession[];
@@ -203,4 +254,6 @@ export interface CBStore {
   errors: CBError[];
   todos: CBTodo[];
   terminalCommands: CBTerminalCommand[];
+  diffSnapshots: CBDiffSnapshot[];
+  qualityCache: CBQualityCacheEntry[];
 }

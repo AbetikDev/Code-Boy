@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import type { CBSettings, CBDashboardData, CBWelcomeData, CBOpenThread } from './types';
+import type { CBSettings, CBDashboardData, CBWelcomeData, CBOpenThread, CBSidebarData, CBQualityCacheEntry } from './types';
 import { DEFAULT_CB_SETTINGS } from './types';
 import { Database } from './Database';
 import { ProjectRepository } from './repositories/ProjectRepository';
@@ -28,6 +28,8 @@ import { SidebarProvider } from './ui/SidebarProvider';
 import type { AIProvider } from './ai/AIProvider';
 import { DisabledAIProvider } from './ai/AIProvider';
 import { BobShellProvider } from './ai/BobShellProvider';
+import { QualityContext, yesterdayRange, localDay, shouldReview, type QualityInput } from './analysis/QualityContext';
+import { buildDayRecap } from './analysis/DayRecap';
 
 function readCBSettings(): CBSettings {
   const config = vscode.workspace.getConfiguration('contextBack');
@@ -83,6 +85,8 @@ export class ContextBackController implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private shownWelcomeThisWindow = false;
   private readonly sidebarRefreshTimer: ReturnType<typeof setInterval>;
+  private snapshotTimer: ReturnType<typeof setTimeout> | undefined;
+  private qualityRunning = false;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.settings = readCBSettings();
@@ -107,7 +111,7 @@ export class ContextBackController implements vscode.Disposable {
 
     this.dashboard = new DashboardProvider(context, () => this.buildDashboardData(), cmd => this.handleDashboardCommand(cmd));
     this.welcome = new WelcomeBackProvider(cmd => this.handleWelcomeCommand(cmd));
-    this.sidebar = new SidebarProvider(() => this.buildDashboardData());
+    this.sidebar = new SidebarProvider(context.extensionUri, () => this.buildSidebarData(), () => this.refreshQuality(true), () => void this.openDashboard(), () => void this.refreshQuality(false));
 
     this.disposables.push(
       this.db,
@@ -128,6 +132,7 @@ export class ContextBackController implements vscode.Disposable {
         }
       }),
       vscode.workspace.onDidChangeWorkspaceFolders(e => this.projectMgr.refreshWorkspace(e.added)),
+      vscode.workspace.onDidSaveTextDocument(() => this.scheduleSnapshot()),
     );
 
     this.registerCommands();
@@ -183,6 +188,7 @@ export class ContextBackController implements vscode.Disposable {
     this.gitCollector.start();
 
     this.sidebar.refresh();
+    if (this.sidebar.isVisible()) void this.refreshQuality(false);
 
     // Welcome back if gap is large enough
     if (lastSession?.endedAt && !this.shownWelcomeThisWindow) {
@@ -258,6 +264,101 @@ export class ContextBackController implements vscode.Disposable {
       });
     }
     return threads.sort((a, b) => b.unfinishedScore - a.unfinishedScore);
+  }
+
+  private scheduleSnapshot(): void {
+    if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
+    this.snapshotTimer = setTimeout(() => { this.snapshotTimer = undefined; void this.captureSnapshot(); }, 3000);
+  }
+
+  private async captureSnapshot(): Promise<void> {
+    const project = this.projectMgr.current;
+    const root = this.projectMgr.root;
+    if (!project || !root) return;
+    const day = localDay(new Date());
+    const input = await new QualityContext(root, this.settings).workingChanges();
+    const rest = this.db.get('diffSnapshots').filter(s => s.projectId !== project.id || s.day !== day);
+    this.db.set('diffSnapshots', [...rest, { projectId: project.id, day, patch: input.text, capturedAt: Date.now() }]);
+  }
+
+  private cacheEntry(projectId: string, kind: 'yesterday' | 'current', day: string): CBQualityCacheEntry | null {
+    return this.db.get('qualityCache').find(e => e.projectId === projectId && e.kind === kind && e.day === day) ?? null;
+  }
+
+  async buildSidebarData(): Promise<CBSidebarData | null> {
+    const project = this.projectMgr.current;
+    const root = this.projectMgr.root;
+    if (!project || !root) return null;
+    const branch = this.sessionRepo.findOrCreateBranch(project.id, await this.git.getCurrentBranch(root));
+    const sessions = this.sessionRepo.getForProject(project.id, 200);
+    const ids = new Set(sessions.map(s => s.id));
+    const range = yesterdayRange();
+    const commits = this.settings.trackGit ? await this.git.getCommitsInRange(root, range.start, range.end) : [];
+    const gitFiles = this.settings.trackGit ? await this.git.getFilesForCommits(root, commits) : [];
+    const recap = buildDayRecap(sessions, this.db.get('events').filter(e => ids.has(e.sessionId)), commits,
+      this.errorRepo.openForProject(project.id), this.todoRepo.openForProject(project.id), new Date(),
+      gitFiles.map(file => path.resolve(root, file)));
+    const today = localDay(new Date());
+    const inputs = await this.qualityInputs();
+    return {
+      project, branch, recap,
+      yesterdayQuality: this.cacheEntry(project.id, 'yesterday', recap.date),
+      currentQuality: this.cacheEntry(project.id, 'current', today),
+      qualityEnabled: new BobShellProvider(root).isAvailable(),
+      yesterdayReviewable: !!inputs?.yesterday.text.trim(),
+      currentReviewable: !!inputs?.current.text.trim(),
+      openThreads: await this.getTopThreads(),
+    };
+  }
+
+  private async qualityInputs(): Promise<{ yesterday: QualityInput; current: QualityInput; day: string; today: string } | null> {
+    const project = this.projectMgr.current;
+    const root = this.projectMgr.root;
+    if (!project || !root) return null;
+    const ctx = new QualityContext(root, this.settings);
+    const range = yesterdayRange();
+    const committed = await ctx.committedYesterday(range.start, range.end);
+    const snapshot = this.db.get('diffSnapshots').find(s => s.projectId === project.id && s.day === range.day)?.patch ?? '';
+    const yesterdayText = [committed.text, snapshot].filter(Boolean).join('\n\n').slice(0, 50_000);
+    const { createHash } = await import('node:crypto');
+    const yesterday: QualityInput = { text: yesterdayText, files: committed.files,
+      hash: createHash('sha256').update(yesterdayText).digest('hex') };
+    const current = await ctx.currentSample(this.fileRepo.recentFiles(project.id).map(f => f.path));
+    return { yesterday, current, day: range.day, today: localDay(new Date()) };
+  }
+
+  async refreshQuality(force: boolean): Promise<void> {
+    if (this.qualityRunning) return;
+    const project = this.projectMgr.current;
+    const root = this.projectMgr.root;
+    if (!project || !root) return;
+    const bob = new BobShellProvider(root);
+    if (!bob.isAvailable()) {
+      if (force) vscode.window.showWarningMessage('ContextBack: Bob is unavailable. Install Bob Shell and set BOB_API_KEY in the workspace .env or VS Code environment.');
+      this.sidebar.refresh();
+      return;
+    }
+    this.qualityRunning = true;
+    try {
+      const inputs = await this.qualityInputs();
+      if (!inputs) return;
+      for (const [kind, input, day] of [
+        ['yesterday', inputs.yesterday, inputs.day],
+        ['current', inputs.current, inputs.today],
+      ] as const) {
+        const previous = this.cacheEntry(project.id, kind, day);
+        if (!shouldReview(previous, input, force)) continue;
+        const assessed = await bob.assessQuality(input.text, kind);
+        const checkedAt = Date.now();
+        const entry: CBQualityCacheEntry = {
+          projectId: project.id, kind, day, inputHash: input.hash, checkedAt,
+          result: assessed ? { ...assessed, checkedAt, inputHash: input.hash } : null,
+        };
+        const rest = this.db.get('qualityCache').filter(e => !(e.projectId === project.id && e.kind === kind && e.day === day));
+        this.db.set('qualityCache', [...rest, entry]);
+        this.sidebar.refresh();
+      }
+    } finally { this.qualityRunning = false; this.sidebar.refresh(); }
   }
 
   async buildDashboardData(): Promise<CBDashboardData | null> {
@@ -409,11 +510,14 @@ export class ContextBackController implements vscode.Disposable {
     const project = this.projectMgr.current;
     if (!project) return;
     // Remove data for this project only
+    const clearedSessionIds = new Set(this.db.get('sessions').filter(s => s.projectId === project.id).map(s => s.id));
     this.db.set('sessions', this.db.get('sessions').filter(s => s.projectId !== project.id));
-    this.db.set('events', this.db.get('events').filter(() => true)); // events by session — kept for now
+    this.db.set('events', this.db.get('events').filter(e => !clearedSessionIds.has(e.sessionId)));
     this.db.set('fileActivity', this.db.get('fileActivity').filter(f => f.projectId !== project.id));
     this.db.set('errors', this.db.get('errors').filter(e => e.projectId !== project.id));
     this.db.set('todos', this.db.get('todos').filter(t => t.projectId !== project.id));
+    this.db.set('diffSnapshots', this.db.get('diffSnapshots').filter(s => s.projectId !== project.id));
+    this.db.set('qualityCache', this.db.get('qualityCache').filter(e => e.projectId !== project.id));
     this.db.flush();
     this.sidebar.refresh();
     vscode.window.showInformationMessage('ContextBack: History cleared.');
@@ -437,6 +541,7 @@ export class ContextBackController implements vscode.Disposable {
 
   dispose(): void {
     clearInterval(this.sidebarRefreshTimer);
+    if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
     this.gitCollector?.dispose();
     this.sessionMgr.endCurrent();
     this.sessionMgr.dispose();

@@ -41,5 +41,7 @@ export async function run(): Promise<void> {
   assert.ok(api.getSnapshot().daily.errorsFixed > beforeFix, 'Real diagnostics change tracked');
   diagnostics.dispose();
   await vscode.commands.executeCommand('codeBoy.showStats');
-  console.log('CODE BOY HOST SMOKE PASSED: activation, webview, commands, coding, sleep, pet, document save, diagnostics.');
+  await vscode.commands.executeCommand('workbench.view.extension.contextback');
+  await vscode.commands.executeCommand('contextback.sidebar.focus');
+  console.log('CODE BOY HOST SMOKE PASSED: activation, companion and ContextBack webviews, commands, coding, sleep, pet, document save, diagnostics.');
 }

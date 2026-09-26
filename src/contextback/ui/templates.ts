@@ -8,7 +8,7 @@ export function nonce(): string {
 }
 
 export function cspMeta(webview: vscode.Webview, n: string): string {
-  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${n}'; img-src ${webview.cspSource} data:;">`;
+  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${n}'; img-src ${webview.cspSource} data:;">`;
 }
 
 export function dashboardHtml(webview: vscode.Webview, data: CBDashboardData): string {

@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import type { CBStore } from './types';
 
-const STORE_VERSION = 1 as const;
+const STORE_VERSION = 2 as const;
 const MAX_EVENTS = 5000;
 const MAX_TERMINAL_COMMANDS = 500;
 const MAX_SESSIONS = 200;
@@ -19,6 +19,8 @@ function empty(): CBStore {
     errors: [],
     todos: [],
     terminalCommands: [],
+    diffSnapshots: [],
+    qualityCache: [],
   };
 }
 
@@ -41,7 +43,7 @@ export class Database {
       if (!fs.existsSync(this.dbPath)) return empty();
       const text = fs.readFileSync(this.dbPath, 'utf8');
       const parsed = JSON.parse(text) as Partial<CBStore>;
-      if (parsed.version !== STORE_VERSION) return empty();
+      if (parsed.version !== STORE_VERSION && parsed.version !== 1) return empty();
       const base = empty();
       return {
         version: STORE_VERSION,
@@ -53,6 +55,8 @@ export class Database {
         errors: Array.isArray(parsed.errors) ? parsed.errors : base.errors,
         todos: Array.isArray(parsed.todos) ? parsed.todos : base.todos,
         terminalCommands: Array.isArray(parsed.terminalCommands) ? parsed.terminalCommands : base.terminalCommands,
+        diffSnapshots: Array.isArray(parsed.diffSnapshots) ? parsed.diffSnapshots : base.diffSnapshots,
+        qualityCache: Array.isArray(parsed.qualityCache) ? parsed.qualityCache : base.qualityCache,
       };
     } catch {
       return empty();
@@ -80,6 +84,14 @@ export class Database {
     }
     if (this.store.sessions.length > MAX_SESSIONS) {
       this.store.sessions = this.store.sessions.slice(-MAX_SESSIONS);
+      this.dirty = true;
+    }
+    if (this.store.diffSnapshots.length > 30) {
+      this.store.diffSnapshots = this.store.diffSnapshots.slice(-30);
+      this.dirty = true;
+    }
+    if (this.store.qualityCache.length > 60) {
+      this.store.qualityCache = this.store.qualityCache.slice(-60);
       this.dirty = true;
     }
   }

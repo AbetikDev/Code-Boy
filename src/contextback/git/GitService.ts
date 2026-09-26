@@ -48,6 +48,28 @@ export class GitService {
     }).filter(c => c.hash);
   }
 
+  async getCommitsInRange(cwd: string, start: number, end: number): Promise<CBCommit[]> {
+    const fmt = '%H\x1F%s\x1F%an\x1F%ct';
+    const out = await git(cwd, ['log', '--max-count=50', `--since=${new Date(start).toISOString()}`,
+      `--until=${new Date(end - 1).toISOString()}`, `--pretty=format:${fmt}`]);
+    return out.split('\n').filter(Boolean).map(line => {
+      const parts = line.split('\x1F');
+      return { hash: parts[0] ?? '', message: parts[1] ?? '', author: parts[2] ?? '',
+        timestamp: (Number(parts[3]) || 0) * 1000, filesChanged: 0 };
+    }).filter(c => c.hash && c.timestamp >= start && c.timestamp < end);
+  }
+
+  async getFilesForCommits(cwd: string, commits: CBCommit[]): Promise<string[]> {
+    const files = new Set<string>();
+    for (const commit of commits.slice(0, 20)) {
+      const out = await git(cwd, ['diff-tree', '--no-commit-id', '--name-only', '-r', '--root', commit.hash]);
+      const names = out.split('\n').filter(Boolean);
+      commit.filesChanged = names.length;
+      for (const name of names) files.add(name);
+    }
+    return [...files];
+  }
+
   async getDiffStat(cwd: string): Promise<string> {
     const out = await git(cwd, ['diff', '--stat', 'HEAD']);
     const lines = out.split('\n').filter(Boolean);

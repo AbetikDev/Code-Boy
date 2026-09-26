@@ -58,7 +58,7 @@
         {
           "id": "contextback.sidebar",
           "name": "Context",
-          "type": "tree"
+          "type": "webview"
         }
       ]
     },
