@@ -12,7 +12,14 @@ export class BobShellProvider implements AIProvider {
     const prompt = `Summarize this developer session metadata. Do not edit files or run commands. Return only a JSON object with topic, summary, completed (string array), unfinished (string array), nextStep, and confidence (number from 0 to 1).\n\n${contextDump.slice(0, 4000)}`;
     try {
       const output = await new Promise<string>((resolve, reject) => {
-        const child = spawn('bob', ['run', '--format', 'json', '--mode', 'ask', '--max-turns', '1', '--max-cost', '0.10'], {
+        const bobArgs = ['run', '--format', 'json', '--mode', 'ask', '--max-turns', '1', '--max-cost', '0.10'];
+        // npm installs Windows command shims as .cmd files, which CreateProcess
+        // cannot execute directly. Route the fixed CLI arguments through cmd.exe.
+        const command = process.platform === 'win32' ? 'cmd.exe' : 'bob';
+        const args = process.platform === 'win32'
+          ? ['/d', '/s', '/c', 'bob.cmd', ...bobArgs]
+          : bobArgs;
+        const child = spawn(command, args, {
           cwd: this.workspace, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
         });
         let stdout = '';
