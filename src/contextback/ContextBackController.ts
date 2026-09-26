@@ -372,7 +372,7 @@ export class ContextBackController implements vscode.Disposable {
       );
       const aiResult = await this.ai.summarize(dump);
       if (aiResult) analysis = { ...aiResult, topics: analysis.topics };
-      else vscode.window.showWarningMessage('ContextBack: IBM Bob Shell did not return a summary. Install and authenticate Bob Shell, or disable Bob summaries. Showing the local summary.');
+      else vscode.window.showWarningMessage('ContextBack: IBM Bob Shell did not return a summary. Set BOB_API_KEY in the workspace .env or VS Code environment, and check Bob Shell authentication. Showing the local summary.');
     }
 
     vscode.window.showInformationMessage(

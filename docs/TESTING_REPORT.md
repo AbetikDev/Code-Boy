@@ -14,6 +14,7 @@ The Node tests cover blocker identity and resolution, warning-only diagnostics, 
 ## Limits
 
 - Bob Shell is not installed in the current development environment, so the optional live `bob run` summary path cannot be end-to-end verified here. The extension falls back to its local summary if Bob is unavailable.
+- IBM Bob credentials can be loaded from the ignored workspace `.env` as `BOB_API_KEY` or inherited from the VS Code process environment; the actual key is not included in the VSIX or repository.
 - The current suite does not exercise a real Bob IDE blocker-fix session. The blocker handoff is a clipboard workflow and requires a person to paste into Bob.
 - No current code coverage percentage is claimed. The previous percentage in this document was not remeasured after bridge work.
 - Multiple simultaneous VS Code windows remain a separate integration surface from these tests.

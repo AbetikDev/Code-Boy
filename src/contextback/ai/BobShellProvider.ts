@@ -1,3 +1,5 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { CBSessionAnalysis } from '../types';
 import type { AIProvider } from './AIProvider';
@@ -9,6 +11,8 @@ export class BobShellProvider implements AIProvider {
   isAvailable(): boolean { return true; }
 
   async summarize(contextDump: string): Promise<CBSessionAnalysis | null> {
+    const apiKey = this.getApiKey();
+    if (!apiKey) return null;
     const prompt = `Summarize this developer session metadata. Do not edit files or run commands. Return only a JSON object with topic, summary, completed (string array), unfinished (string array), nextStep, and confidence (number from 0 to 1).\n\n${contextDump.slice(0, 4000)}`;
     try {
       const output = await new Promise<string>((resolve, reject) => {
@@ -21,6 +25,7 @@ export class BobShellProvider implements AIProvider {
           : bobArgs;
         const child = spawn(command, args, {
           cwd: this.workspace, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, BOB_API_KEY: apiKey },
         });
         let stdout = '';
         let stderr = '';
@@ -57,5 +62,25 @@ export class BobShellProvider implements AIProvider {
     } catch {
       return null;
     }
+  }
+
+  private getApiKey(): string | undefined {
+    const inherited = process.env['BOB_API_KEY']?.trim();
+    if (inherited) return inherited;
+    try {
+      const envFile = fs.readFileSync(path.join(this.workspace, '.env'), 'utf8');
+      for (const line of envFile.split(/\r?\n/)) {
+        const match = line.match(/^\s*(?:export\s+)?BOB_API_KEY\s*=\s*(.*?)\s*$/);
+        if (!match?.[1]) continue;
+        const raw = match[1];
+        const value = raw.length >= 2 &&
+          ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
+          ? raw.slice(1, -1) : raw;
+        if (value.trim()) return value.trim();
+      }
+    } catch {
+      // A missing or unreadable local .env simply means Bob is not configured.
+    }
+    return undefined;
   }
 }

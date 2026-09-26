@@ -49,7 +49,7 @@ Then choose **Extensions → … → Install from VSIX** and select `code-boy-1.
 ## Connect IBM Bob
 
 1. [Install IBM Bob Shell](https://bob.ibm.com/docs/shell/getting-started/install-and-setup) and authenticate it. Bob Shell currently requires Node.js 24+; the extension itself does not require Bob.
-2. Confirm `bob run --format json --mode ask "Summarize this project"` works in a terminal. Noninteractive use may require an IBM Bob API key configured for Bob Shell.
+2. Add your IBM Bob Inference API key as `BOB_API_KEY=...` in the workspace `.env` file (or set it in the environment used to launch VS Code). The extension reads the key locally and passes it only to the Bob Shell child process. Do not commit `.env` or paste the key into chat or logs.
 3. In VS Code settings, enable `contextBack.ai.enabled`; `contextBack.ai.provider` defaults to `bob`.
 4. Run **ContextBack: Summarize Last Session**. Bob Shell receives session metadata and returns a structured summary. The call has a 45 second timeout and cost and turn limits.
 
