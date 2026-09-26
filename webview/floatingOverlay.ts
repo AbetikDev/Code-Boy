@@ -1,11 +1,21 @@
 import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../src/models/types';
 
 (function initFloatingOverlay() {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById('codeboy-floating-root')) return;
+  try {
+    if (typeof document === 'undefined') return;
+    // The workbench bundle can execute before Electron has created <body>.
+    // Defer all DOM work until then; touching document.body during bootstrap
+    // aborts the renderer and leaves VS Code-compatible editors on a grey screen.
+    if (!document.body) {
+      document.addEventListener('DOMContentLoaded', initFloatingOverlay, { once: true });
+      return;
+    }
+    if (document.getElementById('codeboy-floating-root')) return;
 
   const candidatePorts = [43821, 43822, 43823, 43824, 43825];
   const MASCOT_SIZE = 84;
+  const PANEL_WIDTH = MASCOT_SIZE * 4;
+  const PANEL_GAP = 12;
   const EDITOR_GUTTER = 12;
   const POSITION_KEY = 'codeboy_floating_pos_v2';
   let activePort = 43821;
@@ -35,7 +45,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
       touch-action: none;
     }
-    #codeboy-floating-root:hover {
+    #codeboy-floating-root:not(.panel-open):hover {
       transform: scale(1.08) translateY(-2px);
     }
     #codeboy-floating-root.dragging {
@@ -50,6 +60,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       image-rendering: crisp-edges;
       background: transparent !important;
       display: block;
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     #codeboy-floating-speech {
       position: absolute;
@@ -84,48 +95,116 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       border-bottom: 1px solid #7c5ea6;
       transform: rotate(45deg);
     }
-    #codeboy-floating-menu {
+    #codeboy-floating-panel {
       position: absolute;
-      bottom: 88px;
-      right: 0;
+      top: 50%;
+      width: 336px;
+      min-height: 84px;
       background: #181226;
       border: 1px solid #6b4c94;
       border-radius: 4px;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6), 2px 2px 0 #0b0813;
-      padding: 5px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 155px;
+      padding: 7px;
       z-index: 1000001;
       font-family: Consolas, "Courier New", monospace;
+      cursor: default;
+      animation: codeboyPanelIn 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    .codeboy-menu-header {
+    #codeboy-floating-panel[data-side="right"] {
+      left: 96px;
+      transform: translateY(-50%);
+      transform-origin: left center;
+    }
+    #codeboy-floating-panel[data-side="left"] {
+      right: 96px;
+      transform: translateY(-50%);
+      transform-origin: right center;
+    }
+    .codeboy-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 22px;
+      padding: 0 2px 6px;
+      border-bottom: 1px solid #38254f;
+    }
+    .codeboy-panel-name {
       font-size: 9px;
       font-weight: bold;
       color: #ffb667;
-      padding: 3px 6px;
-      border-bottom: 1px solid #38254f;
-      text-align: center;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
-    .codeboy-menu-action {
+    .codeboy-panel-status {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      color: #a997bd;
+      font-size: 8px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .codeboy-panel-close {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 1px solid #4a3469;
+      background: #231936;
+      color: #b9a9cc;
+      font: 14px/14px Consolas, monospace;
+      cursor: pointer;
+    }
+    .codeboy-panel-stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 2px 5px;
+      color: #bcaacf;
+      font-size: 8px;
+      white-space: nowrap;
+    }
+    .codeboy-panel-stats strong { color: #51e4ec; font-weight: normal; }
+    .codeboy-panel-actions {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 3px;
+    }
+    .codeboy-panel-action {
       background: #231936;
       color: #ded3f0;
       border: 1px solid #4a3469;
       border-radius: 2px;
-      padding: 5px 8px;
-      font-size: 11px;
-      text-align: left;
+      min-width: 0;
+      min-height: 28px;
+      padding: 3px 2px;
+      font-size: 13px;
+      line-height: 1;
+      text-align: center;
       cursor: pointer;
       font-family: inherit;
       transition: background 0.1s, color 0.1s;
     }
-    .codeboy-menu-action:hover {
+    .codeboy-panel-action span {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: #bbaaca;
+      font-size: 7px;
+      line-height: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .codeboy-panel-action:hover, .codeboy-panel-close:hover {
       background: #3e2860;
       color: #51e4ec;
       border-color: #51e4ec;
     }
+    .codeboy-panel-action[aria-pressed="true"] {
+      background: #17333b;
+      color: #51e4ec;
+      border-color: #438990;
+    }
+    @keyframes codeboyPanelIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes codeboyPop {
       from { opacity: 0; transform: translateY(6px) scale(0.9); }
       to { opacity: 1; transform: translateY(0) scale(1); }
@@ -136,7 +215,8 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
   // 2. Build DOM
   const root = document.createElement('div');
   root.id = 'codeboy-floating-root';
-  root.title = 'Code Boy · Кликни, чтобы погладить (перетаскивай мышкой)';
+  root.title = 'Code Boy · Клик — открыть панель, перетаскивание — переместить';
+  root.setAttribute('aria-expanded', 'false');
 
   const speechEl = document.createElement('div');
   speechEl.id = 'codeboy-floating-speech';
@@ -147,22 +227,83 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
   canvas.width = 64;
   canvas.height = 64;
 
-  const menuEl = document.createElement('div');
-  menuEl.id = 'codeboy-floating-menu';
-  menuEl.style.display = 'none';
-  menuEl.innerHTML = `
-    <div class="codeboy-menu-header">Code Boy Companion</div>
-    <button class="codeboy-menu-action" data-action="pet">🐾 Погладить</button>
-    <button class="codeboy-menu-action" data-action="dance">🎵 Потанцевать</button>
-    <button class="codeboy-menu-action" data-action="vibe">⚡ Vibe Режим</button>
-    <button class="codeboy-menu-action" data-action="sleep">💤 Спать / Проснуться</button>
-    <button class="codeboy-menu-action" data-action="reset">📍 Сбросить позицию</button>
-    <button class="codeboy-menu-action" data-action="hide">❌ Скрыть</button>
-  `;
+  const panelEl = document.createElement('div');
+  panelEl.id = 'codeboy-floating-panel';
+  panelEl.style.display = 'none';
+  panelEl.setAttribute('role', 'dialog');
+  panelEl.setAttribute('aria-label', 'Code Boy controls');
+  panelEl.dataset.side = 'left';
+
+  // VS Code and compatible editors enforce Trusted Types in the workbench.
+  // Build the panel with DOM APIs so the overlay never needs unsafe innerHTML.
+  const panelHeader = document.createElement('div');
+  panelHeader.className = 'codeboy-panel-header';
+  const panelName = document.createElement('span');
+  panelName.className = 'codeboy-panel-name';
+  panelName.textContent = 'CODE BOY';
+  const panelStatus = document.createElement('span');
+  panelStatus.className = 'codeboy-panel-status';
+  panelStatus.id = 'codeboy-panel-status';
+  panelStatus.textContent = 'Готов к работе';
+  const panelClose = document.createElement('button');
+  panelClose.className = 'codeboy-panel-close';
+  panelClose.dataset.panelCommand = 'close';
+  panelClose.setAttribute('aria-label', 'Закрыть панель');
+  panelClose.title = 'Закрыть';
+  panelClose.textContent = '×';
+  panelHeader.append(panelName, panelStatus, panelClose);
+
+  const panelStats = document.createElement('div');
+  panelStats.className = 'codeboy-panel-stats';
+  panelStats.setAttribute('aria-label', 'Code Boy stats');
+  const statDefinitions = [
+    ['LV ', 'codeboy-panel-level', '1'],
+    ['♥ ', 'codeboy-panel-mood', '75'],
+    ['⚡ ', 'codeboy-panel-energy', '85'],
+    ['XP ', 'codeboy-panel-xp', '0']
+  ] as const;
+  for (const [prefix, id, value] of statDefinitions) {
+    const stat = document.createElement('span');
+    stat.append(document.createTextNode(prefix));
+    const strong = document.createElement('strong');
+    strong.id = id;
+    strong.textContent = value;
+    stat.append(strong);
+    panelStats.append(stat);
+  }
+
+  const panelActions = document.createElement('div');
+  panelActions.className = 'codeboy-panel-actions';
+  const actionDefinitions = [
+    ['pet', '🐾', 'Гладить', 'Погладить', ''],
+    ['music', '🎵', 'Музыка', 'Музыка', 'codeboy-panel-music'],
+    ['dance', '💃', 'Танец', 'Потанцевать', ''],
+    ['vibe', '⚡', 'Vibe', 'Vibe режим', 'codeboy-panel-vibe'],
+    ['sleep', '💤', 'Сон', 'Спать или проснуться', 'codeboy-panel-sleep'],
+    ['play', '🎮', 'Играть', 'Поиграть', ''],
+    ['look', '👀', 'Смотреть', 'Посмотреть вокруг', ''],
+    ['room', '🏠', 'Комната', 'Сменить комнату', ''],
+    ['settings', '⚙', 'Настройки', 'Настройки Code Boy', ''],
+    ['reset', '📍', 'Позиция', 'Сбросить позицию', ''],
+    ['hide', '✕', 'Скрыть', 'Скрыть Code Boy', '']
+  ] as const;
+  for (const [action, icon, label, title, id] of actionDefinitions) {
+    const button = document.createElement('button');
+    button.className = 'codeboy-panel-action';
+    button.dataset.action = action;
+    button.title = title;
+    if (id) button.id = id;
+    button.append(document.createTextNode(icon));
+    const caption = document.createElement('span');
+    caption.textContent = label;
+    button.append(caption);
+    panelActions.append(button);
+  }
+  panelEl.append(panelHeader, panelStats, panelActions);
 
   root.appendChild(speechEl);
   root.appendChild(canvas);
-  root.appendChild(menuEl);
+  root.appendChild(panelEl);
   document.body.appendChild(root);
 
   // 3. Keep the mascot inside the active code editor (not the sidebar/chrome).
@@ -289,11 +430,11 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     hiddenByUser = false;
     localStorage.removeItem('codeboy_floating_hidden');
     syncVisibility();
-    root.style.transform = 'scale(1.25) translateY(-8px)';
+    canvas.style.transform = 'scale(1.25) translateY(-8px)';
     setTimeout(() => {
-      root.style.transform = '';
+      canvas.style.transform = '';
     }, 220);
-    showSpeechBubble('Привет! Я тут! 🐾\nПеретаскивай меня куда хочешь!');
+    showSpeechBubble('Привет! Я тут! 🐾\nКликни по мне — откроется панель.');
   }
 
   function hideMascot() {
@@ -319,6 +460,44 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     showSpeechBubble('Вернулся в угол редактора! 📍');
   }
 
+  function positionPanel(): void {
+    if (panelEl.style.display === 'none') return;
+    const editorRect = getEditorRect();
+    const mascotRect = root.getBoundingClientRect();
+    const roomOnLeft = mascotRect.left - editorRect.left - PANEL_GAP;
+    const roomOnRight = editorRect.right - mascotRect.right - PANEL_GAP;
+    const side = roomOnLeft >= PANEL_WIDTH || roomOnLeft >= roomOnRight ? 'left' : 'right';
+    const availableWidth = Math.max(180, Math.floor(side === 'left' ? roomOnLeft : roomOnRight));
+    panelEl.dataset.side = side;
+    panelEl.style.width = `${Math.min(PANEL_WIDTH, availableWidth)}px`;
+
+    panelEl.style.top = '50%';
+    requestAnimationFrame(() => {
+      if (panelEl.style.display === 'none') return;
+      const panelRect = panelEl.getBoundingClientRect();
+      let correction = 0;
+      if (panelRect.top < editorRect.top + EDITOR_GUTTER) {
+        correction = editorRect.top + EDITOR_GUTTER - panelRect.top;
+      } else if (panelRect.bottom > editorRect.bottom - EDITOR_GUTTER) {
+        correction = editorRect.bottom - EDITOR_GUTTER - panelRect.bottom;
+      }
+      panelEl.style.top = `${MASCOT_SIZE / 2 + correction}px`;
+    });
+  }
+
+  function setPanelOpen(open: boolean): void {
+    panelEl.style.display = open ? 'block' : 'none';
+    root.classList.toggle('panel-open', open);
+    root.setAttribute('aria-expanded', String(open));
+    if (open) {
+      speechEl.style.display = 'none';
+      positionPanel();
+    }
+  }
+
+  function togglePanel(): void {
+    setPanelOpen(panelEl.style.display === 'none');
+  }
   // 4. Drag & Click logic using Pointer Events (smooth across iframes and windows)
   let isDragging = false;
   let startX = 0;
@@ -330,7 +509,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
 
   root.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0) return; // Left click only
-    if (menuEl.contains(e.target as Node)) return;
+    if (panelEl.contains(e.target as Node)) return;
 
     isDragging = true;
     hasMoved = false;
@@ -357,7 +536,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
 
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
       hasMoved = true;
-      menuEl.style.display = 'none';
+      setPanelOpen(false);
     }
 
     if (hasMoved) {
@@ -378,9 +557,8 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     if (hasMoved) {
       savePosition();
     } else {
-      // Normal click! Pet Code Boy
-      if (!menuEl.contains(e.target as Node)) {
-        triggerAction('pet');
+      if (!panelEl.contains(e.target as Node)) {
+        togglePanel();
       }
     }
   };
@@ -395,6 +573,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     layoutFrame = requestAnimationFrame(() => {
       layoutFrame = undefined;
       restorePosition();
+      positionPanel();
     });
   };
   window.addEventListener('resize', scheduleEditorReposition);
@@ -428,44 +607,45 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     workbenchObserver.observe(document.body, { childList: true, subtree: true });
   }
 
-  // Double click -> Vibe mode
-  root.addEventListener('dblclick', (e: MouseEvent) => {
-    if (menuEl.contains(e.target as Node)) return;
-    e.preventDefault();
-    triggerAction('vibe');
-  });
-
-  // Right-click context menu
+  // Keep right-click as an alternative way to open the same panel.
   root.addEventListener('contextmenu', (e: MouseEvent) => {
     e.preventDefault();
-    menuEl.style.display = menuEl.style.display === 'none' ? 'flex' : 'none';
+    if (panelEl.contains(e.target as Node)) return;
+    togglePanel();
   });
 
-  // Close context menu on outside click
+  // Close on outside click, without consuming the editor click.
   window.addEventListener('click', (e: MouseEvent) => {
     if (!root.contains(e.target as Node)) {
-      menuEl.style.display = 'none';
+      setPanelOpen(false);
     }
   });
 
-  menuEl.addEventListener('click', (e: MouseEvent) => {
+  panelEl.addEventListener('click', (e: MouseEvent) => {
+    e.stopPropagation();
+    const commandTarget = (e.target as HTMLElement).closest('[data-panel-command]');
+    if (commandTarget?.getAttribute('data-panel-command') === 'close') {
+      setPanelOpen(false);
+      return;
+    }
     const target = (e.target as HTMLElement).closest('[data-action]');
     if (!target) return;
     const action = target.getAttribute('data-action');
-    menuEl.style.display = 'none';
 
     if (action === 'reset') {
       resetPosition();
+      positionPanel();
       return;
     }
 
     if (action === 'hide') {
+      setPanelOpen(false);
       hideMascot();
       return;
     }
 
     if (action) {
-      triggerAction(action as Action);
+      void triggerAction(action);
     }
   });
 
@@ -656,6 +836,23 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     hiddenBySetting = snapshot.settings.floatingOverlay === false;
     syncVisibility();
 
+    const levelEl = document.getElementById('codeboy-panel-level');
+    const moodEl = document.getElementById('codeboy-panel-mood');
+    const energyEl = document.getElementById('codeboy-panel-energy');
+    const xpEl = document.getElementById('codeboy-panel-xp');
+    const statusEl = document.getElementById('codeboy-panel-status');
+    if (levelEl) levelEl.textContent = String(snapshot.stats.level);
+    if (moodEl) moodEl.textContent = String(Math.round(snapshot.stats.mood));
+    if (energyEl) energyEl.textContent = String(Math.round(snapshot.stats.energy));
+    if (xpEl) xpEl.textContent = `${snapshot.stats.xp}/${snapshot.nextLevelXp}`;
+    if (statusEl) statusEl.textContent = `${snapshot.state.replaceAll('_', ' ')} · ${snapshot.language.displayName}`;
+    document.getElementById('codeboy-panel-vibe')?.setAttribute('aria-pressed', String(snapshot.settings.vibeMode));
+    document.getElementById('codeboy-panel-music')?.setAttribute('aria-pressed', String(snapshot.musicPlaying));
+    const sleepButton = document.getElementById('codeboy-panel-sleep');
+    sleepButton?.setAttribute('aria-pressed', String(snapshot.state === 'SLEEPING'));
+    const sleepLabel = sleepButton?.querySelector('span');
+    if (sleepLabel) sleepLabel.textContent = snapshot.state === 'SLEEPING' ? 'Проснуться' : 'Сон';
+
     // Show speech bubble if changed
     if (snapshot.bubble && snapshot.bubble !== lastBubble) {
       lastBubble = snapshot.bubble;
@@ -674,7 +871,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     }
   }
 
-  async function triggerAction(action: Action) {
+  async function triggerAction(action: Action | string) {
     try {
       await fetch(`${activeBaseUrl}/action`, {
         method: 'POST',
@@ -684,9 +881,9 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       });
 
       // Quick visual feedback
-      root.style.transform = 'scale(1.22) translateY(-6px)';
+      canvas.style.transform = 'scale(1.22) translateY(-6px)';
       setTimeout(() => {
-        root.style.transform = '';
+        canvas.style.transform = '';
       }, 150);
     } catch {
       // ignore
@@ -764,5 +961,11 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     connectEvents();
   }
 
-  void start();
+    void start().catch(error => {
+      console.error('[Code Boy Floating] Startup failed:', error);
+    });
+  } catch (error) {
+    // The overlay is optional UI. It must never abort workbench initialization.
+    console.error('[Code Boy Floating] Initialization failed:', error);
+  }
 })();

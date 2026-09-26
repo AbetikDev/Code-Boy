@@ -201,9 +201,9 @@ export class OverlayServer implements vscode.Disposable {
       });
       req.on('end', () => {
         try {
-          const parsed = JSON.parse(body) as { action?: Action };
+          const parsed = JSON.parse(body) as { action?: unknown };
           if (parsed && typeof parsed.action === 'string') {
-            this.onAction(parsed.action as Action);
+            this.onAction(parsed.action);
           }
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: true }));

@@ -76,17 +76,9 @@ export class CodeBoyController implements vscode.Disposable {
     this.overlayServer.start()
       .then(() => this.overlayServer.broadcast(this.engine.snapshot()))
       .catch(err => this.output.appendLine('[Code Boy] Overlay server note: ' + err));
-    if (settings.floatingOverlay && !WorkbenchInjector.isPatched()) {
-      const result = WorkbenchInjector.patch(this.context.extensionPath);
-      if (result.success) {
-        void vscode.window.showInformationMessage('Code Boy is ready to float over your editor. Reload the window to show him.', 'Reload Window').then(choice => {
-          if (choice === 'Reload Window') void vscode.commands.executeCommand('workbench.action.reloadWindow');
-        });
-      } else {
-        this.output.appendLine(`[Code Boy] Floating mascot unavailable: ${result.error}`);
-      }
-    }
-
+    // Never rewrite the editor's workbench during extension activation.
+    // Native overlay injection is an explicit user action because a failed
+    // workbench patch can prevent the entire editor UI from starting.
   }
   private run(work: PromiseLike<unknown>): void {
     void Promise.resolve(work).catch(() => this.output.appendLine('A Code Boy operation could not complete. Check that VS Code settings and local storage are writable.'));
@@ -201,6 +193,8 @@ export class CodeBoyController implements vscode.Disposable {
       this.view.showStats();
     } else if (action === 'room') {
       await this.chooseRoom();
+    } else if (action === 'settings') {
+      await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:code-boy-local.code-boy');
     } else if (action === 'showOverlay') {
       this.overlayServer.sendCustomEvent('show');
     }
