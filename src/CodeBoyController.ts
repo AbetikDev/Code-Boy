@@ -109,12 +109,12 @@ export class CodeBoyController implements vscode.Disposable {
       await this.open(); this.view.showGallery();
     });
     command('enableFloatingOverlay', async () => {
-      await updateSetting('floatingOverlay', true);
       const result = WorkbenchInjector.patch(this.context.extensionPath);
       if (!result.success) {
         void vscode.window.showErrorMessage(`Code Boy: ${result.error ?? 'Could not enable floating overlay'}`);
         return;
       }
+      await updateSetting('floatingOverlay', true);
       const choice = await vscode.window.showInformationMessage(
         'Code Boy: Floating mascot overlay enabled! Reload the window to see Code Boy in the bottom-right corner.',
         'Reload Window', 'Later'
@@ -124,12 +124,12 @@ export class CodeBoyController implements vscode.Disposable {
       }
     });
     command('disableFloatingOverlay', async () => {
-      await updateSetting('floatingOverlay', false);
       const result = WorkbenchInjector.unpatch();
       if (!result.success) {
         void vscode.window.showErrorMessage(`Code Boy: ${result.error ?? 'Could not disable floating overlay'}`);
         return;
       }
+      await updateSetting('floatingOverlay', false);
       const choice = await vscode.window.showInformationMessage(
         'Code Boy: Floating mascot overlay disabled. Reload window to apply changes.',
         'Reload Window', 'Later'
@@ -138,22 +138,7 @@ export class CodeBoyController implements vscode.Disposable {
         await vscode.commands.executeCommand('workbench.action.reloadWindow');
       }
     });
-    command('toggleFloatingOverlay', async () => {
-      if (!WorkbenchInjector.isPatched()) {
-        const result = WorkbenchInjector.patch(this.context.extensionPath);
-        if (result.success) {
-          const choice = await vscode.window.showInformationMessage(
-            'Code Boy: Плавающий персонаж активирован! Перезагрузите окно, чтобы он появился в правом нижнем углу поверх редактора.',
-            'Перезагрузить окно', 'Позже'
-          );
-          if (choice === 'Перезагрузить окно') {
-            await vscode.commands.executeCommand('workbench.action.reloadWindow');
-          }
-        }
-        return;
-      }
-      this.overlayServer.sendCustomEvent('toggle');
-    });
+    command('toggleFloatingOverlay', () => this.toggleFloatingMascot());
     command('resetFloatingPosition', () => {
       this.overlayServer.sendCustomEvent('resetPosition');
     });
@@ -166,7 +151,7 @@ export class CodeBoyController implements vscode.Disposable {
     command('toggleFloatingMascot', () => this.toggleFloatingMascot());
   }
   private async toggleFloatingMascot(): Promise<void> {
-    const enabled = !readSettings().floatingOverlay;
+    const enabled = !WorkbenchInjector.isPatched();
     const result = enabled ? WorkbenchInjector.patch(this.context.extensionPath) : WorkbenchInjector.unpatch();
     if (!result.success) {
       void vscode.window.showErrorMessage(`Code Boy: ${result.error ?? 'Could not change floating mascot'}`);

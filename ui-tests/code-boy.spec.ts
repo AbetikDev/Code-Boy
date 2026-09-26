@@ -40,6 +40,9 @@ for (const width of [200, 250, 300, 400]) {
     await page.locator('#action-menu [data-panel="stats"]').click();
     await expect(page.locator('#drawer')).toBeVisible();
     await expect(page.locator('#drawer-content')).toContainText('CODING TOGETHER');
+    await expect(page.locator('#drawer-content')).toContainText('CRAFT');
+    await expect(page.locator('#drawer-content')).toContainText('PROJECT HEALTH');
+    await expect(page.locator('#drawer-content')).toContainText('TESTS');
     await page.keyboard.press('Escape');
     await expect(page.locator('#drawer')).toBeHidden();
 
@@ -55,11 +58,11 @@ for (const width of [200, 250, 300, 400]) {
 
     await page.locator('#open-contextback').click();
     await expect(page.locator('#speech')).toHaveText('ContextBack opens inside VS Code.');
-    await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'true');
-    await page.locator('#toggle-overlay').click();
     await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'false');
     await page.locator('#toggle-overlay').click();
     await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('#toggle-overlay').click();
+    await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'false');
 
     await page.screenshot({ path: `artifacts/code-boy-${width}.png`, fullPage: true });
     expect(errors).toEqual([]);
@@ -147,4 +150,3 @@ test('settings toggle in action menu', async ({ page }) => {
   await page.locator('#am-settings').click();
   await expect(page.locator('#speech')).toContainText('preview only.');
 });
-

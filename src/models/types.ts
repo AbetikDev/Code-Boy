@@ -1,36 +1,42 @@
+import type { CodingBehaviorSnapshot, CodingEditSample, DeveloperStateSnapshot, QualitySnapshot, TestStatus } from '../intelligence/types';
+
 export const CHARACTER_STATES = ['IDLE', 'CODING', 'VIBE_CODING', 'THINKING', 'HAPPY', 'VERY_HAPPY', 'SAD', 'VERY_SAD', 'TIRED', 'SLEEPING', 'LISTENING_MUSIC', 'DANCING', 'ERROR', 'SUCCESS', 'CONFUSED', 'BORED', 'AFK', 'CELEBRATING'] as const;
 export type CharacterState = typeof CHARACTER_STATES[number];
 export const ROOM_THEMES = ['DEFAULT', 'NIGHT', 'CYBER', 'FOREST', 'SPACE', 'RETRO_PC'] as const;
 export type RoomTheme = typeof ROOM_THEMES[number];
-export interface Stats { mood: number; energy: number; focus: number; boredom: number; happiness: number; xp: number; level: number; iq: number }
+export interface Stats { mood: number; energy: number; focus: number; boredom: number; happiness: number; xp: number; level: number; craft: number }
 export interface DailyStats { date: string; codingSeconds: number; filesSaved: number; errorsFixed: number; buildsCompleted: number }
 export interface Settings {
   enabled: boolean; soundEnabled: boolean; musicDetection: boolean; animations: boolean; reactions: boolean;
   idleAnimations: boolean; showDiagnosticsReaction: boolean; vibeMode: boolean; roomTheme: RoomTheme;
   animationSpeed: number; reducedMotion: boolean; floatingOverlay: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { enabled: true, soundEnabled: false, musicDetection: true, animations: true, reactions: true, idleAnimations: true, showDiagnosticsReaction: true, vibeMode: false, roomTheme: 'DEFAULT', animationSpeed: 1, reducedMotion: false, floatingOverlay: true };
+export const DEFAULT_SETTINGS: Settings = { enabled: true, soundEnabled: false, musicDetection: true, animations: true, reactions: true, idleAnimations: true, showDiagnosticsReaction: true, vibeMode: false, roomTheme: 'DEFAULT', animationSpeed: 1, reducedMotion: false, floatingOverlay: false };
 export interface LanguageProfile { id: string; displayName: string; icon: string; color: string; reactions: string[] }
-export interface SavedState { version: 1; stats: Stats; daily: DailyStats; unlockedItems: string[]; room: RoomTheme; streak: number; lastCodingDate: string; savedAt: number; deepFocusSessions: number; progression?: { date: string; xpEarned: number; cooldowns: Record<string, number>; codingRemainder: number } }
+export interface SavedState { version: 1 | 2; stats: Stats; daily: DailyStats; unlockedItems: string[]; room: RoomTheme; streak: number; lastCodingDate: string; savedAt: number; deepFocusSessions: number; progression?: { date: string; xpEarned: number; cooldowns: Record<string, number>; codingRemainder: number; craftEarned?: number } }
 export interface Snapshot {
   state: CharacterState; animation: string; stats: Stats; daily: DailyStats; unlockedItems: string[];
   room: RoomTheme; streak: number; language: LanguageProfile; bubble: string; bubbleKind: 'TOP' | 'LEFT' | 'RIGHT' | 'BOTTOM' | 'THOUGHT' | 'WARNING' | 'HAPPY';
   musicPlaying: boolean; musicStatus: string; settings: Settings; hasWorkspace: boolean; development: boolean;
   typingSpeed: number; nextLevelXp: number;
-  autoVibe: boolean; deepFocusSessions: number; iqLabel: string;
+  flowActive: boolean; deepFocusSessions: number;
+  codingBehavior: CodingBehaviorSnapshot; quality: QualitySnapshot; developerState: DeveloperStateSnapshot;
 }
 export type Action = 'pet' | 'look' | 'music' | 'dance' | 'sleep' | 'wake' | 'play' | 'vibe';
 export type ActivityEvent =
   | { type: 'typing'; characters: number; languageId: string }
-  | { type: 'editor'; languageId: string }
+  | { type: 'codingEdit'; sample: CodingEditSample; documentLines: number }
+  | { type: 'codingBehavior'; mode: Exclude<CodingBehaviorSnapshot['mode'], 'idle'>; confidence: number; largestInsertion: number; largeInsertionCount: number }
+  | { type: 'editor'; languageId: string; documentLines?: number }
   | { type: 'save'; languageId: string }
-  | { type: 'diagnostics'; errors: number; previousErrors: number }
+  | { type: 'diagnostics'; errors: number; previousErrors: number; warnings?: number }
+  | { type: 'projectHealth'; projectId?: string; redBlockers: number; openTodos: number; fixmeHacks: number; failingTests: number; tests: TestStatus; lastTestAt?: number; repeatedTestFailure?: boolean; testTransition?: 'failed' | 'passed' }
   | { type: 'taskStart'; kind: 'build' | 'test' | 'task' }
   | { type: 'taskEnd'; success: boolean; kind: 'build' | 'test' | 'task' }
   | { type: 'taskCancel' }
   | { type: 'debug'; active: boolean }
   | { type: 'terminal' }
-  | { type: 'threadStatus'; hasRedThread: boolean; topThreadFile?: string; blockerCount: number }
+  | { type: 'threadStatus'; hasRedThread: boolean; topThreadFile?: string; blockerCount: number; projectSwitch?: boolean }
   | { type: 'sessionWelcome'; topic: string; hoursAgo: number; openBlockers: number }
   | { type: 'threadResolved'; topic?: string }
   | { type: 'gitMilestone'; message: string }

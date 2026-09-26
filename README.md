@@ -33,7 +33,7 @@
   - [🤖 IBM Bob 2.0 Agentic Integration](#3--ibm-bob-20-agentic-integration)
 - [Traffic-Light Thread Detection Engine](#-traffic-light-thread-detection-engine)
 - [Cosmetic Rooms & RPG Progression](#-cosmetic-rooms--rpg-progression)
-- [Privacy & Zero-Leak Architecture](#-privacy--zero-leak-architecture)
+- [Privacy and data handling](#-privacy-and-data-handling)
 - [Available Commands](#-available-commands)
 - [Configuration Reference](#-configuration-reference)
 - [Getting Started & Local Development](#-getting-started--local-development)
@@ -61,7 +61,7 @@ Software engineers spend up to **30% of their workday** rebuilding mental models
 
 1. **ContextBack Core:** A lightweight local daemon collecting file touches, compiler diagnostics, git milestones, terminal exit codes, and inline task markers without external network leaks.
 2. **Code Boy Webview:** A 60 FPS retro pixel-art programmer that lives inside your VS Code activity bar, reacting dynamically to your typing cadence, deep focus, build errors, and music.
-3. **IBM Bob 2.0 Agentic Intelligence:** Bridges local telemetry into actionable, repo-wide diagnoses and enables **1-Click Agent Handoff** to resolve blockers autonomously.
+3. **IBM Bob 2.0 workflow:** ContextBack summarizes local project signals and copies a focused blocker prompt for the developer to review and use in Bob IDE.
 
 ---
 
@@ -94,7 +94,7 @@ flowchart TB
         subgraph CodeBoy["Code Boy Core Engine"]
             Engine["CodeBoyEngine\n(Tick loop, XP, Vitals)"]
             StateMachine["State Machine\n(Prioritized Animations)"]
-            MusicCtrl["Music Controller\n(Windows SMTC / Spotify)"]
+            MusicCtrl["Music Controller\n(Windows / Linux / macOS / Spotify)"]
         end
     end
 
@@ -104,9 +104,9 @@ flowchart TB
         ActionUI["Vitals Meters, Action Menu, Drawers"]
     end
 
-    subgraph IBMBob["IBM Bob 2.0 Agentic Partner"]
-        BobSummary["Full-Repo Session Summarization"]
-        BobHandoff["1-Click Blocker Handoff & Auto-Fix Prompt"]
+    subgraph IBMBob["IBM Bob 2.0"]
+        BobSummary["Optional Summary from Session Metadata"]
+        BobHandoff["Reviewed Blocker Prompt for Bob IDE"]
     end
 
     EditorEvents --> Collectors
@@ -168,8 +168,9 @@ sequenceDiagram
         CB->>Boy: threadStatus(hasRedThread=true)
         Boy-->>Dev: Displays alarmed emotion & error bubble
         Dev->>Boy: Click "Resolve Blocker with Bob"
-        Boy->>Bob: 1-Click Handoff: Copies formatted repo diagnostic prompt
-        Bob-->>Dev: IBM Bob Agent fixes the blocker autonomously
+        Boy->>Bob: Copy blocker context; developer reviews it in Bob IDE
+        Bob-->>Dev: Bob inspects the repository and proposes a fix
+        Dev->>Dev: Review the change and rerun the check
     end
 
     Dev->>VS: All errors resolved & tests pass
@@ -229,14 +230,13 @@ stateDiagram-v2
 
 ### 2. 🎮 Code Boy: 60 FPS Ambient Companion
 * **Flow State Reflection:** Code Boy types rapidly when you are in flow, enters calm focus with headphones on, yawns when you idle, and cheers when builds pass.
-* **Vibe Mode & Music Detection:** Automatically listens to Windows Media (SMTC) or connects to Spotify API to toggle rhythmic head-bobbing animations.
+* **Vibe Mode & Music Detection:** Detects playback with Windows SMTC, Linux MPRIS, macOS Apple Music or Spotify, or the optional Spotify API to toggle rhythmic head-bobbing animations.
 * **RPG Leveling & Rewards:** Earn experience points (XP) for consecutive coding days, clean builds, and resolving error states.
 * **Interactive UI:** Click to pet, hold for context actions (Pet, Music, Dance, Vibe, Sleep, Play, Room Picker, Stats Drawer).
 
-### 3. 🤖 IBM Bob 2.0 Agentic Integration
-* **Repo-Aware Context Synthesis:** Feeds structured operational telemetry into IBM Bob 2.0 for holistic session summaries and recommended Next Steps.
-* **1-Click Agent Handoff:** Click *Resolve Blocker with Bob* on Code Boy to automatically bundle file paths, error lines, and diagnostic traces into a high-context prompt for **IBM Bob Agent mode**.
-* **Zero Cognitive Fatigue:** Lets IBM Bob subagents tackle complex debugging while you maintain flow.
+### 3. 🤖 IBM Bob 2.0 Workflow
+* **Optional Session Summary:** ContextBack can send bounded session metadata to Bob Shell and show its summary.
+* **Reviewed Bob IDE handoff:** Click *Resolve Blocker with Bob*, review and copy the blocker summary, then paste it into Bob IDE. Bob IDE inspects the repository; rerun the check to confirm the blocker is gone.
 
 ---
 
@@ -246,7 +246,7 @@ ContextBack's deterministic heuristics classify your project's unfinished work i
 
 | Signal | Color Indicator | Triggers | Code Boy Reaction | Recommended Action |
 | :---: | :---: | :--- | :--- | :--- |
-| **RED** | 🔴 **Broken** | Failed unit tests (`exit 1`), active compiler errors, syntax breaks. | Alarmed pose, sweating, warning speech bubble. | Click *Resolve Blocker with Bob* for 1-click agent fix. |
+| **RED** | 🔴 **Broken** | Failed unit tests (`exit 1`), active compiler errors, syntax breaks. | Alarmed pose, sweating, warning speech bubble. | Review and copy the blocker prompt for Bob IDE, then verify the fix. |
 | **YELLOW**| 🟡 **In-Progress** | Uncommitted git diffs, dangling `TODO`/`FIXME` tags, open warnings. | Thoughtful expression, focused typing. | Finish edits, run test suite, clean up tasks. |
 | **GREEN** | 🟢 **Ready** | Zero compiler errors, all tests passing, clean git tree. | Happy smile, energetic idle, celebratory dance. | Safe to commit, push, create PR, or switch branches. |
 
@@ -267,16 +267,16 @@ As you code and resolve blockers, Code Boy gains XP, levels up, and unlocks retr
 
 ---
 
-## 🔒 Privacy & Zero-Leak Architecture
+## 🔒 Privacy and data handling
 
-ContextBack was engineered with a strict **Privacy-by-Design** standard:
+The new developer state layer keeps numeric edit counts and project health signals. It does not retain source text or file paths. ContextBack has its own local session records and optional diff snapshots:
 
 ```
 [ Developer Workspace ]
    │
    ├── ✅ ALLOWED: File paths, line counts, error codes, event timestamps
    │
-   └── ❌ BLOCKED & STRIPPED:
+   └── ❌ EXCLUDED FROM DEVELOPER STATE:
        ├── Source code bodies
        ├── Environment files (.env, .env.*)
        ├── Secret directories (**/secrets/**, **/credentials/**)
@@ -285,7 +285,7 @@ ContextBack was engineered with a strict **Privacy-by-Design** standard:
 ```
 
 * **Local JSON Database:** All records persist strictly on your machine at `~/.contextback/context.json`.
-* **Zero Cloud Exfiltration:** No tracking or telemetry data is ever sent to external cloud servers without your explicit AI provider configuration.
+* **Optional external calls:** ContextBack can send bounded diff samples to IBM Bob Shell when its review is enabled. Spotify API detection requests playback status with a user-supplied token. The developer state layer itself stays local.
 
 ---
 
@@ -329,7 +329,7 @@ Customize both extensions via VS Code **Settings** (`Ctrl+,`) or `settings.json`
   "codeBoy.enabled": true,                  // Enable companion and activity tracking
   "codeBoy.vibeMode": false,                // Force vibe coding headphones mode
   "codeBoy.soundEnabled": false,            // Subtle 8-bit interaction sound effects
-  "codeBoy.musicDetection": true,           // Track Windows Media (SMTC) or Spotify
+  "codeBoy.musicDetection": true,           // Detect OS player status or optional Spotify API
   "codeBoy.roomTheme": "DEFAULT",           // Active cosmetic room theme
   "codeBoy.animations": true,               // Enable sprite animations
   "codeBoy.reducedMotion": false,           // Honor accessibility & reduced motion
@@ -402,7 +402,7 @@ Use the included build script or run `vsce`:
 
 # Or manual packaging:
 npm run package
-# Result: code-boy-1.0.0.vsix
+# Result: code-boy-1.0.10.vsix
 ```
 
 ---
@@ -431,7 +431,7 @@ npm run test:host
 ✔ ThreadDetector flags broken diagnostics as RED and open TODOs as YELLOW
 ✔ SessionAnalyzer synthesizes completed tasks, open blockers, and nextStep
 ✔ End-to-end ContextBack core lifecycle: start -> work -> error -> resolve -> end
-✔ ContextBoyBridge dispatches blocker context to IBM Bob agent prompt
+✔ ContextBoyBridge prepares blocker context for IBM Bob IDE
 ...
 ℹ pass 40, fail 0 (238ms)
 ```
@@ -469,7 +469,7 @@ Code-Boy/
 │   │   ├── analysis/           # Traffic-light ThreadDetector & SessionAnalyzer
 │   │   ├── repositories/       # Local JSON repositories
 │   │   └── ui/                 # Welcome Back & Dashboard providers
-│   ├── music/                  # Windows SMTC & Spotify controller
+│   ├── music/                  # Windows SMTC, Linux MPRIS, macOS and Spotify controller
 │   └── vscode/                 # VS Code editor and diagnostics listeners
 ├── test/                       # Unit and integration test suites
 ├── webview/                    # Client-side 60 FPS Canvas & Webview Engine

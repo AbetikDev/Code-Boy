@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MoodEngine, INITIAL_STATS, clamp, iqLabel } from '../src/core/MoodEngine';
+import { MoodEngine, INITIAL_STATS, clamp } from '../src/core/MoodEngine';
 import { StateMachine } from '../src/core/StateMachine';
 import { ActivityTracker } from '../src/core/ActivityTracker';
 import { ProgressionSystem, xpForLevel, validDate, localDate, emptyDaily, UNLOCKS } from '../src/core/ProgressionSystem';
@@ -13,7 +13,7 @@ function freshStats(): Stats {
   return { ...INITIAL_STATS };
 }
 
-// ─── 1. CLAMP & IQLAB ────────────────────────────────────────────────────────
+// ─── 1. CLAMP ────────────────────────────────────────────────────────────────
 
 test('clamp enforces default 0–100 bounds and handles non-finite values', () => {
   assert.equal(clamp(50), 50);
@@ -24,21 +24,6 @@ test('clamp enforces default 0–100 bounds and handles non-finite values', () =
   assert.equal(clamp(NaN), 0);           // non-finite → min
   assert.equal(clamp(Infinity), 0);      // non-finite → min (isFinite(Infinity) is false)
   assert.equal(clamp(-Infinity), 0);
-});
-
-test('iqLabel maps numeric IQ to the correct tier label', () => {
-  assert.equal(iqLabel(100), 'BIG BRAIN');
-  assert.equal(iqLabel(96), 'BIG BRAIN');
-  assert.equal(iqLabel(95), 'GALAXY BRAIN');
-  assert.equal(iqLabel(88), 'GALAXY BRAIN');
-  assert.equal(iqLabel(87), 'SENIOR DEV');
-  assert.equal(iqLabel(76), 'SENIOR DEV');
-  assert.equal(iqLabel(75), 'JUNIOR DEV');
-  assert.equal(iqLabel(60), 'JUNIOR DEV');
-  assert.equal(iqLabel(59), 'INTERN MODE');
-  assert.equal(iqLabel(40), 'INTERN MODE');
-  assert.equal(iqLabel(39), 'RUBBER DUCK');
-  assert.equal(iqLabel(0), 'RUBBER DUCK');
 });
 
 // ─── 2. MOOD ENGINE ──────────────────────────────────────────────────────────
@@ -53,16 +38,14 @@ test('MoodEngine.advance restores energy and reduces boredom while sleeping', ()
   assert.ok(engine.stats.boredom < 50, 'boredom falls when sleeping');
 });
 
-test('MoodEngine.advance raises focus and mood when coding, deep focus raises IQ', () => {
+test('MoodEngine.advance raises focus and reduces boredom when coding', () => {
   const stats = freshStats();
   stats.focus = 10; stats.boredom = 80;
-  stats.iq = 50;  // start below max so there's room to rise
   const engine = new MoodEngine(stats);
-  const iqBefore = engine.stats.iq;
   engine.advance(60, 'CODING', true);
   assert.ok(engine.stats.focus > 10, 'focus rises while coding');
   assert.ok(engine.stats.boredom < 80, 'boredom falls while coding');
-  assert.ok(engine.stats.iq > iqBefore, 'IQ rises with deep focus during coding');
+  assert.equal(engine.stats.craft, 0, 'Craft is awarded for verified actions, not elapsed time');
 });
 
 test('MoodEngine.advance applies vibe bonuses for mood and happiness', () => {
@@ -75,18 +58,18 @@ test('MoodEngine.advance applies vibe bonuses for mood and happiness', () => {
   assert.ok(engine.stats.happiness > happinessBefore, 'happiness rises in vibe mode');
 });
 
-test('MoodEngine.advance reduces IQ during AFK and BORED states', () => {
+test('MoodEngine does not penalize Craft during AFK and BORED states', () => {
   const stats = freshStats();
-  stats.iq = 50;
+  stats.craft = 50;
   const engine = new MoodEngine(stats);
   engine.advance(60, 'AFK', false);
-  assert.ok(engine.stats.iq < 50, 'IQ drops when AFK');
+  assert.equal(engine.stats.craft, 50);
 
   const stats2 = freshStats();
-  stats2.iq = 50;
+  stats2.craft = 50;
   const engine2 = new MoodEngine(stats2);
   engine2.advance(60, 'BORED', false);
-  assert.ok(engine2.stats.iq < 50, 'IQ drops when BORED');
+  assert.equal(engine2.stats.craft, 50);
 });
 
 test('MoodEngine clamps to 0–100 after each advance and handles extreme inputs', () => {

@@ -28,6 +28,7 @@ export function xpForLevel(level: number): number { return 50 * Math.pow(Math.ma
 
 export class ProgressionSystem {
   static readonly DAILY_XP_CAP = 1_200;
+  static readonly DAILY_CRAFT_CAP = 20;
   daily: DailyStats;
   streak: number;
   lastCodingDate: string;
@@ -38,11 +39,12 @@ export class ProgressionSystem {
     this.daily = saved?.daily.date === today ? { ...saved.daily } : emptyDaily(today);
     this.streak = saved?.streak ?? 0;
     this.lastCodingDate = saved?.lastCodingDate ?? '';
-    this.ledger = { date: today, xpEarned: 0, cooldowns: {}, codingRemainder: 0 };
+    this.ledger = { date: today, xpEarned: 0, cooldowns: {}, codingRemainder: 0, craftEarned: 0 };
     const stored = saved?.progression;
     if (stored?.date === today) {
       this.ledger.xpEarned = clamp(stored.xpEarned, 0, ProgressionSystem.DAILY_XP_CAP);
       this.ledger.codingRemainder = clamp(stored.codingRemainder, 0, 29.999);
+      this.ledger.craftEarned = clamp(stored.craftEarned ?? 0, 0, ProgressionSystem.DAILY_CRAFT_CAP);
     }
     if (stored?.cooldowns && typeof stored.cooldowns === 'object') {
       for (const key of ['save', 'build', 'fix'] as const) {
@@ -57,7 +59,7 @@ export class ProgressionSystem {
   rollover(now: number): void {
     const date = localDate(now);
     if (this.daily.date !== date) { this.daily = emptyDaily(date); }
-    if (this.ledger.date !== date) { this.ledger = { date, xpEarned: 0, cooldowns: this.ledger.cooldowns, codingRemainder: 0 }; }
+    if (this.ledger.date !== date) { this.ledger = { date, xpEarned: 0, cooldowns: this.ledger.cooldowns, codingRemainder: 0, craftEarned: 0 }; }
     const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
     if (this.lastCodingDate && this.lastCodingDate !== date && this.lastCodingDate !== localDate(yesterday.getTime())) { this.streak = 0; }
   }
@@ -83,6 +85,15 @@ export class ProgressionSystem {
   save(now: number): void { this.rollover(now); this.daily.filesSaved = Math.min(1_000_000, this.daily.filesSaved + 1); this.award('save', now); }
   fix(count: number, now: number): void { this.rollover(now); this.daily.errorsFixed = Math.min(1_000_000, this.daily.errorsFixed + Math.floor(clamp(count, 0, 10_000))); this.award('fix', now); }
   build(now: number): void { this.rollover(now); this.daily.buildsCompleted = Math.min(1_000_000, this.daily.buildsCompleted + 1); this.award('build', now); }
+
+  /** Craft is a small, capped game reward for observed manual iteration. */
+  awardCraft(points: number, now: number): number {
+    this.rollover(now);
+    const amount = Math.min(Math.max(0, Math.floor(points)), ProgressionSystem.DAILY_CRAFT_CAP - (this.ledger.craftEarned ?? 0), 100 - this.stats.craft);
+    this.stats.craft += amount;
+    this.ledger.craftEarned = (this.ledger.craftEarned ?? 0) + amount;
+    return amount;
+  }
 
   award(kind: Reward, now: number): number {
     this.rollover(now);

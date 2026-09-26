@@ -1,20 +1,17 @@
 # Verification report
 
-Verified on 2026-09-26 with TypeScript type checking, Node's built-in test runner, Playwright webview tests, and a VS Code extension-host smoke test. The Node suite includes one regression test for automatic sleep with a red blocker.
+Verified on 2026-09-26 on Linux. The Developer Intelligence Layer is included in the `code-boy-1.0.10.vsix` build.
 
-| Command | Scope | Latest result |
-| --- | --- | --- |
-| `npm run check` | Extension and webview TypeScript | Passed |
-| `npm test` | Core, ContextBack, bridge, asset, and message routing tests | 217 passed, 0 failed |
-| `npx playwright test` | Browser webview tests | 9 passed, 0 failed |
-| `npm run test:host` | VS Code extension host smoke test | Passed on VS Code 1.139.1 |
+| Command | Result |
+| --- | --- |
+| `npm run check` | Passed: extension and webview TypeScript |
+| `npm test` | 236 passed, 0 failed: domain, intelligence, ContextBack, bridge, music parser, migration, and persistence tests |
+| `npm run test:webview` | 9 passed, 0 failed after rebuilding the webview bundle |
+| `npm run test:host` | Passed on VS Code 1.139.1: activation, navigation, editing, diagnostics, and commands |
+| `npm run package` | Passed: `code-boy-1.0.10.vsix`, 225 files, 436.35 KB |
 
-The Node tests cover blocker identity and resolution, warning-only diagnostics, failed test reruns, Code Boy reactions, session repositories, local persistence, and webview message validation. The Playwright suite covers the canvas and interactive webview.
+The Linux MPRIS implementation was exercised through parser tests and a local session bus query. No MPRIS player was active in this environment, so live playback detection remains unverified. macOS Apple Music and Spotify have platform script checks; playback on a Mac remains unverified. A Windows playback and VSIX smoke test still needs a Windows machine.
 
-## Limits
+The extension-host Bob Shell check found the ignored local `.env` key and resolved the npm-installed CLI outside `PATH`. An authenticated read-only `bob run` returned a session summary. The key and response content were not printed or packaged. The existing `bob_sessions/` images document prior Bob IDE test tasks; a new end-to-end blocker handoff and verification recording has not yet been captured.
 
-- The `bob` command is present in this development environment, but this run did not exercise an authenticated live `bob run` summary. The extension falls back to its local summary if Bob is unavailable.
-- IBM Bob credentials can be loaded from the ignored workspace `.env` as `BOB_API_KEY` or inherited from the VS Code process environment; the actual key is not included in the VSIX or repository.
-- The current suite does not exercise a real Bob IDE blocker-fix session. The blocker handoff is a clipboard workflow and requires a person to paste into Bob.
-- No current code coverage percentage is claimed. The previous percentage in this document was not remeasured after bridge work.
-- Multiple simultaneous VS Code windows remain a separate integration surface from these tests.
+The public event page lists September 25–27, 2026. It does not expose the exact account-specific submission closing time; verify that time in the registered lablab.ai account before submitting.

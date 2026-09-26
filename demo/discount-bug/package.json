@@ -1,0 +1,5 @@
+{
+  "name": "code-boy-discount-demo",
+  "private": true,
+  "scripts": { "test": "node --test test/*.test.cjs" }
+}

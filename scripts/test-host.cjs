@@ -1,4 +1,5 @@
 const path = require('node:path');
+const os = require('node:os');
 const fs = require('node:fs/promises');
 const { runTests } = require('@vscode/test-electron');
 (async () => {
@@ -6,7 +7,7 @@ const { runTests } = require('@vscode/test-electron');
   // inherited a Node-mode setting from the surrounding environment.
   delete process.env.ELECTRON_RUN_AS_NODE;
   const root = path.resolve(__dirname, '..');
-  const workspace = path.join(root, '.vscode-test', 'workspace');
+  const workspace = path.join(os.tmpdir(), 'code-boy-host-workspace');
   await fs.mkdir(workspace, { recursive: true });
   await runTests({
     ...(process.env.VSCODE_EXECUTABLE ? { vscodeExecutablePath: process.env.VSCODE_EXECUTABLE } : {}),

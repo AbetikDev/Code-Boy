@@ -137,6 +137,18 @@ export interface CBOpenThread {
   todoCount: number;
 }
 
+/** Read-only, source-free project signals consumed by Code Boy. */
+export interface CBHealthSignals {
+  projectId?: string;
+  threads: CBOpenThread[];
+  openTodos: number;
+  fixmeHacks: number;
+  failingTests: number;
+  tests: 'unknown' | 'passing' | 'stale' | 'failing';
+  lastTestAt?: number;
+  latestTestRepeatedFailure: boolean;
+}
+
 export interface CBWelcomeData {
   project: CBProject;
   branch: CBBranch;

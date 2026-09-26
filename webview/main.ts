@@ -222,8 +222,8 @@ function update(next: Snapshot): void {
   // Update vibe dot indicator in compact header
   const vibeDot = document.getElementById('vibe-dot');
   if (vibeDot) {
-    vibeDot.classList.toggle('active', vibe || next.autoVibe);
-    vibeDot.title = next.autoVibe ? 'Flow state AUTO' : vibe ? 'Vibe mode ON' : 'Vibe mode';
+    vibeDot.classList.toggle('active', vibe || next.flowActive);
+    vibeDot.title = next.flowActive ? 'Flow state' : vibe ? 'Vibe mode ON' : 'Vibe mode';
   }
   // Disable all action buttons when companion is paused
   document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => { button.disabled = !next.settings.enabled; });
@@ -286,20 +286,13 @@ function statRow(label: string, value: number, type = ''): string {
   return `<div class="stat-row ${type}"><span>${label}</span><meter min="0" max="100" value="${Math.round(value)}" aria-label="${label}"></meter><strong>${Math.round(value)}</strong></div>`;
 }
 
-function iqDescription(iq: number): string {
-  if (iq >= 96) return 'Peak performance. You\'re in the zone.';
-  if (iq >= 88) return 'Sharp and focused. Keep the streak going.';
-  if (iq >= 76) return 'Solid session. Deep work is paying off.';
-  if (iq >= 60) return 'Warming up. More deep focus = higher IQ.';
-  if (iq >= 40) return 'Needs more flow sessions. Step away from TikTok.';
-  return 'Take a break. Rubber duck mode activated.';
-}
-
 function renderStats(): void {
   if (!snapshot) { return; }
   const { stats, daily } = snapshot;
-  const iq = Math.round(stats.iq);
-  const deepSessions = snapshot.deepFocusSessions;
+  const craft = Math.round(stats.craft);
+  const quality = snapshot.quality;
+  const coding = snapshot.codingBehavior.mode.replace('-', ' ');
+  const tests = quality.tests === 'stale' ? 'STALE' : quality.tests.toUpperCase();
   $('drawer-content').innerHTML = `
     <div class="stats-hero">${icon('level')}<span>LEVEL <strong>${String(stats.level).padStart(2, '0')}</strong></span><div><strong>${stats.xp} XP</strong><span>A LITTLE MORE EVERY DAY</span></div></div>
 
@@ -312,20 +305,22 @@ function renderStats(): void {
     </div>
 
     <div class="iq-section">
-      <div class="section-heading"><h3>IQ SYSTEM</h3><span>BRAIN POWER</span></div>
-      <div class="iq-card" aria-label="IQ score ${iq}">
+      <div class="section-heading"><h3>DEVELOPER STATE</h3><span>THIS PROJECT</span></div>
+      <div class="iq-card" aria-label="Craft score ${craft}">
         <div class="iq-left">
-          <span class="iq-value">${iq}</span>
-          <span class="iq-label">${snapshot.iqLabel}</span>
+          <span class="iq-value">${craft}</span>
+          <span class="iq-label">CRAFT</span>
         </div>
         <div class="iq-right">
-          <div class="iq-bar-wrap"><meter min="0" max="100" value="${iq}" aria-label="IQ meter"></meter></div>
-          <p class="iq-desc">${iqDescription(iq)}<br>Rises during deep focus. Falls during AFK.</p>
+          <div class="iq-bar-wrap"><meter min="0" max="100" value="${craft}" aria-label="Craft meter"></meter></div>
+          <p class="iq-desc">Earned through steady edits and verified fixes.</p>
         </div>
       </div>
-      <div class="deep-focus-row">
-        <div><span class="deep-focus-count">${deepSessions}</span></div>
-        <div style="text-align:right"><span class="deep-focus-label">DEEP FOCUS SESSIONS<br>THIS DEVICE</span></div>
+      <div class="intelligence-rows">
+        <div><span>CODING</span><strong>${escapeHtml(coding.toUpperCase())}</strong></div>
+        <div><span>PROJECT HEALTH</span><strong>${quality.status.toUpperCase()}${quality.score === null ? '' : ` · ${quality.score}`}</strong></div>
+        <div><span>TESTS</span><strong>${tests}</strong></div>
+        <div><span>MUSIC</span><strong>${snapshot.musicPlaying ? 'PLAYING' : escapeHtml(snapshot.musicStatus)}</strong></div>
       </div>
     </div>
 
@@ -338,7 +333,7 @@ function renderStats(): void {
     </div>
 
     <p class="streak-note">${icon('coffee')} ${snapshot.streak} DAY${snapshot.streak === 1 ? '' : 'S'} OF LITTLE ADVENTURES</p>
-    <p class="quiet-note">Saved on this device. Your code and filenames stay yours.</p>
+    <p class="quiet-note">Developer state stores edit counts and project signals. ContextBack reviews local diff snapshots separately when enabled.</p>
 
     <div class="section-heading"><h3>COLLECTED</h3><span>${snapshot.unlockedItems.length} ITEMS</span></div>
     <div class="collectibles">${snapshot.unlockedItems.length ? snapshot.unlockedItems.map(item => `<span class="collectible">${escapeHtml(item.replaceAll('_', ' '))}</span>`).join('') : '<p class="quiet-note">Your first coffee mug unlocks at level 2.</p>'}</div>

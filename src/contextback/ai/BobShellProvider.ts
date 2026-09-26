@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as os from 'node:os';
 import { spawn } from 'node:child_process';
 import type { CBSessionAnalysis } from '../types';
 import type { AIProvider, QualityAssessment } from './AIProvider';
@@ -12,6 +13,22 @@ export function parseQualityResponse(content: string): QualityAssessment | null 
     if (!parsed.findings.every(f => typeof f === 'string')) return null;
     return { score: parsed.score!, rationale: parsed.rationale.trim().slice(0, 400), findings: parsed.findings.slice(0, 3).map(f => f.slice(0, 240)) };
   } catch { return null; }
+}
+
+/** VS Code launched from a desktop icon may not inherit the user's npm bin PATH. */
+export function resolveBobCommand(): string {
+  if (process.platform === 'win32') return 'bob.cmd';
+  const executable = 'bob';
+  const pathDirs = (process.env['PATH'] ?? '').split(path.delimiter);
+  for (const directory of pathDirs) {
+    if (directory && fs.existsSync(path.join(directory, executable))) return path.join(directory, executable);
+  }
+  const prefixes = [process.env['npm_config_prefix'], process.env['NPM_CONFIG_PREFIX'],
+    path.join(os.homedir(), '.local', 'npm'), path.join(os.homedir(), '.npm-global')];
+  for (const prefix of prefixes) {
+    if (prefix && fs.existsSync(path.join(prefix, 'bin', executable))) return path.join(prefix, 'bin', executable);
+  }
+  return executable;
 }
 
 /** Uses IBM Bob Shell's documented non-interactive JSON output. */
@@ -55,7 +72,7 @@ export class BobShellProvider implements AIProvider {
         const bobArgs = ['run', '--format', 'json', '--mode', 'ask', '--max-turns', '1', '--max-cost', '0.10'];
         // npm installs Windows command shims as .cmd files, which CreateProcess
         // cannot execute directly. Route the fixed CLI arguments through cmd.exe.
-        const command = process.platform === 'win32' ? 'cmd.exe' : 'bob';
+        const command = process.platform === 'win32' ? 'cmd.exe' : resolveBobCommand();
         const args = process.platform === 'win32'
           ? ['/d', '/s', '/c', 'bob.cmd', ...bobArgs]
           : bobArgs;

@@ -10,6 +10,7 @@ node_modules/**
 src/**
 webview/**
 test/**
+demo/**
 scripts/**
 artifacts/**
 assets/concepts/**

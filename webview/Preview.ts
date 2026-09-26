@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS } from '../src/models/types';
 import type { AssetManifest, ClientMessage, HostMessage, Snapshot } from '../src/models/types';
+import type { CodingBehaviorSnapshot, QualitySnapshot } from '../src/intelligence/types';
 
 /** Explicit browser-only fixture. This code is never selected inside VS Code. */
 export async function startPreview(receive: (message: HostMessage) => void): Promise<(message: ClientMessage) => void> {
@@ -7,14 +8,18 @@ export async function startPreview(receive: (message: HostMessage) => void): Pro
   if (!response.ok) { throw new Error('Serve the repository root to load preview assets.'); }
   const manifest = await response.json() as AssetManifest;
   for (const section of [manifest.character, manifest.room, manifest.icons, manifest.effects]) { for (const asset of Object.values(section)) { asset.src = `/${asset.src}`; } }
+  const behavior: CodingBehaviorSnapshot = { mode: 'idle', windowStart: 0, observedAt: 0, lastEditAt: null, typedChars: 0, insertedChars: 0, deletedChars: 0, largestInsertion: 0, largestInsertionLines: 0, editCount: 0, smallEditCount: 0, largeInsertionCount: 0, assistedRatio: 0, confidence: 0 };
+  const quality: QualitySnapshot = { status: 'healthy', score: 95, correctness: 100, maintainability: 80, testing: null, trend: 'steady', diagnosticsErrors: 0, diagnosticsWarnings: 0, failingTests: 0, redBlockers: 0, unmatchedBlockers: 0, openTodos: 10, fixmeHacks: 0, largeFileCount: 0, buildFailed: false, tests: 'unknown', measuredAt: 0 };
   let snapshot: Snapshot = {
-    state: 'IDLE', animation: 'idle', stats: { mood: 88, happiness: 92, energy: 76, focus: 84, boredom: 12, xp: 2080, level: 7, iq: 78 },
+    state: 'IDLE', animation: 'idle', stats: { mood: 88, happiness: 92, energy: 76, focus: 84, boredom: 12, xp: 2080, level: 7, craft: 24 },
     daily: { date: new Date().toISOString().slice(0, 10), codingSeconds: 5640, filesSaved: 24, errorsFixed: 8, buildsCompleted: 3 },
     unlockedItems: ['coffee_mug', 'poster', 'headphones', 'new_desk'], room: 'DEFAULT', streak: 5,
     language: { id: 'typescript', displayName: 'TypeScript', icon: 'typescript', color: '#3b82f6', reactions: ['TypeScript time.'] },
     bubble: "let's make something.", bubbleKind: 'TOP', musicPlaying: false, musicStatus: 'Manual music is ready.',
     settings: { ...DEFAULT_SETTINGS }, hasWorkspace: true, development: true, typingSpeed: 0, nextLevelXp: 2450,
-    autoVibe: false, deepFocusSessions: 3, iqLabel: 'SENIOR DEV',
+    flowActive: false, deepFocusSessions: 3,
+    codingBehavior: behavior, quality,
+    developerState: { behavior, quality, musicPlaying: false, musicStatus: 'Manual music is ready.', tests: quality.tests, redBlockers: 0, observedAt: 0 },
   };
   let returnTimer: ReturnType<typeof setTimeout> | undefined;
   const emit = (): void => receive({ type: 'snapshot', snapshot: structuredClone(snapshot) });

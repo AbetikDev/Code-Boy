@@ -233,3 +233,7 @@ body.vscode-high-contrast,body.vscode-high-contrast-light{--bg:var(--vscode-edit
 .overlay-switch span { width: 11px; height: 11px; margin-left: auto; background: #b8fff1; box-shadow: 1px 1px 0 #102e30; }
 .overlay-link[aria-pressed="false"] .overlay-switch { border-color: #66596f; background: #302b39; }
 .overlay-link[aria-pressed="false"] .overlay-switch span { margin-left: 0; background: #91849b; }
+.intelligence-rows { display: grid; gap: 5px; margin-top: 9px; }
+.intelligence-rows > div { display: flex; justify-content: space-between; gap: 8px; padding: 5px 7px; border: 1px solid #59456f; background: #21182e; font-size: 8px; }
+.intelligence-rows span { color: #b9a8cb; white-space: nowrap; }
+.intelligence-rows strong { color: #e9dcfa; text-align: right; overflow-wrap: anywhere; }

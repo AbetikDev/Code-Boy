@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import type { CBSettings, CBDashboardData, CBWelcomeData, CBOpenThread, CBSidebarData, CBQualityCacheEntry } from './types';
+import type { CBSettings, CBDashboardData, CBWelcomeData, CBOpenThread, CBSidebarData, CBQualityCacheEntry, CBHealthSignals } from './types';
 import { DEFAULT_CB_SETTINGS } from './types';
 import { Database } from './Database';
 import { ProjectRepository } from './repositories/ProjectRepository';
@@ -13,7 +13,7 @@ import { FileActivityRepository } from './repositories/FileActivityRepository';
 import { ProjectManager } from './core/ProjectManager';
 import { SessionManager } from './core/SessionManager';
 import { EventBus, type CBEvents } from './core/EventBus';
-import { failedTestThreads } from './core/TestCommands';
+import { failedTestThreads, testCommandKey } from './core/TestCommands';
 import { FileCollector } from './collectors/FileCollector';
 import { GitCollector } from './collectors/GitCollector';
 import { TerminalCollector } from './collectors/TerminalCollector';
@@ -292,6 +292,45 @@ export class ContextBackController implements vscode.Disposable {
       });
     }
     return threads.sort((a, b) => b.unfinishedScore - a.unfinishedScore);
+  }
+
+  async getHealthSignals(): Promise<CBHealthSignals> {
+    const project = this.projectMgr.current;
+    if (!project) return { threads: [], openTodos: 0, fixmeHacks: 0, failingTests: 0,
+      tests: 'unknown', latestTestRepeatedFailure: false };
+    const threads = await this.getTopThreads();
+    const todos = this.settings.trackTodos ? this.db.get('todos').filter(todo =>
+      todo.projectId === project.id && todo.status === 'open') : [];
+    const sessionIds = new Set(this.sessionRepo.getForProject(project.id).map(session => session.id));
+    const events = this.settings.trackTerminalCommands ? this.db.get('events')
+      .filter(event => sessionIds.has(event.sessionId) && event.type === 'terminal_command')
+      .sort((a, b) => b.timestamp - a.timestamp) : [];
+    const latest = new Map<string, { failed: boolean; at: number; failureStreak: number; closed: boolean }>();
+    for (const event of events) {
+      const command = event.data['command'];
+      const exitCode = event.data['exitCode'];
+      if (typeof command !== 'string' || typeof exitCode !== 'number') continue;
+      const key = testCommandKey(command);
+      if (!key) continue;
+      const current = latest.get(key);
+      if (!current) {
+        latest.set(key, { failed: exitCode !== 0, at: event.timestamp,
+          failureStreak: exitCode !== 0 ? 1 : 0, closed: exitCode === 0 });
+      } else if (!current.closed) {
+        if (exitCode === 0) current.closed = true;
+        else current.failureStreak++;
+      }
+    }
+    const testRuns = [...latest.values()];
+    const mostRecentTest = testRuns.sort((a, b) => b.at - a.at)[0];
+    const freshTests = testRuns.filter(test => Date.now() - test.at <= 24 * 60 * 60_000);
+    const stale = testRuns.length > 0 && freshTests.length === 0;
+    const failingTests = freshTests.filter(test => test.failed).length;
+    return { projectId: project.id, threads, openTodos: todos.length,
+      fixmeHacks: todos.filter(todo => todo.tag === 'FIXME' || todo.tag === 'HACK').length,
+      failingTests, tests: testRuns.length === 0 ? 'unknown' : stale ? 'stale' : failingTests > 0 ? 'failing' : 'passing',
+      lastTestAt: mostRecentTest?.at,
+      latestTestRepeatedFailure: Boolean(!stale && mostRecentTest?.failed && mostRecentTest.failureStreak >= 2) };
   }
 
   private scheduleSnapshot(): void {

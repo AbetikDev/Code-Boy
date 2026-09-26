@@ -10,9 +10,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-1.0.2-8055df?style=for-the-badge" alt="Version 1.0.2" />
+  <img src="https://img.shields.io/badge/Version-1.0.10-8055df?style=for-the-badge" alt="Version 1.0.10" />
   <img src="https://img.shields.io/badge/VS%20Code-%5E1.96.0-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="VS Code ^1.96.0" />
-  <img src="https://img.shields.io/badge/100%25-Local%20%26%20Private-10B981?style=for-the-badge" alt="Local & Private" />
+  <img src="https://img.shields.io/badge/Developer%20State-Metadata%20Only-10B981?style=for-the-badge" alt="Developer state uses metadata" />
   <img src="https://img.shields.io/badge/Zero%20Config-Instant%20Play-F59E0B?style=for-the-badge" alt="Instant Play" />
 </p>
 
@@ -30,7 +30,7 @@ He observes your active coding sessions in real-time and reacts to your editor a
 - **He celebrates with confetti** when builds pass and bugs are resolved.
 - **He falls asleep peacefully** when you step away for a break or call it a night.
 
-Everything runs **100% offline and locally**. No code, prompts, or personal data ever leave your machine.
+The new developer state layer uses only edit counts and project signals. ContextBack stores local session records and optional local diff snapshots; an enabled Bob Shell review can send bounded samples to IBM Bob. Spotify API detection makes a playback-status request when connected.
 
 ---
 
@@ -71,7 +71,9 @@ Personalize Code Boy's workspace backdrop as you level up:
 
 ### 🎵 4. Ambient Music Sync
 - **Windows Media (SMTC)**: Automatically detects whatever audio is playing on your PC (Spotify, browser, local players) without any configuration.
-- **Spotify Integration**: Optional direct account link via the command palette to display track info.
+- **Linux MPRIS**: Detects playback from compatible media players.
+- **macOS Apple Music and Spotify**: Reads player state with system Automation access.
+- **Spotify Integration**: Optional playback detection through a supplied access token; no track history is stored.
 - Code Boy slips on his headphones, bobs along to the beat, and floats animated music notes!
 
 ### 🧭 5. ContextBack: Instant Session Recovery
@@ -96,10 +98,10 @@ Code Boy includes **ContextBack**, an intelligent local workspace memory assista
 If you have downloaded the `.vsix` file directly:
 1. In VS Code, open the Extensions panel (`Ctrl+Shift+X`).
 2. Click the `...` (Views and More Actions) menu in the top right corner.
-3. Select **Install from VSIX...** and choose your `code-boy-1.0.0.vsix` file.
+3. Select **Install from VSIX...** and choose your `code-boy-1.0.10.vsix` file.
 *Alternatively, install via terminal:*
 ```bash
-code --install-extension code-boy-1.0.0.vsix
+code --install-extension code-boy-1.0.10.vsix
 ```
 
 ---
@@ -109,7 +111,7 @@ code --install-extension code-boy-1.0.0.vsix
 1. **Locate Code Boy**:
    - Click the **Code Boy** icon in the left Activity Bar.
    - Click **ContextBack** below his room to see yesterday's work and code scans. Use **Back to Code Boy** to return.
-   - Floating Code Boy is on by default. Use **Floating Code Boy** below the room to turn him on or off; reload the window when prompted.
+   - The editor overlay is off until you enable it from **Floating Code Boy** below the room. Enabling it explicitly patches the VS Code workbench and asks you to reload; the normal sidebar companion works without this overlay.
 2. **Start Coding**:
    - Open any file and type. Code Boy automatically wakes up and mirrors your activity!
 3. **Interact with Code Boy**:
@@ -159,8 +161,9 @@ Open VS Code Settings (`Ctrl+,` or `Cmd+,`) and search for `Code Boy` to customi
 
 ## 🔒 Privacy & Performance
 
-- **100% Offline & Private**: Zero code, file paths, or metrics leave your device.
-- **No Cloud Dependency**: No API keys, subscriptions, or logins required.
+- **Developer state**: Edit counts and project health signals stay local; it does not store source text or file paths.
+- **ContextBack reviews**: Local diff snapshots are separate from developer state. Optional Bob Shell reviews send bounded samples to IBM Bob.
+- **Music**: Reads playback state only. Spotify API detection needs a supplied token; manual mode needs no account.
 - **Featherweight**: Ultra-low CPU and memory footprint engineered for battery longevity.
 
 ---
