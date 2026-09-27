@@ -22,7 +22,15 @@ export class TodoCollector implements vscode.Disposable {
     );
   }
 
-  updateSettings(settings: CBSettings): void { this.settings = settings; }
+  updateSettings(settings: CBSettings): void {
+    this.settings = settings;
+    for (const [file, timer] of this.pending.entries()) {
+      if (!settings.trackTodos || isExcluded(file, settings.exclude)) {
+        clearTimeout(timer);
+        this.pending.delete(file);
+      }
+    }
+  }
 
   private scheduleScan(doc: vscode.TextDocument): void {
     if (!this.settings.trackTodos) return;
@@ -36,7 +44,7 @@ export class TodoCollector implements vscode.Disposable {
 
   private scanFile(doc: vscode.TextDocument): void {
     const ctx = this.getContext();
-    if (!ctx || isExcluded(doc.uri.fsPath, this.settings.exclude)) return;
+    if (!ctx || !this.settings.trackTodos || isExcluded(doc.uri.fsPath, this.settings.exclude)) return;
     this.scanText(ctx.projectId, doc.uri.fsPath, doc.getText());
   }
 

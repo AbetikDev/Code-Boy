@@ -622,7 +622,7 @@ export class ContextBackController implements vscode.Disposable {
     const clearedSessionIds = new Set(this.db.get('sessions').filter(s => s.projectId === project.id).map(s => s.id));
     this.db.set('sessions', this.db.get('sessions').filter(s => s.projectId !== project.id));
     this.db.set('events', this.db.get('events').filter(e => !clearedSessionIds.has(e.sessionId)));
-    this.db.set('terminalCommands', this.db.get('terminalCommands').filter(c => c.projectId && c.projectId !== project.id));
+    this.db.set('terminalCommands', this.db.get('terminalCommands').filter(c => c.projectId !== project.id));
     this.db.set('fileActivity', this.db.get('fileActivity').filter(f => f.projectId !== project.id));
     this.db.set('errors', this.db.get('errors').filter(e => e.projectId !== project.id));
     this.db.set('todos', this.db.get('todos').filter(t => t.projectId !== project.id));

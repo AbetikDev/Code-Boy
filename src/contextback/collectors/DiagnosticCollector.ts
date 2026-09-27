@@ -22,7 +22,13 @@ export class DiagnosticCollector implements vscode.Disposable {
     });
   }
 
-  updateSettings(settings: CBSettings): void { this.settings = settings; }
+  updateSettings(settings: CBSettings): void {
+    this.settings = settings;
+    if (!settings.trackDiagnostics && this.timer) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+    }
+  }
 
   private scan(): void {
     if (!this.settings.trackDiagnostics) return;

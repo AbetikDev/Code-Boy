@@ -10,6 +10,6 @@ export interface AIProvider {
 
 export class DisabledAIProvider implements AIProvider {
   isAvailable(): boolean { return false; }
-  async summarize(): Promise<null> { return null; }
-  async assessQuality(): Promise<null> { return null; }
+  async summarize(_contextDump?: string): Promise<null> { return null; }
+  async assessQuality(_context?: string, _scope?: 'yesterday' | 'current'): Promise<null> { return null; }
 }

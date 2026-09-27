@@ -34,6 +34,12 @@ export class FileCollector implements vscode.Disposable {
       this.activeFilePath = null;
       this.activeFileOpenedAt = null;
     }
+    for (const [file, timer] of this.pendingEdits.entries()) {
+      if (isExcluded(file, settings.exclude)) {
+        clearTimeout(timer);
+        this.pendingEdits.delete(file);
+      }
+    }
   }
 
   private onOpen(doc: vscode.TextDocument): void {

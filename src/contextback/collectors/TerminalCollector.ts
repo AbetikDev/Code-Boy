@@ -23,7 +23,12 @@ export class TerminalCollector implements vscode.Disposable {
     );
   }
 
-  updateSettings(settings: CBSettings): void { this.settings = settings; }
+  updateSettings(settings: CBSettings): void {
+    this.settings = settings;
+    if (!settings.trackTerminalCommands) {
+      this.running.clear();
+    }
+  }
 
   private onStart(e: vscode.TerminalShellExecutionStartEvent): void {
     if (!this.settings.trackTerminalCommands) return;
@@ -36,11 +41,11 @@ export class TerminalCollector implements vscode.Disposable {
   }
 
   private onEnd(e: vscode.TerminalShellExecutionEndEvent): void {
-    if (!this.settings.trackTerminalCommands) return;
     const key = this.terminalKey(e.terminal);
     const start = this.running.get(key);
     this.running.delete(key);
-    if (!start) return;
+    if (!this.settings.trackTerminalCommands || !start) return;
+    if (this.looksLikeSensitive(start.command)) return;
     const ctx = this.getContext();
     if (!ctx) return;
     const now = Date.now();
@@ -65,9 +70,9 @@ export class TerminalCollector implements vscode.Disposable {
     return String((terminal as unknown as { name: string }).name);
   }
 
-  private looksLikeSensitive(cmd: string): boolean {
+  looksLikeSensitive(cmd: string): boolean {
     const lower = cmd.toLowerCase();
-    return /password|secret|token|api.?key|private.?key|\.env|credentials/.test(lower);
+    return /password|passwd|passphrase|secret|token|bearer\s+[a-z0-9_\-\.]|api[_-]?key|access[_-]?token|private[_-]?key|-----begin (?:rsa |ec )?private key-----|\.env|credentials|id_rsa|id_ed25519|id_ecdsa|id_dsa|\.pem\b|\.key\b|aws_access_key_id|aws_secret_access_key|auth\b|authorization\b/i.test(lower);
   }
 
   dispose(): void { this.running.clear(); this.subs.forEach(s => s.dispose()); }

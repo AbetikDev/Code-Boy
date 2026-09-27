@@ -14,7 +14,7 @@ The editor sends numeric edit metadata to a five-minute behavior analyzer. Diagn
 
 ## 4. Bob IDE workflow
 
-A red blocker produces a prompt with its error context and numeric project summary. Bob IDE inspects the repository and applies a fix. Rerunning the check removes the known blocker; Code Boy reacts once. The reproducible discount-threshold example lives in `demo/discount-bug`.
+A red blocker produces a prompt with its error context and numeric project summary. Bob IDE inspects the repository and applies a fix. Rerunning the check removes the known blocker; Code Boy reacts once. The discount-threshold fixture in `demo/discount-bug` is fixed and passing; use a disposable copy with the comparison temporarily reverted for a live blocker demo.
 
 ## 5. Privacy and control
 

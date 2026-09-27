@@ -23,7 +23,7 @@ The captured Bob task summaries are in the required repository-root [bob_session
 
 ## Demo sequence
 
-1. Open the reproducible `demo/discount-bug` workspace. Run `npm test`; show its failing threshold test, ContextBack red thread, and Code Boy's concern state.
+1. The checked-in `demo/discount-bug` fixture now passes. For the Bob handoff recording, make a disposable copy, change `>= 100` to `> 100` in the copy, and open it as the workspace. Run `npm test`; show the failing threshold test, ContextBack red thread, and Code Boy's concern state. Keep the checked-in fixture fixed.
 2. Leave and reopen the project to show the recovered session and Welcome Back card.
 3. Run **Code Boy: Resolve Blocker with Bob**, review the prompt, confirm the copy, and paste it into IBM Bob. Show Bob's real response and any resulting diff.
 4. Rerun the diagnostic or test. Show the same blocker identity disappearing and Code Boy celebrating.

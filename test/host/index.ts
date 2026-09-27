@@ -1,8 +1,11 @@
 import * as assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { ActivityEvent, Snapshot } from '../../src/models/types';
 import { BobShellProvider, resolveBobCommand } from '../../src/contextback/ai/BobShellProvider';
+import { WorkbenchInjector } from '../../src/overlay/WorkbenchInjector';
 const delay = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 async function waitFor(predicate: () => boolean, timeout = 8_000): Promise<boolean> {
   const until = Date.now() + timeout;
@@ -62,5 +65,74 @@ export async function run(): Promise<void> {
       ? 'returned' : 'unavailable';
   }
   console.log(`BOB SHELL HOST CHECK: key configured=${bob.isAvailable()}, CLI found=${shellFound}, summary=${bobSummary}`);
-  console.log('CODE BOY HOST SMOKE PASSED: activation, shared sidebar navigation, companion and ContextBack webviews, commands, coding, sleep, pet, document save, diagnostics.');
+  const testInstall = path.resolve(extension.extensionPath, '.vscode-test') + path.sep;
+  assert.ok(path.resolve(vscode.env.appRoot).toLowerCase().startsWith(testInstall.toLowerCase()),
+    `Overlay patch smoke must use disposable VS Code test installation: ${vscode.env.appRoot} vs ${testInstall}`);
+  const jsPath = WorkbenchInjector.getWorkbenchJsPath();
+  const htmlPath = WorkbenchInjector.getWorkbenchHtmlPath();
+  assert.ok(jsPath && htmlPath, 'Real VS Code workbench files found');
+  const originalJs = fs.readFileSync(jsPath);
+  const originalHtml = fs.readFileSync(htmlPath);
+  const backupPath = `${jsPath}.codeboy.bak`;
+  const hadBackup = fs.existsSync(backupPath);
+  try {
+    const patched = WorkbenchInjector.patch(extension.extensionPath);
+    assert.equal(patched.success, true, patched.error);
+    assert.equal(WorkbenchInjector.isPatched(), true, 'Real workbench patch detected');
+  } finally {
+    fs.writeFileSync(jsPath, originalJs);
+    fs.writeFileSync(htmlPath, originalHtml);
+    if (!hadBackup) fs.rmSync(backupPath, { force: true });
+  }
+  assert.equal(WorkbenchInjector.isPatched(), false, 'Disposable test installation restored');
+  const health = await Promise.any([43821, 43822, 43823, 43824, 43825].map(async port => {
+    const response = await fetch(`http://127.0.0.1:${port}/health`);
+    if (!response.ok) throw new Error(`port ${port} unavailable`);
+    const body = await response.json() as { status?: string; appName?: string };
+    if (body.status !== 'ok' || body.appName !== vscode.env.appName) throw new Error(`port ${port} is not Code Boy`);
+    return port;
+  }));
+  console.log(`CODE BOY OVERLAY HOST CHECK PASSED: test-installation patch, restore, and server on ${health}.`);
+
+  // Verify real action requests to the overlay server trigger state transitions in VS Code
+  const sleepRes = await fetch(`http://127.0.0.1:${health}/action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'sleep' }),
+  });
+  assert.equal(sleepRes.status, 200);
+  assert.ok(await waitFor(() => api.getSnapshot().state === 'SLEEPING'), 'Overlay sleep action transitions character state');
+
+  const wakeRes = await fetch(`http://127.0.0.1:${health}/action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'wake' }),
+  });
+  assert.equal(wakeRes.status, 200);
+  assert.ok(await waitFor(() => api.getSnapshot().state !== 'SLEEPING'), 'Overlay wake action restores character state');
+
+  const vibeBefore = api.getSnapshot().settings.vibeMode;
+  const vibeRes = await fetch(`http://127.0.0.1:${health}/action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'vibe' }),
+  });
+  assert.equal(vibeRes.status, 200);
+  assert.ok(await waitFor(() => api.getSnapshot().settings.vibeMode !== vibeBefore), 'Overlay vibe action toggles vibe mode');
+
+  // Verify overlay server error handling on malformed JSON
+  const badRes = await fetch(`http://127.0.0.1:${health}/action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{ invalid: json ',
+  });
+  assert.equal(badRes.status, 400);
+
+  // Verify pauseTracking command pauses tracking
+  await vscode.commands.executeCommand('contextBack.pauseTracking');
+  assert.equal(vscode.workspace.getConfiguration('contextBack').get('enabled'), false, 'pauseTracking command updates contextBack.enabled to false');
+  // Re-enable for subsequent runs
+  await vscode.workspace.getConfiguration('contextBack').update('enabled', true, vscode.ConfigurationTarget.Global);
+
+  console.log('CODE BOY HOST SMOKE PASSED: activation, shared sidebar navigation, companion and ContextBack webviews, commands, coding, sleep, pet, document save, diagnostics, overlay actions, and pause tracking.');
 }

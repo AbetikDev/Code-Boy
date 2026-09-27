@@ -364,6 +364,7 @@
     "test": "tsc -p tsconfig.test.json && node --test .test/test/*.test.js",
     "test:host": "npm run compile && tsc -p tsconfig.test.json && node scripts/test-host.cjs",
     "test:webview": "npm run compile && playwright test",
+    "test:vsix": "node scripts/test-vsix-clean-profile.mjs",
     "preview": "npm run compile && node scripts/preview.mjs",
     "vscode:prepublish": "npm run compile",
     "package": "vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.0.10.vsix"
