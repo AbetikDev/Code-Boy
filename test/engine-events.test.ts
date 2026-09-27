@@ -337,6 +337,54 @@ test('setMusic truncates status strings longer than 160 characters', () => {
   assert.equal(engine.snapshot().musicStatus.length, 160);
 });
 
+test('agent input switches to vibe, manual input overrides it, and hints expire', () => {
+  const { engine, advance } = setup({ reactions: false });
+  engine.setMusic(true, 'Windows media');
+  assert.equal(engine.snapshot().state, 'LISTENING_MUSIC');
+  engine.handle({ type: 'inputSource', source: 'agent' });
+  assert.equal(engine.snapshot().state, 'VIBE_CODING');
+  engine.handle({ type: 'typing', characters: 500, languageId: 'typescript' });
+  assert.equal(engine.snapshot().state, 'VIBE_CODING');
+  engine.handle({ type: 'inputSource', source: 'manual' });
+  assert.equal(engine.snapshot().state, 'CODING');
+  advance(35_000);
+  assert.notEqual(engine.snapshot().state, 'VIBE_CODING');
+  engine.handle({ type: 'inputSource', source: 'agent' });
+  engine.handle({ type: 'focus', focused: false });
+  assert.notEqual(engine.snapshot().state, 'VIBE_CODING');
+  engine.dispose();
+});
+
+test('manual coding stays authoritative through pauses after agent activity', () => {
+  for (const vibeMode of [false, true]) {
+    const { engine, advance } = setup({ reactions: false, vibeMode });
+    engine.setMusic(true, 'Windows media');
+    engine.handle({ type: 'inputSource', source: 'agent' });
+    assert.equal(engine.snapshot().state, 'VIBE_CODING');
+    engine.handle({ type: 'inputSource', source: 'manual' });
+    engine.handle({ type: 'typing', characters: 1, languageId: 'typescript' });
+    for (const pause of [100, 7_900, 4_000, 17_000]) {
+      advance(pause);
+      assert.equal(engine.snapshot().state, 'CODING');
+    }
+    // Further edits extend the typing window even without a fresh UI hint.
+    engine.handle({ type: 'typing', characters: 1, languageId: 'typescript' });
+    advance(9_000);
+    assert.equal(engine.snapshot().state, 'CODING');
+    engine.handle({ type: 'inputSource', source: 'agent' });
+    assert.equal(engine.snapshot().state, 'VIBE_CODING');
+    engine.dispose();
+  }
+});
+
+test('agent focus does not wake a character put to sleep manually', () => {
+  const { engine } = setup();
+  engine.action('sleep');
+  engine.handle({ type: 'inputSource', source: 'agent' });
+  assert.equal(engine.snapshot().state, 'SLEEPING');
+  engine.dispose();
+});
+
 // ─── 11. debug (development mode) ────────────────────────────────────────────
 
 test('debug command overrides state and animation in development mode', () => {

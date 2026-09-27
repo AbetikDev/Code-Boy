@@ -24,6 +24,7 @@ export interface Snapshot {
 }
 export type Action = 'pet' | 'look' | 'music' | 'dance' | 'sleep' | 'wake' | 'play' | 'vibe';
 export type ActivityEvent =
+  | { type: 'inputSource'; source: 'agent' | 'manual' }
   | { type: 'typing'; characters: number; languageId: string }
   | { type: 'codingEdit'; sample: CodingEditSample; documentLines: number }
   | { type: 'codingBehavior'; mode: Exclude<CodingBehaviorSnapshot['mode'], 'idle'>; confidence: number; largestInsertion: number; largeInsertionCount: number }

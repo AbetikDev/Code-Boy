@@ -106,6 +106,8 @@ export class CodeBoyEngine {
   private lastBehaviorMode: CodingBehaviorSnapshot['mode'] = 'idle';
   private lastCodeEditAt = Number.NEGATIVE_INFINITY;
   private lastManualEditAt = Number.NEGATIVE_INFINITY;
+  private inputSource: 'agent' | 'manual' | undefined;
+  private inputSourceAt = Number.NEGATIVE_INFINITY;
   private lastTestAt = Number.NEGATIVE_INFINITY;
   private manualEditCountForCraft = 0;
   private lastCraftFixAt = Number.NEGATIVE_INFINITY;
@@ -173,7 +175,12 @@ export class CodeBoyEngine {
     if (this.disposed || !this.settings.enabled) { return; }
     const now = this.clock();
     this.advance(now);
-    if (event.type === 'focus') {
+    if (event.type === 'inputSource') {
+      this.inputSource = event.source;
+      this.inputSourceAt = now;
+      this.activity.touch(now);
+    } else if (event.type === 'focus') {
+      if (!event.focused) { this.inputSource = undefined; }
       this.activity.setFocused(event.focused, now);
     } else if (event.type === 'codingEdit') {
       this.handleCodingEdit(event.sample, event.documentLines, now);
@@ -606,6 +613,10 @@ export class CodeBoyEngine {
     let state: CharacterState = 'IDLE';
     if (!this.settings.enabled) { return 'IDLE'; }
     if (this.manualSleep) { state = 'SLEEPING'; }
+    else if (this.inputSource === 'agent' && now - this.inputSourceAt < 12_000) { state = 'VIBE_CODING'; }
+    // Keep manual input authoritative through the typing grace period, including
+    // pauses after its short-lived UI hint expires.
+    else if (this.inputSource === 'manual' && (now - this.inputSourceAt < 8_000 || this.activity.isTyping(now))) { state = 'CODING'; }
     else if (this.activity.isTyping(now)) {
       state = this.musicPlaying || this.settings.vibeMode ? 'VIBE_CODING' : 'CODING';
     }

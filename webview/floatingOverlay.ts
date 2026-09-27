@@ -1,4 +1,6 @@
 import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../src/models/types';
+import { drawPanelIcon } from './PanelIcons';
+import { observeAgentActivity } from './AgentActivity';
 
 (function initFloatingOverlay() {
   try {
@@ -14,7 +16,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
 
   const candidatePorts = [43821, 43822, 43823, 43824, 43825];
   const MASCOT_SIZE = 84;
-  const PANEL_WIDTH = MASCOT_SIZE * 4;
+  const PANEL_WIDTH = 570;
   const PANEL_GAP = 12;
   const EDITOR_GUTTER = 12;
   const POSITION_KEY = 'codeboy_floating_pos_v2';
@@ -210,6 +212,49 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
   `;
+  styleEl.textContent += `
+    #codeboy-floating-panel { box-sizing:border-box; width:570px; padding:18px; border:2px solid #7550ab; border-radius:12px; background:radial-gradient(ellipse at top,#211632,#131020 75%); box-shadow:0 0 0 3px #090810,0 16px 48px #0009; color:#c5abe9; font:14px/1.4 Consolas,monospace; overflow:auto; overscroll-behavior:contain; touch-action:pan-y; }
+    #codeboy-floating-panel[data-side] { transform:none; right:auto; }
+    #codeboy-floating-panel * { box-sizing:border-box; }
+    .codeboy-panel-header { gap:14px; padding-bottom:14px; border-color:#46305f; }
+    .codeboy-panel-portrait { width:74px; height:74px; image-rendering:pixelated; flex-shrink:0; }
+    .codeboy-panel-heading { flex:1; min-width:0; }
+    .codeboy-panel-name { display:block; font-size:29px; font-weight:900; letter-spacing:3px; color:#faf2ff; text-shadow:2px 2px #8151bb; }
+    .codeboy-panel-status { display:block; margin-top:3px; font-size:13px; color:#9880ba; white-space:normal; }
+    .codeboy-panel-close { align-self:flex-start; width:34px; height:34px; border-radius:5px; font-size:28px; line-height:28px; }
+    .codeboy-panel-overview { display:grid; grid-template-columns:1.4fr 1fr; gap:12px; margin:13px 0 18px; }
+    .codeboy-panel-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding:0; font-size:16px; }
+    .codeboy-panel-stats > span { display:flex; justify-content:center; align-items:center; gap:8px; padding:9px 4px; border:1px solid #46305f; border-radius:7px; background:#191327; }
+    .codeboy-panel-stats strong { font-weight:bold; font-size:21px; }
+    #codeboy-panel-mood { color:#ff67ae; } #codeboy-panel-energy { color:#ffe16e; }
+    .codeboy-panel-stats > .codeboy-panel-xp-row { grid-column:1/-1; padding:10px; font-size:12px; }
+    #codeboy-panel-xp { color:#a8a4ff; font-size:12px; }
+    .codeboy-panel-xp-track { height:14px; flex:1; background:#2b1b42; border:2px solid #40275f; overflow:hidden; }
+    .codeboy-panel-xp-fill { height:100%; width:0; background:linear-gradient(#be87ff,#8c48ef); box-shadow:inset 0 2px #dcb4ff; transition:width .3s; }
+    .codeboy-panel-mood-card { display:flex; gap:8px; align-items:center; padding:10px 7px; border:2px solid #553477; border-radius:3px; background:linear-gradient(135deg,#21152f,#171121); min-width:0; }
+    .codeboy-panel-mood-card .codeboy-panel-portrait { width:62px; height:62px; }
+    .codeboy-panel-mood-copy { min-width:0; overflow-wrap:anywhere; }
+    .codeboy-panel-emotion { color:#73f2c2; font-size:18px; font-weight:bold; }
+    .codeboy-panel-message { margin-top:5px; font-size:11px; color:#bda3d9; }
+    .codeboy-panel-actions,.codeboy-panel-secondary,.codeboy-panel-more { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .codeboy-panel-action { display:flex; align-items:center; justify-content:center; gap:9px; min-height:44px; padding:8px; border:1px solid #46305f; border-radius:5px; background:#191326; color:#c7a7e9; font-size:14px; }
+    .codeboy-panel-action span { display:inline; margin:0; font-size:inherit; color:inherit; line-height:1.2; }
+    .codeboy-panel-icon { width:28px; height:28px; image-rendering:pixelated; flex-shrink:0; }
+    .codeboy-panel-actions .codeboy-panel-action { min-height:56px; border:2px solid #b784ff; background:linear-gradient(145deg,#7939db,#43209b); color:#fff1ff; font-size:20px; font-weight:bold; letter-spacing:1px; box-shadow:inset 2px 2px #ffffff35,inset -2px -2px #0003,0 3px #0a0712; }
+    .codeboy-panel-actions .codeboy-panel-action:first-child { background:linear-gradient(145deg,#c92c96,#7f1c72); border-color:#f17acd; }
+    .codeboy-panel-actions .codeboy-panel-action:last-child { background:linear-gradient(145deg,#347cec,#3026b3); border-color:#80b8ff; }
+    .codeboy-panel-actions .codeboy-panel-icon { width:34px; height:34px; }
+    .codeboy-panel-secondary { margin-top:15px; } .codeboy-panel-more { margin-top:10px; } .codeboy-panel-more[hidden] { display:none; }
+    .codeboy-panel-action:hover,.codeboy-panel-close:hover { filter:brightness(1.2); }
+    #codeboy-floating-panel button:focus-visible { outline:2px solid #7aeee5; outline-offset:3px; }
+    .codeboy-panel-action[aria-pressed="true"] { outline:2px solid #75efce; outline-offset:2px; }
+    #codeboy-floating-panel[data-compact="true"] { padding:12px; }
+    #codeboy-floating-panel[data-compact="true"] .codeboy-panel-overview { grid-template-columns:1fr; }
+    #codeboy-floating-panel[data-compact="true"] .codeboy-panel-name { font-size:22px; }
+    #codeboy-floating-panel[data-compact="true"] .codeboy-panel-action { gap:4px; font-size:12px; }
+    #codeboy-floating-panel[data-compact="true"] .codeboy-panel-icon { width:24px; height:24px; }
+    @media(prefers-reduced-motion:reduce) { #codeboy-floating-panel,#codeboy-floating-panel * { animation:none!important; transition:none!important; } }
+  `;
   (document.head || document.documentElement).appendChild(styleEl);
 
   // 2. Build DOM
@@ -300,6 +345,49 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     panelActions.append(button);
   }
   panelEl.append(panelHeader, panelStats, panelActions);
+
+  const makeElement = (className: string, text = ''): HTMLDivElement => {
+    const node = document.createElement('div'); node.className = className; node.textContent = text; return node;
+  };
+  const portraits = [document.createElement('canvas'), document.createElement('canvas')];
+  for (const portrait of portraits) { portrait.width = portrait.height = 64; portrait.className = 'codeboy-panel-portrait'; portrait.setAttribute('aria-hidden', 'true'); }
+  const heading = makeElement('codeboy-panel-heading');
+  heading.append(panelName, panelStatus);
+  panelHeader.replaceChildren(portraits[0], heading, panelClose);
+  panelClose.textContent = '×'; panelClose.title = 'Close'; panelClose.setAttribute('aria-label', 'Close panel');
+  panelStatus.textContent = 'Connecting…';
+  const overview = makeElement('codeboy-panel-overview');
+  const moodCard = makeElement('codeboy-panel-mood-card');
+  const moodCopy = makeElement('codeboy-panel-mood-copy');
+  const emotion = makeElement('codeboy-panel-emotion', 'HELLO');
+  const moodMessage = makeElement('codeboy-panel-message', 'Ready when you are.');
+  moodCopy.append(emotion, moodMessage); moodCard.append(portraits[1], moodCopy);
+  overview.append(panelStats, moodCard); panelHeader.after(overview);
+  const xpTrack = makeElement('codeboy-panel-xp-track');
+  xpTrack.setAttribute('role', 'progressbar'); xpTrack.setAttribute('aria-label', 'Level experience'); xpTrack.setAttribute('aria-valuemin', '0');
+  const xpFill = makeElement('codeboy-panel-xp-fill'); xpTrack.append(xpFill);
+  const xpRow = panelStats.lastElementChild!; xpRow.className = 'codeboy-panel-xp-row'; xpRow.append(xpTrack);
+  const iconCanvases: { canvas: HTMLCanvasElement; name: string }[] = [];
+  const makeIcon = (name: string): HTMLCanvasElement => {
+    const icon = document.createElement('canvas'); icon.width = icon.height = 32; icon.className = 'codeboy-panel-icon'; icon.setAttribute('aria-hidden', 'true'); iconCanvases.push({ canvas: icon, name }); return icon;
+  };
+  for (const [index, name] of [[1, 'heart'], [2, 'energy']] as const) {
+    panelStats.children[index].firstChild?.replaceWith(makeIcon(name));
+  }
+  const secondary = makeElement('codeboy-panel-secondary');
+  const moreActions = makeElement('codeboy-panel-more'); moreActions.id = 'codeboy-panel-more-actions'; moreActions.hidden = true;
+  const buttons = new Map(Array.from(panelActions.querySelectorAll('button')).map(button => [button.dataset.action!, button]));
+  for (const [action, label] of Object.entries({ pet:'PET', play:'PLAY', music:'MUSIC', settings:'Settings', sleep:'Sleep', dance:'Dance', vibe:'Vibe', look:'Look', room:'Room', reset:'Reset position', hide:'Hide' })) {
+    const button = buttons.get(action)!;
+    const caption = document.createElement('span'); caption.textContent = label;
+    button.title = label; button.replaceChildren(caption);
+    if (['pet','play','music','settings','sleep'].includes(action)) button.prepend(makeIcon(action === 'pet' ? 'heart' : action));
+  }
+  panelActions.replaceChildren(buttons.get('pet')!, buttons.get('play')!, buttons.get('music')!);
+  const moreButton = document.createElement('button'); moreButton.className = 'codeboy-panel-action'; moreButton.textContent = '•••  More'; moreButton.dataset.action = 'more'; moreButton.setAttribute('aria-expanded', 'false'); moreButton.setAttribute('aria-controls', moreActions.id);
+  secondary.append(buttons.get('settings')!, buttons.get('sleep')!, moreButton);
+  for (const action of ['dance','vibe','look','room','reset','hide']) moreActions.append(buttons.get(action)!);
+  panelEl.append(secondary, moreActions);
 
   root.appendChild(speechEl);
   root.appendChild(canvas);
@@ -462,27 +550,17 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
 
   function positionPanel(): void {
     if (panelEl.style.display === 'none') return;
-    const editorRect = getEditorRect();
     const mascotRect = root.getBoundingClientRect();
-    const roomOnLeft = mascotRect.left - editorRect.left - PANEL_GAP;
-    const roomOnRight = editorRect.right - mascotRect.right - PANEL_GAP;
-    const side = roomOnLeft >= PANEL_WIDTH || roomOnLeft >= roomOnRight ? 'left' : 'right';
-    const availableWidth = Math.max(180, Math.floor(side === 'left' ? roomOnLeft : roomOnRight));
-    panelEl.dataset.side = side;
-    panelEl.style.width = `${Math.min(PANEL_WIDTH, availableWidth)}px`;
-
-    panelEl.style.top = '50%';
-    requestAnimationFrame(() => {
-      if (panelEl.style.display === 'none') return;
-      const panelRect = panelEl.getBoundingClientRect();
-      let correction = 0;
-      if (panelRect.top < editorRect.top + EDITOR_GUTTER) {
-        correction = editorRect.top + EDITOR_GUTTER - panelRect.top;
-      } else if (panelRect.bottom > editorRect.bottom - EDITOR_GUTTER) {
-        correction = editorRect.bottom - EDITOR_GUTTER - panelRect.bottom;
-      }
-      panelEl.style.top = `${MASCOT_SIZE / 2 + correction}px`;
-    });
+    const width = Math.min(PANEL_WIDTH, window.innerWidth - EDITOR_GUTTER * 2);
+    panelEl.style.width = width + 'px';
+    panelEl.dataset.compact = String(width < 470);
+    panelEl.style.maxHeight = (window.innerHeight - EDITOR_GUTTER * 2) + 'px';
+    const leftSide = mascotRect.left - width - PANEL_GAP;
+    const desiredLeft = leftSide >= EDITOR_GUTTER ? leftSide : mascotRect.right + PANEL_GAP;
+    const left = Math.max(EDITOR_GUTTER, Math.min(window.innerWidth - width - EDITOR_GUTTER, desiredLeft));
+    const top = Math.max(EDITOR_GUTTER, Math.min(window.innerHeight - panelEl.offsetHeight - EDITOR_GUTTER, mascotRect.top + MASCOT_SIZE / 2 - panelEl.offsetHeight / 2));
+    panelEl.style.left = (left - mascotRect.left) + 'px';
+    panelEl.style.top = (top - mascotRect.top) + 'px';
   }
 
   function setPanelOpen(open: boolean): void {
@@ -492,6 +570,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     if (open) {
       speechEl.style.display = 'none';
       positionPanel();
+      panelClose.focus({ preventScroll: true });
     }
   }
 
@@ -632,6 +711,12 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     if (!target) return;
     const action = target.getAttribute('data-action');
 
+    if (action === 'more') {
+      moreActions.hidden = !moreActions.hidden;
+      moreButton.setAttribute('aria-expanded', String(!moreActions.hidden));
+      positionPanel();
+      return;
+    }
     if (action === 'reset') {
       resetPosition();
       positionPanel();
@@ -647,6 +732,16 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     if (action) {
       void triggerAction(action);
     }
+  });
+
+  canvas.tabIndex = 0;
+  canvas.setAttribute('role', 'button');
+  canvas.setAttribute('aria-label', 'Open Code Boy controls');
+  canvas.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); togglePanel(); }
+  });
+  panelEl.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.stopPropagation(); setPanelOpen(false); canvas.focus(); }
   });
 
   // 5. Canvas Animation & Rendering
@@ -746,6 +841,15 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       );
     }
 
+    for (const portrait of portraits) {
+      const context = portrait.getContext('2d');
+      if (context) {
+        context.imageSmoothingEnabled = false;
+        context.clearRect(0, 0, 64, 64);
+        context.drawImage(canvas, 0, 0);
+      }
+    }
+
     // Overlay effects if active
     if (currentSnapshot && manifest) {
       let effectName: string | undefined;
@@ -818,7 +922,7 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
   }
 
   function showSpeechBubble(text: string) {
-    if (!text) {
+    if (!text || panelEl.style.display !== 'none') {
       speechEl.style.display = 'none';
       return;
     }
@@ -845,13 +949,19 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
     if (moodEl) moodEl.textContent = String(Math.round(snapshot.stats.mood));
     if (energyEl) energyEl.textContent = String(Math.round(snapshot.stats.energy));
     if (xpEl) xpEl.textContent = `${snapshot.stats.xp}/${snapshot.nextLevelXp}`;
+    xpTrack.setAttribute('aria-valuemax', String(snapshot.nextLevelXp));
+    xpTrack.setAttribute('aria-valuenow', String(snapshot.stats.xp));
+    xpFill.style.width = Math.max(0, Math.min(100, snapshot.stats.xp / Math.max(1, snapshot.nextLevelXp) * 100)) + '%';
+    emotion.textContent = snapshot.state.replaceAll('_', ' ');
+    moodMessage.textContent = snapshot.bubble || (snapshot.musicPlaying ? 'Good tunes. Good mood.' : 'Ready when you are.');
+    positionPanel();
     if (statusEl) statusEl.textContent = `${snapshot.state.replaceAll('_', ' ')} · ${snapshot.language.displayName}`;
     document.getElementById('codeboy-panel-vibe')?.setAttribute('aria-pressed', String(snapshot.settings.vibeMode));
     document.getElementById('codeboy-panel-music')?.setAttribute('aria-pressed', String(snapshot.musicPlaying));
     const sleepButton = document.getElementById('codeboy-panel-sleep');
     sleepButton?.setAttribute('aria-pressed', String(snapshot.state === 'SLEEPING'));
     const sleepLabel = sleepButton?.querySelector('span');
-    if (sleepLabel) sleepLabel.textContent = snapshot.state === 'SLEEPING' ? 'Проснуться' : 'Сон';
+    if (sleepLabel) sleepLabel.textContent = snapshot.state === 'SLEEPING' ? 'Wake' : 'Sleep';
 
     // Show speech bubble if changed
     if (snapshot.bubble && snapshot.bubble !== lastBubble) {
@@ -870,6 +980,15 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       void setAnimation(animDef);
     }
   }
+
+  observeAgentActivity(source => {
+    if (!currentSnapshot) return;
+    void fetch(`${activeBaseUrl}/action`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: source === 'agent' ? 'activity.agent' : 'activity.manual' }),
+      mode: 'cors'
+    }).catch(() => {});
+  });
 
   async function triggerAction(action: Action | string) {
     try {
@@ -945,6 +1064,12 @@ import type { Action, AnimationDefinition, AssetManifest, Snapshot } from '../sr
       return;
     }
     await loadManifest();
+    await Promise.all(iconCanvases.map(async ({ canvas: target, name }) => {
+      if (drawPanelIcon(target, name)) return;
+      const img = await getImage('assets/icons/' + name + '.png');
+      const context = target.getContext('2d');
+      if (img && context) { context.imageSmoothingEnabled = false; context.drawImage(img, 0, 0, 32, 32); }
+    }));
     if (manifest) {
       // Preload core animations
       const coreKeys = ['idle', 'coding', 'dance', 'sleep', 'vibe', 'happy', 'error'];

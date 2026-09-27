@@ -5,7 +5,7 @@ import { hasOverlayCsp, patchWorkbenchCsp, unpatchWorkbenchCsp } from './Workben
 
 export const INJECTION_START = '/* -- CODE-BOY-OVERLAY-START -- */';
 export const INJECTION_END = '/* -- CODE-BOY-OVERLAY-END -- */';
-const INJECTION_VERSION = '__CODE_BOY_TRUSTED_OVERLAY_V8__';
+const INJECTION_VERSION = '__CODE_BOY_TRUSTED_OVERLAY_V12__';
 
 export class WorkbenchInjector {
   static getWorkbenchHtmlPath(): string | undefined {

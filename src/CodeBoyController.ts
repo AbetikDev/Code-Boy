@@ -169,6 +169,10 @@ export class CodeBoyController implements vscode.Disposable {
     await openSidebarScreen('companion');
   }
   private async act(action: Action | string): Promise<void> {
+    if (action === 'activity.agent' || action === 'activity.manual') {
+      this.engine.handle({ type: 'inputSource', source: action === 'activity.agent' ? 'agent' : 'manual' });
+      return;
+    }
     const knownActions: Action[] = ['pet', 'look', 'music', 'dance', 'sleep', 'wake', 'play', 'vibe'];
     if (knownActions.includes(action as Action)) {
       this.engine.action(action as Action);
