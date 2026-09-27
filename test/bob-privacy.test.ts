@@ -47,6 +47,13 @@ test('QualityContext permits only allowed code files, omits .env/secrets, and re
       'export function hello(): string {',
       '  const apiKey = "1234567890abcdef";',
       '  const password = "my_super_secret_password";',
+      '  const url = "postgres://demo:db-pass@example.test:5432/app";',
+      '  const header = "Authorization: Bearer abcdefghijklmnopqrstuvwxyz";',
+      '  const githubToken = "ghp_0123456789abcdefghijklmnop";',
+      '  const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature123";',
+      '  // -----BEGIN OPENSSH PRIVATE KEY-----',
+      '  // private-material-body-that-must-never-leak',
+      '  // -----END OPENSSH PRIVATE KEY-----',
       '  return "hello world";',
       '}',
     ].join('\n'));
@@ -72,6 +79,9 @@ test('QualityContext permits only allowed code files, omits .env/secrets, and re
     assert.match(sample.text, /\[redacted sensitive line\]/);
     assert.ok(!sample.text.includes('1234567890abcdef'), 'raw apiKey must not appear in prompt');
     assert.ok(!sample.text.includes('my_super_secret_password'), 'raw password must not appear in prompt');
+    for (const secret of ['db-pass', 'abcdefghijklmnopqrstuvwxyz', 'ghp_0123456789abcdefghijklmnop', 'signature123', 'private-material-body-that-must-never-leak']) {
+      assert.ok(!sample.text.includes(secret), `sensitive value must not appear in prompt: ${secret}`);
+    }
     assert.ok(sample.text.includes('return "hello world";'), 'non-sensitive lines preserved');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });

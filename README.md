@@ -13,7 +13,7 @@
   <a href="https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon"><img src="https://img.shields.io/badge/IBM%20Bob%202.0-Hackathon%20Submission-0062FF?style=for-the-badge&logo=ibm&logoColor=white" alt="IBM Bob 2.0 Hackathon" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge" alt="MIT License" /></a>
   <a href="https://code.visualstudio.com/"><img src="https://img.shields.io/badge/VS%20Code-%5E1.96.0-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="VS Code" /></a>
-  <a href="docs/TESTING_REPORT.md"><img src="https://img.shields.io/badge/Tests-247%20Node%20Passing-10B981?style=for-the-badge&logo=checkmarx&logoColor=white" alt="247 Node tests passing" /></a>
+  <a href="docs/TESTING_REPORT.md"><img src="https://img.shields.io/badge/Tests-267%20Node%20Passing-10B981?style=for-the-badge&logo=checkmarx&logoColor=white" alt="267 Node tests passing" /></a>
   <a href="package.json"><img src="https://img.shields.io/badge/Dependencies-0%20Runtime%20npm-3B82F6?style=for-the-badge" alt="0 Runtime Dependencies" /></a>
 </p>
 
@@ -434,10 +434,10 @@ npm run test:host
 ✔ End-to-end ContextBack core lifecycle: start -> work -> error -> resolve -> end
 ✔ ContextBoyBridge prepares blocker context for IBM Bob IDE
 ...
-ℹ pass 247, fail 0
+ℹ pass 267, fail 0
 ```
 
-See the full [**Testing & QA Report**](docs/TESTING_REPORT.md) for detailed test matrices and coverage reports.
+See the full [**Testing & QA Report**](docs/TESTING_REPORT.md) for test results and remaining verification gaps.
 
 ---
 

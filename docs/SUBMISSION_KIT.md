@@ -7,7 +7,7 @@ This is a draft based on the implemented product. Check the [current hackathon p
 - **Name:** Code Boy & ContextBack
 - **Repository:** https://github.com/AbetikDev/Code-Boy
 - **Product:** VS Code extension with Developer Intelligence, ContextBack, Canvas webview, local persistence, and optional IBM Bob Shell summaries.
-- **Installable build:** Run `npm run package` to create `code-boy-1.0.10.vsix`. Upload that file to a release or the submission form before presenting it as a downloadable artifact.
+- **Installable build:** [Download code-boy-1.0.10.vsix](https://raw.githubusercontent.com/AbetikDev/Code-Boy/download-vsix-1.0.10/downloads/code-boy-1.0.10.vsix) (SHA-256 `5C8C334F9C9BEE53094B39CCE7980B29BC369B6CBCB2DD14BE7AB0E3356439AB`). Built from the current working tree and verified by downloading the public file and comparing checksums. The downloadable binary is on the dedicated `download-vsix-1.0.10` branch.
 
 ## Problem and solution
 
@@ -19,7 +19,7 @@ For deeper analysis, the user can opt into IBM Bob Shell summaries. ContextBack 
 
 The shipped integration calls the documented Bob Shell noninteractive CLI for optional session summaries. This path requires the user to install and authenticate Bob Shell. The blocker workflow is currently manual: preview prompt, confirm copy, paste into Bob IDE, review Bob's actions, then rerun the relevant check. There is no direct IBM Bob IDE chat API integration and no automatic agent dispatch from VS Code.
 
-The captured Bob task summaries are in the required repository-root [bob_sessions/](../bob_sessions/) directory and described in [ibm-bob/](ibm-bob/). They show work on test coverage. Review any additional session evidence before attributing architecture, integration code, subagents, or productivity measurements to Bob.
+The repository-root [bob_sessions/](../bob_sessions/) currently contains two Bob task captures for test coverage. An additional [task03 response capture](ibm-bob/codeboy_task03_discount_blocker_summary.png) exists under `docs/ibm-bob/`, but it shows an answer about unverified work, not the task session consumption summary or a completed discount-blocker fix. The [evidence audit](ibm-bob/README.md) lists the remaining screenshots needed from Bob IDE, including relevant tasks from each registered participant. Do not treat these captures as proof of a full handoff or attribute unrecorded work to Bob.
 
 ## Demo sequence
 
@@ -29,14 +29,14 @@ The captured Bob task summaries are in the required repository-root [bob_session
 4. Rerun the diagnostic or test. Show the same blocker identity disappearing and Code Boy celebrating.
 5. Optionally run **ContextBack: Summarize Last Session**. An authenticated Bob Shell summary returned in the Linux extension-host smoke test.
 
-Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) and [PRESENTATION.md](PRESENTATION.md) to record and present the run. Record the run end to end. If you claim time saved, measure a baseline and the product flow on the same task and state the method. Link the final video, VSIX release, and Bob evidence when they exist.
+Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) and [PRESENTATION.md](PRESENTATION.md) to record and present the run. The only measured before/after result so far is an [automated local rehearsal](ibm-bob/discount-before-after-measurement.json): a deliberately failing discount test ran in 107.01 ms (1 pass, 1 fail), and the corrected version ran in 107.73 ms (2 passes). The complete scripted fail-to-pass sequence took 215.33 ms. This measures test execution and one scripted edit, not human productivity or Bob IDE performance. A continuous Bob IDE video is still needed before claiming the full flow.
 
 ## Submission checklist
 
 - [x] Verify the repository is publicly readable at the URL above.
 - [x] Build and inspect `code-boy-1.0.10.vsix` locally.
-- [ ] Upload the VSIX and add the actual download link.
+- [x] Upload the VSIX and add the verified public download link.
 - [ ] Record and link a real product demo.
-- [x] Add captured IBM Bob task summary screenshots to `bob_sessions/`.
-- [ ] Capture the new Bob IDE blocker-fix task summary and end-to-end recording.
+- [ ] Capture the actual IBM Bob task session consumption summaries for all relevant tasks and registered participants in `bob_sessions/`.
+- [ ] Capture the Bob IDE discount-blocker fix, its task summary, and the continuous end-to-end recording.
 - [ ] Confirm the exact submission closing time in the registered account.

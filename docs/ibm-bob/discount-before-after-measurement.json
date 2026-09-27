@@ -1,0 +1,25 @@
+{
+  "measuredAtUtc": "2026-09-27T07:12:09.549Z",
+  "method": "Automated local rehearsal on a disposable copy; includes two Node test runs and one file edit. No Bob IDE or human repair time is included.",
+  "before": {
+    "change": "subtotal > 100",
+    "exitCode": 1,
+    "elapsedMs": 107.01,
+    "counts": {
+      "tests": 2,
+      "pass": 1,
+      "fail": 1
+    }
+  },
+  "after": {
+    "change": "subtotal >= 100",
+    "exitCode": 0,
+    "elapsedMs": 107.73,
+    "counts": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0
+    }
+  },
+  "failToPassElapsedMs": 215.33
+}

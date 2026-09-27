@@ -11,7 +11,10 @@ const MAX_FILES = 10;
 const MAX_CHARS = 50_000;
 const CODE_EXT = /\.(?:[cm]?[jt]sx?|py|go|rs|java|kt|swift|cs|c|cc|cpp|h|hpp|php|rb|vue|svelte|html|css|scss|sql)$/i;
 const PRIVATE_PATH = /(?:^|[/\\])(?:\.env[^/\\]*|secrets?|credentials?|node_modules|dist|build|\.git)(?:[/\\]|$)|\.(?:pem|key|p12|pfx)$/i;
-const SENSITIVE_LINE = /(?:api[_-]?key|access[_-]?token|secret|password|private[_-]?key)\s*[:=]|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/i;
+const SENSITIVE_ASSIGNMENT = /\b(?:api[_-]?key|access[_-]?token|auth(?:orization)?|client[_-]?secret|secret|password|passwd|passphrase|private[_-]?key|refresh[_-]?token|session[_-]?token|database[_-]?url|connection[_-]?string)\b\s*["']?\s*[:=]/i;
+const SENSITIVE_VALUE = /\bBearer\s+[A-Za-z0-9._~+/-]{8,}|\b(?:gh[pousr]_[A-Za-z0-9_]{12,}|github_pat_[A-Za-z0-9_]{12,}|xox[baprs]-[A-Za-z0-9-]{12,}|AKIA[0-9A-Z]{16}|sk-(?:proj-)?[A-Za-z0-9_-]{16,})\b|\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis):\/\/[^\s@/]+:[^\s@/]+@|\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/i;
+const PRIVATE_KEY_START = /-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----/i;
+const PRIVATE_KEY_END = /-----END (?:[A-Z0-9 ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----/i;
 
 export interface QualityInput { text: string; hash: string; files: string[] }
 
@@ -59,8 +62,16 @@ export class QualityContext {
   }
 
   private clean(text: string): string {
-    return text.split(/\r?\n/).map(line => SENSITIVE_LINE.test(line) ? '[redacted sensitive line]' : line)
-      .join('\n').slice(0, MAX_CHARS);
+    let inPrivateKey = false;
+    return text.split(/\r?\n/).map(line => {
+      if (PRIVATE_KEY_START.test(line)) inPrivateKey = true;
+      if (inPrivateKey) {
+        if (PRIVATE_KEY_END.test(line)) inPrivateKey = false;
+        return '[redacted sensitive line]';
+      }
+      return SENSITIVE_ASSIGNMENT.test(line) || SENSITIVE_VALUE.test(line)
+        ? '[redacted sensitive line]' : line;
+    }).join('\n').slice(0, MAX_CHARS);
   }
 
   private input(parts: string[], files: string[]): QualityInput {

@@ -17,6 +17,8 @@ The Windows media status script and WindowsMediaProvider verify boolean status r
 
 The host check verified Bob CLI discovery and gatekeeping (`contextBack.ai.enabled` and `BOB_API_KEY`). Without user consent, Bob is never called; when enabled, QualityContext sanitizes sensitive lines (`[redacted sensitive line]`), omits excluded files, and bounds prompt size to 50k chars. Tests verify that Bob timeouts, process exit errors, or malformed responses do not break the local session scenario and fall back gracefully to the local heuristic summary.
 
+On 2026-09-27, QualityContext filtering was extended to bearer tokens, common token prefixes, JWTs, connection URLs containing passwords, and entire private-key blocks. The expanded privacy assertions passed in the same 267-test suite. A fresh VSIX was packaged and installed in a disposable profile; its public download was fetched and SHA-256 matched against the local file. The [discount before/after measurement](ibm-bob/discount-before-after-measurement.json) records an automated test rehearsal only, not a Bob IDE productivity result.
+
 Overlay interactions were verified on multiple levels: Playwright tests verify UI clicks, dialogs, and CSP handling; host tests verify live HTTP action dispatch (`sleep`, `wake`, `vibe`) against the running VS Code overlay server, triggering actual state transitions on the character, as well as HTTP 400 rejection for malformed JSON; unit tests verify rejection when candidate loopback ports 43821–43825 are all occupied and directory traversal prevention. Visual rendering inside the GUI window remains unverified only because the Windows Computer Use helper was unavailable.
 
 ### Full requirements verification
