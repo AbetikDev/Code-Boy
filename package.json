@@ -2,7 +2,7 @@
   "name": "code-boy",
   "displayName": "Code Boy",
   "description": "Your cozy pixel-art programmer companion in VS Code. Types as you code, vibes to your music, levels up, and keeps you in flow.",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "publisher": "code-boy-local",
   "license": "MIT",
   "repository": {
@@ -153,32 +153,32 @@
       },
       {
         "command": "codeBoy.enableFloatingOverlay",
-        "title": "Enable Floating Mascot (Включить плавающего персонажа)",
+        "title": "Enable Floating Mascot",
         "category": "Code Boy"
       },
       {
         "command": "codeBoy.disableFloatingOverlay",
-        "title": "Disable Floating Mascot (Отключить плавающего персонажа)",
+        "title": "Disable Floating Mascot",
         "category": "Code Boy"
       },
       {
         "command": "codeBoy.toggleFloatingOverlay",
-        "title": "Toggle Floating Mascot (Показать/Скрыть плавающего персонажа)",
+        "title": "Toggle Floating Mascot",
         "category": "Code Boy"
       },
       {
         "command": "codeBoy.resetFloatingPosition",
-        "title": "Reset Mascot Position (Вернуть персонажа в правый нижний угол)",
+        "title": "Reset Mascot Position",
         "category": "Code Boy"
       },
       {
         "command": "codeBoy.showFloatingOverlay",
-        "title": "Show Floating Mascot (Показать плавающего персонажа)",
+        "title": "Show Floating Mascot",
         "category": "Code Boy"
       },
       {
         "command": "codeBoy.hideFloatingOverlay",
-        "title": "Hide Floating Mascot (Скрыть плавающего персонажа)",
+        "title": "Hide Floating Mascot",
         "category": "Code Boy"
       },
       {
@@ -372,7 +372,7 @@
     "test:vsix": "node scripts/test-vsix-clean-profile.mjs",
     "preview": "npm run compile && node scripts/preview.mjs",
     "vscode:prepublish": "npm run compile",
-    "package": "vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.0.10.vsix"
+    "package": "vsce package --readme-path README.vscode.md --allow-missing-repository --no-dependencies --out code-boy-1.1.0.vsix"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

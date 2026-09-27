@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0
+
+- Full English localization across mascot floating overlay, controls, status bar, and command palette.
+- Enhanced IBM Bob API key in-editor onboarding guide and status indicator.
+- Real-time scanning feedback in ContextBack and fallback file discovery for clean workspaces.
+- Standalone VS Code SecretStorage integration (no `.env` file required).
+
 ## 1.0.10
 
 - Turn the Code Boy activity-bar icon into a show/hide toggle for the mascot.

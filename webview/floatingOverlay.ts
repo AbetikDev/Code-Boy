@@ -260,7 +260,7 @@ import { observeAgentActivity } from './AgentActivity';
   // 2. Build DOM
   const root = document.createElement('div');
   root.id = 'codeboy-floating-root';
-  root.title = 'Code Boy · Клик — открыть панель, перетаскивание — переместить';
+  root.title = 'Code Boy · Click to open controls, drag to move';
   root.setAttribute('aria-expanded', 'false');
 
   const speechEl = document.createElement('div');
@@ -289,12 +289,12 @@ import { observeAgentActivity } from './AgentActivity';
   const panelStatus = document.createElement('span');
   panelStatus.className = 'codeboy-panel-status';
   panelStatus.id = 'codeboy-panel-status';
-  panelStatus.textContent = 'Готов к работе';
+  panelStatus.textContent = 'Ready';
   const panelClose = document.createElement('button');
   panelClose.className = 'codeboy-panel-close';
   panelClose.dataset.panelCommand = 'close';
-  panelClose.setAttribute('aria-label', 'Закрыть панель');
-  panelClose.title = 'Закрыть';
+  panelClose.setAttribute('aria-label', 'Close panel');
+  panelClose.title = 'Close';
   panelClose.textContent = '×';
   panelHeader.append(panelName, panelStatus, panelClose);
 
@@ -320,17 +320,17 @@ import { observeAgentActivity } from './AgentActivity';
   const panelActions = document.createElement('div');
   panelActions.className = 'codeboy-panel-actions';
   const actionDefinitions = [
-    ['pet', '🐾', 'Гладить', 'Погладить', ''],
-    ['music', '🎵', 'Музыка', 'Музыка', 'codeboy-panel-music'],
-    ['dance', '💃', 'Танец', 'Потанцевать', ''],
-    ['vibe', '⚡', 'Vibe', 'Vibe режим', 'codeboy-panel-vibe'],
-    ['sleep', '💤', 'Сон', 'Спать или проснуться', 'codeboy-panel-sleep'],
-    ['play', '🎮', 'Играть', 'Поиграть', ''],
-    ['look', '👀', 'Смотреть', 'Посмотреть вокруг', ''],
-    ['room', '🏠', 'Комната', 'Сменить комнату', ''],
-    ['settings', '⚙', 'Настройки', 'Настройки Code Boy', ''],
-    ['reset', '📍', 'Позиция', 'Сбросить позицию', ''],
-    ['hide', '✕', 'Скрыть', 'Скрыть Code Boy', '']
+    ['pet', '🐾', 'Pet', 'Pet Code Boy', ''],
+    ['music', '🎵', 'Music', 'Music', 'codeboy-panel-music'],
+    ['dance', '💃', 'Dance', 'Dance', ''],
+    ['vibe', '⚡', 'Vibe', 'Vibe mode', 'codeboy-panel-vibe'],
+    ['sleep', '💤', 'Sleep', 'Sleep or wake up', 'codeboy-panel-sleep'],
+    ['play', '🎮', 'Play', 'Play game', ''],
+    ['look', '👀', 'Look', 'Look around', ''],
+    ['room', '🏠', 'Room', 'Change room', ''],
+    ['settings', '⚙', 'Settings', 'Code Boy settings', ''],
+    ['reset', '📍', 'Reset', 'Reset position', ''],
+    ['hide', '✕', 'Hide', 'Hide Code Boy', '']
   ] as const;
   for (const [action, icon, label, title, id] of actionDefinitions) {
     const button = document.createElement('button');
@@ -522,7 +522,7 @@ import { observeAgentActivity } from './AgentActivity';
     setTimeout(() => {
       canvas.style.transform = '';
     }, 220);
-    showSpeechBubble('Привет! Я тут! 🐾\nКликни по мне — откроется панель.');
+    showSpeechBubble("Hi! I'm here! 🐾\nClick me to open controls.");
   }
 
   function hideMascot() {
@@ -545,7 +545,7 @@ import { observeAgentActivity } from './AgentActivity';
     const position = defaultPosition();
     placeAt(position.left, position.top);
     showMascot();
-    showSpeechBubble('Вернулся в угол редактора! 📍');
+    showSpeechBubble('Back to the editor corner! 📍');
   }
 
   function positionPanel(): void {

@@ -4,11 +4,13 @@ import * as os from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 
 const root = process.cwd();
-const vsixPath = path.join(root, 'code-boy-1.0.10.vsix');
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const vsixName = `code-boy-${pkg.version}.vsix`;
+const vsixPath = path.join(root, vsixName);
 
 console.log('=== Step 1: Checking VSIX package ===');
 if (!fs.existsSync(vsixPath)) {
-  console.log('Packaging code-boy-1.0.10.vsix...');
+  console.log(`Packaging ${vsixName}...`);
   execFileSync('npm', ['run', 'package'], { cwd: root, stdio: 'inherit', shell: true });
 }
 

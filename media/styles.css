@@ -124,10 +124,9 @@ body.vscode-high-contrast,body.vscode-high-contrast-light{--bg:var(--vscode-edit
 .daily-grid>div span{font-size:8px;color:var(--muted);letter-spacing:.5px;margin-top:2px}
 
 /* ═══════════════════════════════════════════════════════
-   COMPACT LAYOUT — убраны кнопки и футер
+   COMPACT LAYOUT
    ═══════════════════════════════════════════════════════ */
 
-/* Компактный заголовок: LV + две полосы + виб-точка */
 /* ── Compact header: LV + bars + vibe dot ── */
 .compact-header{display:flex;align-items:center;gap:5px;padding:3px 7px 3px;border-bottom:1px solid var(--panel-light)}
 .compact-header .level-badge{padding:2px 4px;gap:2px;border:1px solid #614550;background:#251b38;color:var(--orange);white-space:nowrap;flex-shrink:0;box-shadow:none}

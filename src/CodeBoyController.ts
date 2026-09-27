@@ -42,7 +42,7 @@ export class CodeBoyController implements vscode.Disposable {
     const emit = this.engine.handle.bind(this.engine);
     this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     this.statusBarItem.text = '$(heart) Code Boy';
-    this.statusBarItem.tooltip = 'Code Boy · Плавающий персонаж (кликните, чтобы показать/скрыть)';
+    this.statusBarItem.tooltip = 'Code Boy · Floating mascot (click to show/hide)';
     this.statusBarItem.command = 'codeBoy.toggleFloatingOverlay';
     this.statusBarItem.show();
 

@@ -404,7 +404,7 @@ Use the included build script or run `vsce`:
 
 # Or manual packaging:
 npm run package
-# Result: code-boy-1.0.10.vsix
+# Result: code-boy-1.1.0.vsix
 ```
 
 ---

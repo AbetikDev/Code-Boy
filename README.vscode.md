@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-1.0.10-8055df?style=for-the-badge" alt="Version 1.0.10" />
+  <img src="https://img.shields.io/badge/Version-1.1.0-8055df?style=for-the-badge" alt="Version 1.1.0" />
   <img src="https://img.shields.io/badge/VS%20Code-%5E1.96.0-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="VS Code ^1.96.0" />
   <img src="https://img.shields.io/badge/Developer%20State-Metadata%20Only-10B981?style=for-the-badge" alt="Developer state uses metadata" />
   <img src="https://img.shields.io/badge/Zero%20Config-Instant%20Play-F59E0B?style=for-the-badge" alt="Instant Play" />
@@ -92,10 +92,10 @@ Code Boy includes **ContextBack**, an intelligent local workspace memory assista
 If you have downloaded the `.vsix` file directly:
 1. In VS Code, open the Extensions panel (`Ctrl+Shift+X`).
 2. Click the `...` (Views and More Actions) menu in the top right corner.
-3. Select **Install from VSIX...** and choose your `code-boy-1.0.10.vsix` file.
+3. Select **Install from VSIX...** and choose your `code-boy-1.1.0.vsix` file.
 *Alternatively, install via terminal:*
 ```bash
-code --install-extension code-boy-1.0.10.vsix
+code --install-extension code-boy-1.1.0.vsix
 ```
 
 ---
