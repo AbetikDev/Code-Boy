@@ -21,6 +21,8 @@ package-lock.json
 *.vsix
 .gitignore
 docs/**
+bob_sessions/**
+.bobignore
 ui-tests/**
 playwright.config.ts
 test-results/**

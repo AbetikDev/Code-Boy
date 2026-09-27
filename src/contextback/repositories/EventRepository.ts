@@ -3,7 +3,7 @@ import type { CBEvent, CBEventType } from '../types';
 import { nanoid } from '../util';
 
 export class EventRepository {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database, private readonly onActivity?: (sessionId: string) => void) {}
 
   add(sessionId: string, type: CBEventType, filePath: string, data: Record<string, unknown>): CBEvent {
     const event: CBEvent = {
@@ -15,6 +15,7 @@ export class EventRepository {
       data,
     };
     this.db.set('events', [...this.db.get('events'), event]);
+    this.onActivity?.(sessionId);
     return event;
   }
 

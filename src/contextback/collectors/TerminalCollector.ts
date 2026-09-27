@@ -42,8 +42,10 @@ export class TerminalCollector implements vscode.Disposable {
     this.running.delete(key);
     if (!start) return;
     const ctx = this.getContext();
+    if (!ctx) return;
     const now = Date.now();
     const rec: CBTerminalCommand = {
+      projectId: ctx.projectId,
       command: start.command,
       cwd: start.cwd,
       startTime: start.startTime,

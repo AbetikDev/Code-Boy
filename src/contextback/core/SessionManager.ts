@@ -21,6 +21,7 @@ export class SessionManager {
 
   updateSettings(settings: CBSettings): void {
     this.settings = settings;
+    if (this.currentSession) this.resetInactivityTimer();
   }
 
   /** Must be called after ProjectManager.initWorkspace() returns a project. */
@@ -31,6 +32,7 @@ export class SessionManager {
     const branchRec = this.repo.findOrCreateBranch(projectId, branch);
     this.currentSession = this.repo.startSession(projectId, branchRec.id);
     this.lastActivityAt = Date.now();
+    this.resetInactivityTimer();
     return this.currentSession;
   }
 
@@ -45,6 +47,7 @@ export class SessionManager {
   }
 
   touch(): void {
+    if (!this.currentSession) return;
     this.lastActivityAt = Date.now();
     this.resetInactivityTimer();
   }

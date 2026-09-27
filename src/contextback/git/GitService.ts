@@ -14,6 +14,9 @@ async function git(cwd: string, args: string[]): Promise<string> {
 }
 
 export class GitService {
+  async checkoutBranch(cwd: string, branch: string): Promise<void> {
+    await exec('git', ['switch', '--', branch], { cwd, timeout: 8000 });
+  }
   async getCurrentBranch(cwd: string): Promise<string> {
     const result = await git(cwd, ['branch', '--show-current']);
     return result || 'HEAD';

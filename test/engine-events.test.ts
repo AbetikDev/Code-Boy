@@ -319,15 +319,23 @@ test('setMusic false stops listening when no manual music', () => {
   assert.equal(engine.snapshot().state, 'IDLE');
 });
 
-test('detected music keeps an inactive character listening until playback stops', () => {
+test('detected music yields to automatic sleep after inactivity', () => {
   const { engine, advance } = setup();
   engine.setMusic(true, 'Windows media');
   advance(16 * 60_000);
-  assert.equal(engine.snapshot().state, 'LISTENING_MUSIC');
-  assert.equal(engine.snapshot().animation, 'music_loop');
+  assert.equal(engine.snapshot().state, 'SLEEPING');
   engine.setMusic(false, 'Paused');
   assert.equal(engine.snapshot().musicPlaying, false);
   assert.equal(engine.snapshot().state, 'SLEEPING');
+  engine.dispose();
+});
+
+test('an idle red blocker takes priority over music', () => {
+  const { engine } = setup({ reactions: false });
+  engine.setMusic(true, 'Windows media');
+  engine.handle({ type: 'threadStatus', hasRedThread: true, blockerCount: 1, topThreadFile: 'src/app.ts' });
+  assert.equal(engine.snapshot().state, 'CONFUSED');
+  assert.equal(engine.snapshot().musicPlaying, true);
   engine.dispose();
 });
 

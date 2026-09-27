@@ -28,7 +28,13 @@ export class FileCollector implements vscode.Disposable {
     }
   }
 
-  updateSettings(settings: CBSettings): void { this.settings = settings; }
+  updateSettings(settings: CBSettings): void {
+    this.settings = settings;
+    if (this.activeFilePath && isExcluded(this.activeFilePath, settings.exclude)) {
+      this.activeFilePath = null;
+      this.activeFileOpenedAt = null;
+    }
+  }
 
   private onOpen(doc: vscode.TextDocument): void {
     const ctx = this.getContext();
@@ -60,7 +66,7 @@ export class FileCollector implements vscode.Disposable {
     this.pendingEdits.set(file, setTimeout(() => {
       this.pendingEdits.delete(file);
       const c = this.getContext();
-      if (!c) return;
+      if (!c || isExcluded(file, this.settings.exclude)) return;
       this.fileActivity.touch(c.projectId, file, 'edit');
       this.events.add(c.sessionId, 'file_activity', file, {});
     }, 2000));
@@ -83,6 +89,11 @@ export class FileCollector implements vscode.Disposable {
   }
 
   private trackActiveFile(path: string): void {
+    if (isExcluded(path, this.settings.exclude)) {
+      this.activeFilePath = null;
+      this.activeFileOpenedAt = null;
+      return;
+    }
     this.activeFilePath = path;
     this.activeFileOpenedAt = Date.now();
   }

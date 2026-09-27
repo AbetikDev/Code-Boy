@@ -105,7 +105,8 @@ export class Database {
       fs.writeFileSync(tmp, JSON.stringify(this.store), 'utf8');
       fs.renameSync(tmp, this.dbPath);
     } catch {
-      // Non-fatal: next flush will retry
+      this.dirty = true;
+      if (!this.flushTimer) this.flushTimer = setTimeout(() => { this.flushTimer = undefined; this.flush(); }, 5000);
     }
   }
 

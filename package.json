@@ -339,7 +339,7 @@
           "contextBack.ai.enabled": {
             "type": "boolean",
             "default": false,
-            "description": "Use IBM Bob Shell for session summaries. Requires an installed and authenticated bob command; session metadata is sent to Bob."
+            "description": "Enable IBM Bob Shell summaries and code reviews. Sends session metadata and bounded filtered code samples to Bob when enabled. Requires authenticated Bob Shell."
           },
           "contextBack.ai.provider": {
             "type": "string",

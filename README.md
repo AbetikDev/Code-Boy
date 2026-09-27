@@ -13,7 +13,7 @@
   <a href="https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon"><img src="https://img.shields.io/badge/IBM%20Bob%202.0-Hackathon%20Submission-0062FF?style=for-the-badge&logo=ibm&logoColor=white" alt="IBM Bob 2.0 Hackathon" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge" alt="MIT License" /></a>
   <a href="https://code.visualstudio.com/"><img src="https://img.shields.io/badge/VS%20Code-%5E1.96.0-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="VS Code" /></a>
-  <a href="docs/TESTING_REPORT.md"><img src="https://img.shields.io/badge/Tests-40%2F40%20Passing-10B981?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Tests 40 Passed" /></a>
+  <a href="docs/TESTING_REPORT.md"><img src="https://img.shields.io/badge/Tests-247%20Node%20Passing-10B981?style=for-the-badge&logo=checkmarx&logoColor=white" alt="247 Node tests passing" /></a>
   <a href="package.json"><img src="https://img.shields.io/badge/Dependencies-0%20Runtime%20npm-3B82F6?style=for-the-badge" alt="0 Runtime Dependencies" /></a>
 </p>
 
@@ -29,7 +29,7 @@
   - [3. Code Boy State Machine](#3-code-boy-state-machine)
 - [Core Features](#-core-features)
   - [🧠 ContextBack: Zero-Friction Developer Continuity](#1--contextback-zero-friction-developer-continuity)
-  - [🎮 Code Boy: 60 FPS Ambient Companion](#2--code-boy-60-fps-ambient-companion)
+  - [🎮 Code Boy: Animated Ambient Companion](#2--code-boy-animated-ambient-companion)
   - [🤖 IBM Bob 2.0 Agentic Integration](#3--ibm-bob-20-agentic-integration)
 - [Traffic-Light Thread Detection Engine](#-traffic-light-thread-detection-engine)
 - [Cosmetic Rooms & RPG Progression](#-cosmetic-rooms--rpg-progression)
@@ -46,9 +46,9 @@
 
 ## 💡 The Problem: Context Fragmentation
 
-Software engineers spend up to **30% of their workday** rebuilding mental models after interruptions:
+Interruptions can make developers spend time rebuilding the context of a task:
 
-* ⏱️ **The 23-Minute Penalty:** Research indicates that after any interruption (meeting, overnight rest, weekend), it takes an average of **23+ minutes** to regain deep focus.
+* ⏱️ **Context recovery:** After a meeting or overnight break, developers may need to review files, tests, and errors before continuing.
 * 🕳️ **Invisible Blockers:** Broken tests, obscure compiler diagnostics, and dangling `TODO`/`FIXME` comments get buried under git diff noise.
 * 🌪️ **Branch-Switching Fatigue:** Juggling multiple feature branches forces repetitive manual reconstruction of open files and unresolved state.
 * 📉 **Impersonal Tools:** Traditional trackers are passive spreadsheets or verbose terminal logs that provide zero ambient motivation or delightful feedback.
@@ -59,8 +59,8 @@ Software engineers spend up to **30% of their workday** rebuilding mental models
 
 **Code Boy & ContextBack** bridges automated developer context preservation with ambient, gamified visual companionship:
 
-1. **ContextBack Core:** A lightweight local daemon collecting file touches, compiler diagnostics, git milestones, terminal exit codes, and inline task markers without external network leaks.
-2. **Code Boy Webview:** A 60 FPS retro pixel-art programmer that lives inside your VS Code activity bar, reacting dynamically to your typing cadence, deep focus, build errors, and music.
+1. **ContextBack Core:** A local VS Code extension component collecting file touches, compiler diagnostics, git milestones, terminal exit codes, and inline task markers. Optional IBM Bob features send filtered samples only when enabled.
+2. **Code Boy Webview:** A pixel-art programmer that lives inside your VS Code activity bar, reacting dynamically to your typing cadence, deep focus, build errors, and music.
 3. **IBM Bob 2.0 workflow:** ContextBack summarizes local project signals and copies a focused blocker prompt for the developer to review and use in Bob IDE.
 
 ---
@@ -98,7 +98,7 @@ flowchart TB
         end
     end
 
-    subgraph AmbientUI["Webview Sidebar (60 FPS Canvas)"]
+    subgraph AmbientUI["Animated Webview Sidebar"]
         CanvasEngine["HTML5 Canvas Render Engine"]
         SpriteAnim["SpriteAnimator & Scene Engine"]
         ActionUI["Vitals Meters, Action Menu, Drawers"]
@@ -219,7 +219,7 @@ stateDiagram-v2
 ## 🌟 Core Features
 
 ### 1. 🧠 ContextBack: Zero-Friction Developer Continuity
-* **100% Zero-Dependency Runtime:** Built entirely on top of standard Node.js APIs and native VS Code extension host services.
+* **0 npm runtime dependencies:** Uses Node.js, VS Code APIs, and optional system tools.
 * **Welcome Back Card:** Instantly reconstructs your previous mental model: recently edited files, active branch history, error states, and uncommitted changes.
 * **Non-Intrusive Local Telemetry:**
   - 📂 **File Collector:** Records file focus frequency, save counts, and line numbers.
@@ -228,7 +228,7 @@ stateDiagram-v2
   - 🩺 **Diagnostic Collector:** Tracks language server errors and warnings in real-time.
   - 📝 **TODO Collector:** Scans modified files for dangling `TODO`, `FIXME`, `HACK`, and `XXX` annotations.
 
-### 2. 🎮 Code Boy: 60 FPS Ambient Companion
+### 2. 🎮 Code Boy: Animated Ambient Companion
 * **Flow State Reflection:** Code Boy types rapidly when you are in flow, enters calm focus with headphones on, yawns when you idle, and cheers when builds pass.
 * **Vibe Mode & Music Detection:** Detects playback with Windows SMTC, Linux MPRIS, macOS Apple Music or Spotify, or the optional Spotify API to toggle rhythmic head-bobbing animations.
 * **RPG Leveling & Rewards:** Earn experience points (XP) for consecutive coding days, clean builds, and resolving error states.
@@ -269,23 +269,24 @@ As you code and resolve blockers, Code Boy gains XP, levels up, and unlocks retr
 
 ## 🔒 Privacy and data handling
 
-The new developer state layer keeps numeric edit counts and project health signals. It does not retain source text or file paths. ContextBack has its own local session records and optional diff snapshots:
+The developer state layer keeps numeric edit counts and project health signals. It does not retain source text or file paths. ContextBack keeps local session records, file paths, diagnostics, TODO text, and terminal command metadata. When IBM Bob is enabled, it can also store bounded local diff snapshots for reviews:
 
 ```
 [ Developer Workspace ]
    │
    ├── ✅ ALLOWED: File paths, line counts, error codes, event timestamps
    │
-   └── ❌ EXCLUDED FROM DEVELOPER STATE:
+   └── ❌ EXCLUDED FROM DEVELOPER STATE AND CONTEXTBACK COLLECTION:
        ├── Source code bodies
        ├── Environment files (.env, .env.*)
        ├── Secret directories (**/secrets/**, **/credentials/**)
        ├── Private keys & certificates (*.pem, *.key)
-       └── Terminal command output & sensitive parameters
+       └── Terminal command output
 ```
 
 * **Local JSON Database:** All records persist strictly on your machine at `~/.contextback/context.json`.
-* **Optional external calls:** ContextBack can send bounded diff samples to IBM Bob Shell when its review is enabled. Spotify API detection requests playback status with a user-supplied token. The developer state layer itself stays local.
+* **Terminal metadata:** Command strings are stored locally when terminal tracking is enabled. Commands matching common secret markers are skipped; review this setting before using terminals with sensitive arguments.
+* **Optional external calls:** ContextBack can send bounded filtered code samples to IBM Bob Shell when `contextBack.ai.enabled` is enabled. Spotify API detection requests playback status with a user-supplied token. The developer state layer itself stays local.
 
 ---
 
@@ -385,7 +386,7 @@ npm run compile
 
 ### 3. Standalone Browser Preview
 
-You can preview and test Code Boy's 60 FPS canvas engine directly in your web browser without spinning up VS Code:
+You can preview and test Code Boy's animated webview directly in your web browser without spinning up VS Code:
 
 ```bash
 npm run preview
@@ -433,7 +434,7 @@ npm run test:host
 ✔ End-to-end ContextBack core lifecycle: start -> work -> error -> resolve -> end
 ✔ ContextBoyBridge prepares blocker context for IBM Bob IDE
 ...
-ℹ pass 40, fail 0 (238ms)
+ℹ pass 247, fail 0
 ```
 
 See the full [**Testing & QA Report**](docs/TESTING_REPORT.md) for detailed test matrices and coverage reports.
@@ -472,7 +473,7 @@ Code-Boy/
 │   ├── music/                  # Windows SMTC, Linux MPRIS, macOS and Spotify controller
 │   └── vscode/                 # VS Code editor and diagnostics listeners
 ├── test/                       # Unit and integration test suites
-├── webview/                    # Client-side 60 FPS Canvas & Webview Engine
+├── webview/                    # Client-side animated Webview Engine
 │   ├── main.ts                 # Webview bootstrap & UI events
 │   ├── Scene.ts                # Pixel room compositing & rendering
 │   ├── SpriteAnimator.ts       # Frame-accurate sprite animation player

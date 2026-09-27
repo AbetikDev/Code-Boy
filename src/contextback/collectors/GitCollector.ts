@@ -6,6 +6,7 @@ import type { GitService } from '../git/GitService';
 /** Periodically polls git and records commit events. */
 export class GitCollector {
   private timer: ReturnType<typeof setInterval> | undefined;
+  private generation = 0;
 
   constructor(
     private readonly db: Database,
@@ -33,17 +34,20 @@ export class GitCollector {
   }
 
   stop(): void {
+    this.generation++;
     if (this.timer) { clearInterval(this.timer); this.timer = undefined; }
   }
 
   private async poll(): Promise<void> {
     if (!this.settings.trackGit) return;
+    const generation = this.generation;
     const ctx = this.getContext();
     if (!ctx) return;
     const { projectId, sessionId, root } = ctx;
 
     try {
       const commits = await this.git.getRecentCommits(root, 5);
+      if (generation !== this.generation) return;
       const known = this.db.get('events')
         .filter(e => e.sessionId === sessionId && e.type === 'git_commit')
         .map(e => e.data['hash'] as string);
@@ -62,6 +66,7 @@ export class GitCollector {
       }
       this.baselineLoaded = true;
       const changedFilesKey = (await this.git.getChangedFiles(root)).sort().join('\n');
+      if (generation !== this.generation) return;
       if (this.changedFilesKey !== changedFilesKey) {
         this.changedFilesKey = changedFilesKey;
         this.onHealthChanged?.(projectId);

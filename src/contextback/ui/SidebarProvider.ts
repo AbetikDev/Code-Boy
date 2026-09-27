@@ -10,7 +10,7 @@ function esc(value: string): string {
 function qualityCard(kind: string, title: string, entry: CBQualityCacheEntry | null, enabled: boolean, reviewable: boolean): string {
   const result = entry?.result;
   const score = result && reviewable ? result.score : null;
-  const label = !reviewable ? 'NO CODE' : !enabled ? 'BOB OFFLINE' : !entry ? 'SCANNING...' : !result ? 'UNAVAILABLE' : `${score}/100`;
+  const label = !enabled ? 'BOB DISABLED / OFFLINE' : !reviewable ? 'NO CODE' : !entry ? 'READY TO SCAN' : !result ? 'UNAVAILABLE' : `${score}/100`;
   const tone = score === null ? 'quiet' : score >= 80 ? 'good' : score >= 55 ? 'warn' : 'bad';
   return `<article class="scan-card ${tone}">
     <div class="scan-top"><span class="scan-title">${esc(title)}</span><strong class="scan-score">${label}</strong></div>

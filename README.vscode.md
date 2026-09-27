@@ -81,20 +81,14 @@ Ever open your editor on a Monday and ask *"Where was I?"*
 Code Boy includes **ContextBack**, an intelligent local workspace memory assistant:
 - Shows a compact **What I did yesterday** recap behind the **ContextBack** button in Code Boy's Activity Bar panel, with files, commits, test results, and a next step when available.
 - Displays unresolved `TODO`s, compiler errors, and pending tasks in one glance.
-- Uses Bob Shell to score yesterday's code changes and a sample of current code from 0 to 100, with reasons and concrete findings. Add `BOB_API_KEY` to the workspace `.env` and install Bob Shell to enable reviews. Only bounded, filtered code samples are sent; older uncommitted work without a saved snapshot cannot be scored.
+- Uses Bob Shell to score yesterday's code changes and a sample of current code from 0 to 100, with reasons and concrete findings. Enable `contextBack.ai.enabled`, install Bob Shell, and set `BOB_API_KEY` to allow reviews. Only bounded, filtered code samples are sent; older uncommitted work without a saved snapshot cannot be scored.
 - Restores your mental context in seconds so you can get straight to building.
 
 ---
 
 ## 📥 How to Install
 
-### Option A: From VS Code Extensions View (Recommended)
-1. Open **Visual Studio Code**.
-2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (macOS) to open the **Extensions** view.
-3. In the search box, type **Code Boy**.
-4. Click **Install**.
-
-### Option B: Install from VSIX Package
+### Install from VSIX Package
 If you have downloaded the `.vsix` file directly:
 1. In VS Code, open the Extensions panel (`Ctrl+Shift+X`).
 2. Click the `...` (Views and More Actions) menu in the top right corner.

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'node:fs';
 import type { CBSettings, CBTodo } from '../types';
 import type { TodoRepository } from '../repositories/TodoRepository';
+import { isExcluded } from '../util';
 
 const TODO_RE = /\/\/\s*(TODO|FIXME|HACK|XXX)[:\s]+(.+)/gi;
 const SUPPORTED_SCHEMES = new Set(['file']);
@@ -27,6 +28,7 @@ export class TodoCollector implements vscode.Disposable {
     if (!this.settings.trackTodos) return;
     if (!SUPPORTED_SCHEMES.has(doc.uri.scheme)) return;
     const file = doc.uri.fsPath;
+    if (isExcluded(file, this.settings.exclude)) return;
     const existing = this.pending.get(file);
     if (existing) clearTimeout(existing);
     this.pending.set(file, setTimeout(() => { this.pending.delete(file); this.scanFile(doc); }, 1500));
@@ -34,7 +36,7 @@ export class TodoCollector implements vscode.Disposable {
 
   private scanFile(doc: vscode.TextDocument): void {
     const ctx = this.getContext();
-    if (!ctx) return;
+    if (!ctx || isExcluded(doc.uri.fsPath, this.settings.exclude)) return;
     this.scanText(ctx.projectId, doc.uri.fsPath, doc.getText());
   }
 
@@ -58,7 +60,7 @@ export class TodoCollector implements vscode.Disposable {
 
   /** Scan a file from disk (used on startup for recently changed files). */
   async scanPath(projectId: string, filePath: string): Promise<void> {
-    if (!this.settings.trackTodos) return;
+    if (!this.settings.trackTodos || isExcluded(filePath, this.settings.exclude)) return;
     try {
       const text = fs.readFileSync(filePath, 'utf8');
       this.scanText(projectId, filePath, text);

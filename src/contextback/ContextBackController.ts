@@ -88,6 +88,7 @@ export class ContextBackController implements vscode.Disposable {
   private readonly sidebarRefreshTimer: ReturnType<typeof setInterval>;
   private snapshotTimer: ReturnType<typeof setTimeout> | undefined;
   private qualityRunning = false;
+  private initializing = false;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.settings = readCBSettings();
@@ -95,7 +96,9 @@ export class ContextBackController implements vscode.Disposable {
     this.db = new Database(storageRoot);
     this.projectRepo = new ProjectRepository(this.db);
     this.sessionRepo = new SessionRepository(this.db);
-    this.eventRepo = new EventRepository(this.db);
+    this.eventRepo = new EventRepository(this.db, sessionId => {
+      if (this.sessionMgr?.current?.id === sessionId) this.sessionMgr.touch();
+    });
     this.errorRepo = new ErrorRepository(this.db);
     this.todoRepo = new TodoRepository(this.db);
     this.fileRepo = new FileActivityRepository(this.db);
@@ -122,8 +125,16 @@ export class ContextBackController implements vscode.Disposable {
       this.sidebar,
       vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration('contextBack')) {
+          const wasEnabled = this.settings.enabled;
           this.settings = readCBSettings();
           this.sessionMgr.updateSettings(this.settings);
+          if (wasEnabled && !this.settings.enabled) {
+            if (this.snapshotTimer) { clearTimeout(this.snapshotTimer); this.snapshotTimer = undefined; }
+            this.stopCollectors();
+            this.sessionMgr.endCurrent();
+          } else if (!wasEnabled && this.settings.enabled) {
+            void this.init();
+          }
           this.fileCollector?.updateSettings(this.settings);
           this.terminalCollector?.updateSettings(this.settings);
           this.diagCollector?.updateSettings(this.settings);
@@ -134,6 +145,14 @@ export class ContextBackController implements vscode.Disposable {
       }),
       vscode.workspace.onDidChangeWorkspaceFolders(() => { void this.switchWorkspace(); }),
       vscode.workspace.onDidSaveTextDocument(() => this.scheduleSnapshot()),
+      vscode.workspace.onDidChangeTextDocument(e => {
+        if (e.contentChanges.length && this.settings.enabled && !this.sessionMgr.current && this.projectMgr.current) {
+          void this.init();
+        }
+      }),
+      vscode.window.onDidStartTerminalShellExecution(() => {
+        if (this.settings.enabled && !this.sessionMgr.current && this.projectMgr.current) void this.init();
+      }),
     );
 
     this.registerCommands();
@@ -142,15 +161,19 @@ export class ContextBackController implements vscode.Disposable {
   }
 
   private async init(): Promise<void> {
-    if (!this.settings.enabled) return;
+    if (!this.settings.enabled || this.initializing) return;
+    this.initializing = true;
+    try {
     const project = await this.projectMgr.initWorkspace();
-    if (!project) return;
+    if (!project || !this.settings.enabled || this.sessionMgr.current) return;
 
+    this.stopCollectors();
     const root = this.projectMgr.root!;
     this.sessionMgr.recoverPrevious(project.id);
     const lastSession = this.sessionRepo.getLastCompleted(project.id);
 
     await this.sessionMgr.startForProject(project.id, root);
+    if (!this.settings.enabled) { this.sessionMgr.endCurrent(); return; }
     const session = this.sessionMgr.current!;
 
     const ctx = () => {
@@ -179,13 +202,15 @@ export class ContextBackController implements vscode.Disposable {
         .filter(todo => todo.projectId === project.id && todo.status === 'open')
         .map(todo => todo.file));
       for (const file of files) {
+        if (!this.settings.enabled || !this.todoCollector) return;
         const relative = path.relative(root, file);
         if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
           await this.todoCollector.scanPath(project.id, file);
         }
       }
     }
-    this.gitCollector.start();
+    if (!this.settings.enabled) return;
+    this.gitCollector?.start();
 
     this.sidebar.refresh();
     if (this.sidebar.isVisible()) void this.refreshQuality(false);
@@ -198,6 +223,7 @@ export class ContextBackController implements vscode.Disposable {
         setTimeout(() => void this.showWelcomeBack(lastSession), 2000);
       }
     }
+    } finally { this.initializing = false; }
   }
 
   private getContext(): { projectId: string; sessionId: string; root: string } | null {
@@ -255,7 +281,7 @@ export class ContextBackController implements vscode.Disposable {
       project, branch, lastSession, hoursAgo,
       analysis: analysis.confidence >= 0.4 ? analysis : null,
       recentFiles, openErrors: errors, openTodos: todos,
-      recentCommands: this.db.get('terminalCommands').slice(-5),
+      recentCommands: this.db.get('terminalCommands').filter(command => command.projectId === project.id).slice(-5),
       git,
     };
     this.welcome.show(data);
@@ -334,18 +360,21 @@ export class ContextBackController implements vscode.Disposable {
   }
 
   private scheduleSnapshot(): void {
+    if (!this.settings.enabled || !this.settings.aiEnabled || this.settings.aiProvider !== 'bob') return;
     if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
     this.snapshotTimer = setTimeout(() => { this.snapshotTimer = undefined; void this.captureSnapshot(); }, 3000);
   }
 
   private async captureSnapshot(): Promise<void> {
+    if (!this.settings.enabled || !this.settings.aiEnabled || this.settings.aiProvider !== 'bob') return;
     const project = this.projectMgr.current;
     const root = this.projectMgr.root;
     if (!project || !root) return;
     const day = localDay(new Date());
     const input = await new QualityContext(root, this.settings).workingChanges();
     const rest = this.db.get('diffSnapshots').filter(s => s.projectId !== project.id || s.day !== day);
-    this.db.set('diffSnapshots', [...rest, { projectId: project.id, day, patch: input.text, capturedAt: Date.now() }]);
+    if (this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob')
+      this.db.set('diffSnapshots', [...rest, { projectId: project.id, day, patch: input.text, capturedAt: Date.now() }]);
   }
 
   private cacheEntry(projectId: string, kind: 'yesterday' | 'current', day: string): CBQualityCacheEntry | null {
@@ -366,12 +395,13 @@ export class ContextBackController implements vscode.Disposable {
       this.errorRepo.openForProject(project.id), this.todoRepo.openForProject(project.id), new Date(),
       gitFiles.map(file => path.resolve(root, file)));
     const today = localDay(new Date());
-    const inputs = await this.qualityInputs();
+    const inputs = this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob'
+      ? await this.qualityInputs() : null;
     return {
       project, branch, recap,
       yesterdayQuality: this.cacheEntry(project.id, 'yesterday', recap.date),
       currentQuality: this.cacheEntry(project.id, 'current', today),
-      qualityEnabled: new BobShellProvider(root).isAvailable(),
+      qualityEnabled: this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob' && new BobShellProvider(root).isAvailable(),
       yesterdayReviewable: !!inputs?.yesterday.text.trim(),
       currentReviewable: !!inputs?.current.text.trim(),
       openThreads: await this.getTopThreads(),
@@ -395,6 +425,10 @@ export class ContextBackController implements vscode.Disposable {
   }
 
   async refreshQuality(force: boolean): Promise<void> {
+    if (!this.settings.enabled || !this.settings.aiEnabled || this.settings.aiProvider !== 'bob') {
+      if (force) vscode.window.showInformationMessage('ContextBack: Enable IBM Bob summaries in settings before sending code for review.');
+      return;
+    }
     if (this.qualityRunning) return;
     const project = this.projectMgr.current;
     const root = this.projectMgr.root;
@@ -415,6 +449,7 @@ export class ContextBackController implements vscode.Disposable {
       ] as const) {
         const previous = this.cacheEntry(project.id, kind, day);
         if (!shouldReview(previous, input, force)) continue;
+        if (!this.settings.enabled || !this.settings.aiEnabled || this.settings.aiProvider !== 'bob') break;
         const assessed = await bob.assessQuality(input.text, kind);
         const checkedAt = Date.now();
         const entry: CBQualityCacheEntry = {
@@ -422,7 +457,8 @@ export class ContextBackController implements vscode.Disposable {
           result: assessed ? { ...assessed, checkedAt, inputHash: input.hash } : null,
         };
         const rest = this.db.get('qualityCache').filter(e => !(e.projectId === project.id && e.kind === kind && e.day === day));
-        this.db.set('qualityCache', [...rest, entry]);
+        if (this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob')
+          this.db.set('qualityCache', [...rest, entry]);
         this.sidebar.refresh();
       }
     } finally {
@@ -510,9 +546,8 @@ export class ContextBackController implements vscode.Disposable {
         'Switch branch', 'Continue on current', 'Cancel'
       );
       if (choice === 'Switch branch') {
-        const terminal = vscode.window.createTerminal({ name: 'ContextBack', cwd: root });
-        terminal.sendText(`git checkout ${sessionBranch.name}`);
-        terminal.show();
+        try { await this.git.checkoutBranch(root, sessionBranch.name); }
+        catch { vscode.window.showWarningMessage('ContextBack: Could not switch branch. Check for uncommitted changes.'); }
       }
     }
 
@@ -580,16 +615,21 @@ export class ContextBackController implements vscode.Disposable {
     if (answer !== 'Clear') return;
     const project = this.projectMgr.current;
     if (!project) return;
+    if (this.snapshotTimer) { clearTimeout(this.snapshotTimer); this.snapshotTimer = undefined; }
+    this.stopCollectors();
+    this.sessionMgr.endCurrent();
     // Remove data for this project only
     const clearedSessionIds = new Set(this.db.get('sessions').filter(s => s.projectId === project.id).map(s => s.id));
     this.db.set('sessions', this.db.get('sessions').filter(s => s.projectId !== project.id));
     this.db.set('events', this.db.get('events').filter(e => !clearedSessionIds.has(e.sessionId)));
+    this.db.set('terminalCommands', this.db.get('terminalCommands').filter(c => c.projectId && c.projectId !== project.id));
     this.db.set('fileActivity', this.db.get('fileActivity').filter(f => f.projectId !== project.id));
     this.db.set('errors', this.db.get('errors').filter(e => e.projectId !== project.id));
     this.db.set('todos', this.db.get('todos').filter(t => t.projectId !== project.id));
     this.db.set('diffSnapshots', this.db.get('diffSnapshots').filter(s => s.projectId !== project.id));
     this.db.set('qualityCache', this.db.get('qualityCache').filter(e => e.projectId !== project.id));
     this.db.flush();
+    if (this.settings.enabled) await this.init();
     this.sidebar.refresh();
     vscode.window.showInformationMessage('ContextBack: History cleared.');
   }
@@ -598,6 +638,7 @@ export class ContextBackController implements vscode.Disposable {
     if (!this.settings.aiEnabled || this.settings.aiProvider === 'disabled') return new DisabledAIProvider();
     return new BobShellProvider(this.projectMgr.root ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd());
   }
+
 
   private registerCommands(): void {
     const cmd = (id: string, fn: () => unknown) =>

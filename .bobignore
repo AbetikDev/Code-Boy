@@ -1,0 +1,13 @@
+.env
+.env.*
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+node_modules/
+dist/
+coverage/
+bob_sessions/
+*.vsix

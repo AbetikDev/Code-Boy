@@ -99,6 +99,7 @@ export interface CBCommit {
 }
 
 export interface CBTerminalCommand {
+  projectId?: string;
   command: string;
   cwd: string;
   startTime: number;
