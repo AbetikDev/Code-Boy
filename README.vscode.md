@@ -88,11 +88,14 @@ Code Boy includes **ContextBack**, an intelligent local workspace memory assista
 
 ## 📥 How to Install
 
+### Download Latest Release
+You can always download the newest `.vsix` packages directly from [GitHub Releases](https://github.com/AbetikDev/Code-Boy/releases/latest).
+
 ### Install from VSIX Package
-If you have downloaded the `.vsix` file directly:
+If you have downloaded the `.vsix` file:
 1. In VS Code, open the Extensions panel (`Ctrl+Shift+X`).
 2. Click the `...` (Views and More Actions) menu in the top right corner.
-3. Select **Install from VSIX...** and choose your `code-boy-1.1.0.vsix` file.
+3. Select **Install from VSIX...** and choose your `code-boy-1.1.0.vsix` (or `code-boy-reserve-1.1.0.vsix`) file.
 *Alternatively, install via terminal:*
 ```bash
 code --install-extension code-boy-1.1.0.vsix

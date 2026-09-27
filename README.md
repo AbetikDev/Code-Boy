@@ -36,6 +36,7 @@
 - [Privacy and data handling](#-privacy-and-data-handling)
 - [Available Commands](#-available-commands)
 - [Configuration Reference](#-configuration-reference)
+- [Download & Releases](#-download--releases)
 - [Getting Started & Local Development](#-getting-started--local-development)
 - [Testing & Quality Assurance](#-testing--quality-assurance)
 - [Repository Structure](#-repository-structure)
@@ -355,6 +356,25 @@ Customize both extensions via VS Code **Settings** (`Ctrl+,`) or `settings.json`
   ]
 }
 ```
+
+---
+
+## 📥 Download & Releases
+
+Pre-built `.vsix` packages for the latest and past versions can be downloaded directly from GitHub Releases:
+
+👉 **[Download Latest Version (GitHub Releases)](https://github.com/AbetikDev/Code-Boy/releases/latest)**
+
+* **Latest Release (`v1.1.0`):**
+  * Primary: [`code-boy-1.1.0.vsix`](https://github.com/AbetikDev/Code-Boy/releases/download/v1.1.0/code-boy-1.1.0.vsix)
+  * Backup: [`code-boy-reserve-1.1.0.vsix`](https://github.com/AbetikDev/Code-Boy/releases/download/v1.1.0/code-boy-reserve-1.1.0.vsix)
+* **All Releases:** [Browse All Releases & Changelogs](https://github.com/AbetikDev/Code-Boy/releases)
+
+#### Quick Install in VS Code:
+```bash
+code --install-extension code-boy-1.1.0.vsix
+```
+Or inside VS Code: Open Extensions view (`Ctrl+Shift+X`), click `...` in the top-right corner, and select **Install from VSIX...**.
 
 ---
 
