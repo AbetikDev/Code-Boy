@@ -302,7 +302,6 @@ The developer state layer keeps numeric edit counts and project health signals. 
 | `contextBack.showOpenThreads` | `ContextBack: Show Open Threads` | Inspects red/yellow blocker threads in the sidebar. |
 | `contextBack.pauseTracking` | `ContextBack: Pause Tracking` | Temporarily suspends local activity recording. |
 | `contextBack.clearHistory` | `ContextBack: Clear Project History` | Resets local session telemetry for the current workspace. |
-| `contextBack.setOpenAIKey` | `ContextBack: Set OpenAI API Key` | Stores API key securely in VS Code SecretStorage. |
 
 ### Code Boy Commands
 | Command ID | Title in Palette (`Ctrl+Shift+P`) | Description |
@@ -344,7 +343,8 @@ Customize both extensions via VS Code **Settings** (`Ctrl+,`) or `settings.json`
   "contextBack.trackDiagnostics": true,     // Record compiler/linter error traces
   "contextBack.trackGit": true,             // Monitor git branch transitions and commits
   "contextBack.trackTodos": true,           // Scan saved files for TODO/FIXME markers
-  "contextBack.ai.provider": "disabled",    // AI summary engine: 'disabled' | 'openai' | 'ollama'
+  "contextBack.ai.enabled": false,          // Enable IBM Bob summaries & reviews (requires Bob Shell)
+  "contextBack.ai.provider": "bob",         // Summary provider: 'bob' | 'disabled'
   "contextBack.exclude": [                  // Patterns strictly excluded from tracking
     "**/.env*",
     "**/secrets/**",
@@ -416,7 +416,7 @@ Code Boy & ContextBack adheres to strict test-driven boundaries. The test suite 
 # Typecheck TypeScript for both extension host and webview
 npm run check
 
-# Run 40 automated unit tests (sub-second execution)
+# Run 267 automated Node tests
 npm test
 
 # Run UI tests with Playwright
@@ -493,7 +493,7 @@ This repository is submitted to the **IBM Bob 2.0 Hackathon**:
   * IBM Bob Usage Statement (≤ 500 words).
   * 3-Minute Video Pitch & Demo Script with timestamps.
   * 6-Slide Presentation Deck Outline.
-* 🧪 **[QA & Testing Report](docs/TESTING_REPORT.md):** 40 automated unit tests, 0 flaky runs, sub-second execution.
+* 🧪 **[QA & Testing Report](docs/TESTING_REPORT.md):** 267 Node tests + 11 Playwright tests, 0 flaky runs, sub-second execution.
 * 📸 **[IBM Bob Task Session Proofs](docs/ibm-bob/):** Documentation of architectural co-design with IBM Bob 2.0.
 
 ---
