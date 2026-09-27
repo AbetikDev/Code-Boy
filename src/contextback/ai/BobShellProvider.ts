@@ -17,23 +17,31 @@ export function parseQualityResponse(content: string): QualityAssessment | null 
 
 /** VS Code launched from a desktop icon may not inherit the user's npm bin PATH. */
 export function resolveBobCommand(): string {
-  if (process.platform === 'win32') return 'bob.cmd';
-  const executable = 'bob';
+  const executable = process.platform === 'win32' ? 'bob.cmd' : 'bob';
   const pathDirs = (process.env['PATH'] ?? '').split(path.delimiter);
   for (const directory of pathDirs) {
     if (directory && fs.existsSync(path.join(directory, executable))) return path.join(directory, executable);
   }
   const prefixes = [process.env['npm_config_prefix'], process.env['NPM_CONFIG_PREFIX'],
+    ...(process.platform === 'win32' && process.env['APPDATA'] ? [path.join(process.env['APPDATA'], 'npm')] : []),
     path.join(os.homedir(), '.local', 'npm'), path.join(os.homedir(), '.npm-global')];
   for (const prefix of prefixes) {
-    if (prefix && fs.existsSync(path.join(prefix, 'bin', executable))) return path.join(prefix, 'bin', executable);
+    if (!prefix) continue;
+    for (const candidate of [path.join(prefix, executable), path.join(prefix, 'bin', executable)]) {
+      if (fs.existsSync(candidate)) return candidate;
+    }
   }
   return executable;
 }
 
+export const BOB_API_KEY_SECRET = 'contextBack.bobApiKey';
+
 /** Uses IBM Bob Shell's documented non-interactive JSON output. */
 export class BobShellProvider implements AIProvider {
-  constructor(private readonly workspace: string) {}
+  readonly workspace: string;
+  readonly storedApiKey?: string;
+  lastError?: string;
+  constructor(workspace: string, storedApiKey?: string) { this.workspace = workspace; this.storedApiKey = storedApiKey; }
 
   isAvailable(): boolean { return !!this.getApiKey(); }
 
@@ -66,15 +74,16 @@ export class BobShellProvider implements AIProvider {
 
   private async runPrompt(prompt: string): Promise<string | null> {
     const apiKey = this.getApiKey();
-    if (!apiKey) return null;
+    this.lastError = undefined;
+    if (!apiKey) { this.lastError = 'Save an IBM Bob API key in Code Boy first.'; return null; }
     try {
       const output = await new Promise<string>((resolve, reject) => {
         const bobArgs = ['run', '--format', 'json', '--mode', 'ask', '--max-turns', '1', '--max-cost', '0.10'];
         // npm installs Windows command shims as .cmd files, which CreateProcess
         // cannot execute directly. Route the fixed CLI arguments through cmd.exe.
-        const command = process.platform === 'win32' ? 'cmd.exe' : resolveBobCommand();
+        const command = process.platform === 'win32' ? (process.env['ComSpec'] || 'cmd.exe') : resolveBobCommand();
         const args = process.platform === 'win32'
-          ? ['/d', '/s', '/c', 'bob.cmd', ...bobArgs]
+          ? ['/d', '/c', 'call', resolveBobCommand(), ...bobArgs]
           : bobArgs;
         const child = spawn(command, args, {
           cwd: this.workspace, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
@@ -94,36 +103,25 @@ export class BobShellProvider implements AIProvider {
         child.on('close', code => {
           clearTimeout(timer);
           if (code === 0) resolve(stdout);
-          else reject(new Error(stderr || `Bob Shell exited with code ${code}`));
+          else reject(new Error(stderr.trim() || `Bob Shell exited with code ${code}`));
         });
         child.stdin.on('error', () => { /* process exit is handled above */ });
         child.stdin.end(prompt);
       });
       const result = JSON.parse(output) as { status?: string; last_message?: string };
-      if (result.status !== 'success' || typeof result.last_message !== 'string') return null;
+      if (result.status !== 'success' || typeof result.last_message !== 'string') {
+        this.lastError = 'Bob Shell did not return a successful response. Check your key and Bob Shell installation.';
+        return null;
+      }
       return result.last_message.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-    } catch {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.lastError = msg ? `Bob error: ${msg}` : 'Bob Shell could not complete the scan. Check that Bob Shell is installed and the key is valid.';
       return null;
     }
   }
 
   private getApiKey(): string | undefined {
-    const inherited = process.env['BOB_API_KEY']?.trim();
-    if (inherited) return inherited;
-    try {
-      const envFile = fs.readFileSync(path.join(this.workspace, '.env'), 'utf8');
-      for (const line of envFile.split(/\r?\n/)) {
-        const match = line.match(/^\s*(?:export\s+)?BOB_API_KEY\s*=\s*(.*?)\s*$/);
-        if (!match?.[1]) continue;
-        const raw = match[1];
-        const value = raw.length >= 2 &&
-          ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
-          ? raw.slice(1, -1) : raw;
-        if (value.trim()) return value.trim();
-      }
-    } catch {
-      // A missing or unreadable local .env simply means Bob is not configured.
-    }
-    return undefined;
+    return this.storedApiKey?.trim() || undefined;
   }
 }

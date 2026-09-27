@@ -210,6 +210,11 @@
         "command": "contextBack.clearHistory",
         "title": "Clear Project History",
         "category": "ContextBack"
+      },
+      {
+        "command": "contextBack.configureBob",
+        "title": "Connect IBM Bob API Key",
+        "category": "ContextBack"
       }
     ],
     "menus": {

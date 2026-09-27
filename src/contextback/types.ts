@@ -204,6 +204,7 @@ export interface CBQualityCacheEntry {
   kind: 'yesterday' | 'current';
   day: string;
   result: CBQualityResult | null;
+  error?: string;
   inputHash: string;
   checkedAt: number;
 }
@@ -222,6 +223,7 @@ export interface CBSidebarData {
   yesterdayQuality: CBQualityCacheEntry | null;
   currentQuality: CBQualityCacheEntry | null;
   qualityEnabled: boolean;
+  qualityRunning?: boolean;
   yesterdayReviewable: boolean;
   currentReviewable: boolean;
   openThreads: CBOpenThread[];

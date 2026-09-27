@@ -58,6 +58,15 @@ for (const width of [200, 250, 300, 400]) {
 
     await page.locator('#open-contextback').click();
     await expect(page.locator('#speech')).toHaveText('ContextBack opens inside VS Code.');
+    await page.locator('#configure-bob').click();
+    await expect(page.locator('#bob-key-form')).toBeVisible();
+    await expect(page.locator('#bob-key-form a')).toHaveAttribute('href', 'https://bob.ibm.com/docs/shell/account/api-keys');
+    await page.locator('#bob-key-input').fill('preview-test-key');
+    await page.locator('#bob-key-form button').click();
+    await expect(page.locator('#bob-key-form')).toBeHidden();
+    await expect(page.locator('#bob-key-input')).toHaveValue('');
+    await expect(page.locator('#bob-key-title')).toHaveText('IBM BOB: CONNECTED');
+    await expect(page.locator('#bob-key-status')).toHaveText('KEY SAVED · CLICK TO CHANGE');
     await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'false');
     await page.locator('#toggle-overlay').click();
     await expect(page.locator('#toggle-overlay')).toHaveAttribute('aria-pressed', 'true');

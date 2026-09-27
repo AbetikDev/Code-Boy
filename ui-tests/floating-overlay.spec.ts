@@ -5,7 +5,8 @@ import { CodeBoyEngine } from '../src/core/CodeBoyEngine';
 import { DEFAULT_SETTINGS } from '../src/models/types';
 
 // Match the installed workbench's restrictions on connections, images and scripts.
-const html = `<html><head><title>Visual Studio Code</title><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https: ws:; img-src 'self' data: blob: https:; require-trusted-types-for 'script';"></head><body><script src="/floating-overlay.js"></script></body></html>`;
+// Custom title bars can show just the workspace name, without the product name.
+const html = `<html><head><title>Code-Boy</title><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https: ws:; img-src 'self' data: blob: https:; require-trusted-types-for 'script';"></head><body><script src="/floating-overlay.js"></script></body></html>`;
 
 for (const repaired of [false, true]) {
   test(`floating mascot ${repaired ? 'renders with repaired CSP' : 'is blocked by original workbench CSP'}`, async ({ page }) => {

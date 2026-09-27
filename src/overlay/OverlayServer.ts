@@ -120,7 +120,7 @@ export class OverlayServer implements vscode.Disposable {
 
     if (pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', port: this.port, appName: vscode.env.appName }));
+      res.end(JSON.stringify({ status: 'ok', port: this.port, appName: vscode.env.appName, pid: process.pid }));
       return;
     }
 

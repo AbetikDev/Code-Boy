@@ -15,9 +15,12 @@ export function parseClientMessage(input: unknown, development: boolean, animati
       return ownKeys(value, ['type', 'action']) && typeof value.action === 'string' && actions.has(value.action as Action) ? { type: 'action', action: value.action as Action } : undefined;
     case 'room':
       return ownKeys(value, ['type', 'room']) && ROOM_THEMES.includes(value.room as RoomTheme) ? { type: 'room', room: value.room as RoomTheme } : undefined;
+    case 'bobKey':
+      return ownKeys(value, ['type', 'key']) && typeof value.key === 'string' && value.key.trim().length > 0 && value.key.length <= 512
+        ? { type: 'bobKey', key: value.key.trim() } : undefined;
     case 'command':
       if (!ownKeys(value, ['type', 'command']) || typeof value.command !== 'string' || !commands.has(value.command) || (value.command === 'gallery' && !development)) { return; }
-      return { type: 'command', command: value.command as 'stats' | 'room' | 'settings' | 'gallery' | 'context' | 'toggleOverlay' };
+      return { type: 'command', command: value.command as Extract<ClientMessage, { type: 'command' }>['command'] };
     case 'debug': {
       if (!development || !ownKeys(value, ['type', 'state', 'mood', 'energy', 'random', 'animation', 'fps'])) { return; }
       if (value.state !== undefined && !CHARACTER_STATES.includes(value.state as CharacterState)) { return; }

@@ -7,23 +7,25 @@ function esc(value: string): string {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function qualityCard(kind: string, title: string, entry: CBQualityCacheEntry | null, enabled: boolean, reviewable: boolean): string {
+function qualityCard(kind: string, title: string, entry: CBQualityCacheEntry | null, enabled: boolean, reviewable: boolean, scanning = false): string {
   const result = entry?.result;
   const score = result && reviewable ? result.score : null;
-  const label = !enabled ? 'BOB DISABLED / OFFLINE' : !reviewable ? 'NO CODE' : !entry ? 'READY TO SCAN' : !result ? 'UNAVAILABLE' : `${score}/100`;
-  const tone = score === null ? 'quiet' : score >= 80 ? 'good' : score >= 55 ? 'warn' : 'bad';
+  const label = scanning ? 'SCANNING...' : !enabled ? 'BOB DISABLED / OFFLINE' : !reviewable ? 'NO CODE' : !entry ? 'READY TO SCAN' : !result ? 'UNAVAILABLE' : `${score}/100`;
+  const tone = scanning ? 'quiet' : score === null ? 'quiet' : score >= 80 ? 'good' : score >= 55 ? 'warn' : 'bad';
   return `<article class="scan-card ${tone}">
     <div class="scan-top"><span class="scan-title">${esc(title)}</span><strong class="scan-score">${label}</strong></div>
     <div class="meter" aria-label="${esc(title)} score"><span style="width:${score ?? 0}%"></span></div>
     ${result && reviewable ? `<p class="scan-reason">${esc(result.rationale)}</p>
       ${result.findings.length ? `<details class="finding-details" data-scan="${kind}"><summary>VIEW ${result.findings.length} FINDINGS</summary><ul class="findings">${result.findings.map(f => `<li>${esc(f)}</li>`).join('')}</ul></details>` : ''}
-      <div class="scan-time">BOB SCAN · ${esc(new Date(result.checkedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</div>` : ''}
+      <div class="scan-time">BOB SCAN · ${esc(new Date(result.checkedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</div>` :
+      entry?.error ? `<p class="scan-reason">${esc(entry.error)}</p>` : ''}
   </article>`;
 }
 
 export function sidebarHtml(data: CBSidebarData, webview: vscode.Webview, assets: { css?: string; sprite?: string } = {}): string {
   const n = nonce();
   const recap = data.recap;
+  const isScanning = Boolean(data.qualityRunning);
   const sprite = assets.sprite ? `<div class="sprite" role="img" aria-label="Code Boy"><img src="${esc(assets.sprite)}" alt="" /></div>` : '<div class="sprite-fallback">CB</div>';
   const sources = recap.sources.length ? recap.sources.join(' + ') : 'NO DATA';
   const stats = [
@@ -60,14 +62,14 @@ export function sidebarHtml(data: CBSidebarData, webview: vscode.Webview, assets
       ${recap.nextStep ? `<div class="next-step"><small>NEXT MOVE</small><p>${esc(recap.nextStep)}</p></div>` : ''}
     </section>
     <div class="section-heading"><h2>02 / CODE SCAN</h2><span>IBM BOB</span></div>
-    ${qualityCard('yesterday', "YESTERDAY'S CHANGES", data.yesterdayQuality, data.qualityEnabled, data.yesterdayReviewable)}
-    ${qualityCard('current', 'CURRENT CODE SAMPLE', data.currentQuality, data.qualityEnabled, data.currentReviewable)}
+    ${qualityCard('yesterday', "YESTERDAY'S CHANGES", data.yesterdayQuality, data.qualityEnabled, data.yesterdayReviewable, isScanning)}
+    ${qualityCard('current', 'CURRENT CODE SAMPLE', data.currentQuality, data.qualityEnabled, data.currentReviewable, isScanning)}
     <p class="score-note">Scores describe only the code Bob reviewed. They are not a whole-project grade.</p>
     ${threads ? `<div class="section-heading"><h2>03 / OPEN THREADS</h2><span>${data.openThreads.length}</span></div><section class="pixel-panel threads">${threads}</section>` : ''}
-    <div class="actions"><button id="refresh">↻ SCAN AGAIN</button><button id="dashboard">▣ DASHBOARD</button></div>
+    <div class="actions"><button id="refresh" ${isScanning ? 'disabled' : ''}>${isScanning ? '⏳ SCANNING...' : '↻ SCAN AGAIN'}</button><button id="dashboard">▣ DASHBOARD</button></div>
     <footer>CONTEXTBACK <span>◆</span> YOUR WORK, REMEMBERED</footer>
   </main>
-  <script nonce="${n}">const vscode=acquireVsCodeApi();const state=vscode.getState()||{};document.querySelectorAll('[data-scan]').forEach(el=>{el.open=!!state[el.dataset.scan];el.addEventListener('toggle',()=>{state[el.dataset.scan]=el.open;vscode.setState(state)})});document.getElementById('back').addEventListener('click',()=>vscode.postMessage({command:'back'}));document.getElementById('refresh').addEventListener('click',()=>vscode.postMessage({command:'refresh'}));document.getElementById('dashboard').addEventListener('click',()=>vscode.postMessage({command:'dashboard'}));document.querySelectorAll('[data-file]').forEach(el=>el.addEventListener('click',()=>vscode.postMessage({command:'openFile',index:Number(el.dataset.file)})));</script>
+  <script nonce="${n}">const vscode=acquireVsCodeApi();const state=vscode.getState()||{};document.querySelectorAll('[data-scan]').forEach(el=>{el.open=!!state[el.dataset.scan];el.addEventListener('toggle',()=>{state[el.dataset.scan]=el.open;vscode.setState(state)})});document.getElementById('back').addEventListener('click',()=>vscode.postMessage({command:'back'}));const refBtn=document.getElementById('refresh');if(refBtn){refBtn.addEventListener('click',()=>{refBtn.disabled=true;refBtn.textContent='⏳ SCANNING...';vscode.postMessage({command:'refresh'})});}document.getElementById('dashboard').addEventListener('click',()=>vscode.postMessage({command:'dashboard'}));document.querySelectorAll('[data-file]').forEach(el=>el.addEventListener('click',()=>vscode.postMessage({command:'openFile',index:Number(el.dataset.file)})));</script>
   </body></html>`;
 }
 

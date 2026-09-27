@@ -133,6 +133,28 @@ export class QualityContext {
       } catch { /* file no longer exists */ }
       if (parts.join('').length >= MAX_CHARS) break;
     }
+    if (parts.length === 0) {
+      try {
+        for (const dir of ['src', 'lib', 'app', '']) {
+          const targetDir = dir ? path.join(this.root, dir) : this.root;
+          if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) continue;
+          const entries = fs.readdirSync(targetDir, { withFileTypes: true });
+          for (const entry of entries) {
+            if (!entry.isFile()) continue;
+            const rel = (dir ? path.join(dir, entry.name) : entry.name).replace(/\\/g, '/');
+            if (this.allowed(rel) && !files.includes(rel)) {
+              const full = path.join(this.root, rel);
+              if (fs.statSync(full).size <= 20_000) {
+                parts.push(`Current file: ${rel}\n${fs.readFileSync(full, 'utf8')}`);
+                files.push(rel);
+                if (files.length >= 3 || parts.join('').length >= MAX_CHARS) break;
+              }
+            }
+          }
+          if (files.length > 0) break;
+        }
+      } catch { /* fallback scan failed silently */ }
+    }
     return this.input(parts, files);
   }
 }

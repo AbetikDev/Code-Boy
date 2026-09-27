@@ -286,7 +286,7 @@ The developer state layer keeps numeric edit counts and project health signals. 
 
 * **Local JSON Database:** All records persist strictly on your machine at `~/.contextback/context.json`.
 * **Terminal metadata:** Command strings are stored locally when terminal tracking is enabled. Commands matching common secret markers are skipped; review this setting before using terminals with sensitive arguments.
-* **Optional external calls:** ContextBack can send bounded filtered code samples to IBM Bob Shell when `contextBack.ai.enabled` is enabled. Spotify API detection requests playback status with a user-supplied token. The developer state layer itself stays local.
+* **Optional external calls:** After you save an IBM Bob Inference key through **IBM BOB API KEY** in Code Boy, ContextBack can send bounded filtered code samples to Bob Shell for the current workspace. The key stays in VS Code SecretStorage. Spotify API detection requests playback status with a user-supplied token. The developer state layer itself stays local.
 
 ---
 
@@ -302,6 +302,7 @@ The developer state layer keeps numeric edit counts and project health signals. 
 | `contextBack.showOpenThreads` | `ContextBack: Show Open Threads` | Inspects red/yellow blocker threads in the sidebar. |
 | `contextBack.pauseTracking` | `ContextBack: Pause Tracking` | Temporarily suspends local activity recording. |
 | `contextBack.clearHistory` | `ContextBack: Clear Project History` | Resets local session telemetry for the current workspace. |
+| `contextBack.configureBob` | `ContextBack: Connect IBM Bob API Key` | Stores IBM Bob Inference API key securely in VS Code SecretStorage. |
 
 ### Code Boy Commands
 | Command ID | Title in Palette (`Ctrl+Shift+P`) | Description |
@@ -343,8 +344,8 @@ Customize both extensions via VS Code **Settings** (`Ctrl+,`) or `settings.json`
   "contextBack.trackDiagnostics": true,     // Record compiler/linter error traces
   "contextBack.trackGit": true,             // Monitor git branch transitions and commits
   "contextBack.trackTodos": true,           // Scan saved files for TODO/FIXME markers
-  "contextBack.ai.enabled": false,          // Enable IBM Bob summaries & reviews (requires Bob Shell)
-  "contextBack.ai.provider": "bob",         // Summary provider: 'bob' | 'disabled'
+  "contextBack.ai.enabled": false,          // Save a key in Code Boy to enable reviews for this workspace
+  "contextBack.ai.provider": "disabled",   // 'bob' is set when you save the key
   "contextBack.exclude": [                  // Patterns strictly excluded from tracking
     "**/.env*",
     "**/secrets/**",
@@ -416,6 +417,7 @@ Code Boy & ContextBack adheres to strict test-driven boundaries. The test suite 
 # Typecheck TypeScript for both extension host and webview
 npm run check
 
+# Run 40 automated unit tests (sub-second execution)
 # Run 267 automated Node tests
 npm test
 

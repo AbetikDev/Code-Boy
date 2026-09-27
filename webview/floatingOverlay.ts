@@ -770,7 +770,9 @@ import { observeAgentActivity } from './AgentActivity';
 
     if (serverName.includes('antigravity')) return hostIdentity.includes('antigravity');
     if (serverName.includes('visual studio code')) {
-      return hostIdentity.includes('visual studio code') && !hostIdentity.includes('antigravity');
+      // VS Code's custom title bar may show only the workspace name. Its
+      // application name is not guaranteed to appear in any visible DOM text.
+      return !hostIdentity.includes('antigravity');
     }
     return hostIdentity.includes(serverName);
   }

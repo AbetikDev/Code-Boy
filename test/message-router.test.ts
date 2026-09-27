@@ -16,3 +16,12 @@ test('development tools cannot be requested by a production webview', () => {
   assert.equal(parseClientMessage({ type: 'debug', state: 'RUN_ARBITRARY' }, true), undefined);
   assert.equal(parseClientMessage({ type: 'debug', animation: 'idle_blink' }, true, new Set(['idle_blink']))?.type, 'debug');
 });
+
+test('Bob key messages accept a bounded secret without extra fields', () => {
+  assert.deepEqual(parseClientMessage({ type: 'bobKey', key: '  test-key  ' }, false), { type: 'bobKey', key: 'test-key' });
+  for (const input of [
+    { type: 'bobKey', key: '' },
+    { type: 'bobKey', key: 'x'.repeat(513) },
+    { type: 'bobKey', key: 'test-key', log: true },
+  ]) assert.equal(parseClientMessage(input, false), undefined);
+});

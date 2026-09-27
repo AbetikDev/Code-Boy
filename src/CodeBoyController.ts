@@ -221,6 +221,7 @@ export class CodeBoyController implements vscode.Disposable {
         else if (message.command === 'settings') await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:code-boy-local.code-boy');
         break;
       case 'ready': break;
+      case 'bobKey': await vscode.commands.executeCommand('contextBack.storeBobKey', message.key); break;
     }
   }
   async flush(): Promise<void> { this.dirty = false; await this.store.save(this.engine.serialize()); }

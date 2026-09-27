@@ -27,6 +27,7 @@ export async function startPreview(receive: (message: HostMessage) => void): Pro
   receive({ type: 'init', manifest, snapshot: structuredClone(snapshot) });
   return (message: ClientMessage): void => {
     if (message.type === 'ready') { return; }
+    if (message.type === 'bobKey') { receive({ type: 'bobStatus', configured: true }); snapshot.bubble = 'Bob key entry works in VS Code.'; emit(); return; }
     if (message.type === 'command') {
       if (message.command === 'context') { snapshot.bubble = 'ContextBack opens inside VS Code.'; emit(); }
       else if (message.command === 'toggleOverlay') { snapshot.settings.floatingOverlay = !snapshot.settings.floatingOverlay; emit(); }

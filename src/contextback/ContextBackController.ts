@@ -25,9 +25,7 @@ import { ThreadDetector } from './analysis/ThreadDetector';
 import { DashboardProvider } from './ui/DashboardProvider';
 import { WelcomeBackProvider } from './ui/WelcomeBackProvider';
 import { SidebarProvider } from './ui/SidebarProvider';
-import type { AIProvider } from './ai/AIProvider';
-import { DisabledAIProvider } from './ai/AIProvider';
-import { BobShellProvider } from './ai/BobShellProvider';
+import { BobShellProvider, BOB_API_KEY_SECRET } from './ai/BobShellProvider';
 import { QualityContext, yesterdayRange, localDay, shouldReview, type QualityInput } from './analysis/QualityContext';
 import { buildDayRecap } from './analysis/DayRecap';
 import { openSidebarScreen } from '../SidebarNavigation';
@@ -71,7 +69,6 @@ export class ContextBackController implements vscode.Disposable {
   private readonly bus: EventBus<CBEvents>;
   private readonly analyzer: SessionAnalyzer;
   private readonly threads: ThreadDetector;
-  private ai: AIProvider;
 
   private fileCollector: FileCollector | undefined;
   private gitCollector: GitCollector | undefined;
@@ -107,7 +104,6 @@ export class ContextBackController implements vscode.Disposable {
     this.analyzer = new SessionAnalyzer();
     this.threads = new ThreadDetector();
     this.projectMgr = new ProjectManager(this.db, this.git);
-    this.ai = this.buildAI();
     this.sessionMgr = new SessionManager(this.db, this.git, this.settings, session => {
       this.bus.emit('sessionEnd', { sessionId: session.id });
       this.db.prune();
@@ -140,7 +136,7 @@ export class ContextBackController implements vscode.Disposable {
           this.diagCollector?.updateSettings(this.settings);
           this.todoCollector?.updateSettings(this.settings);
           this.gitCollector?.updateSettings(this.settings);
-          this.ai = this.buildAI();
+          this.sidebar.refresh();
         }
       }),
       vscode.workspace.onDidChangeWorkspaceFolders(() => { void this.switchWorkspace(); }),
@@ -397,11 +393,13 @@ export class ContextBackController implements vscode.Disposable {
     const today = localDay(new Date());
     const inputs = this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob'
       ? await this.qualityInputs() : null;
+    const bob = await this.bobProvider(root);
     return {
       project, branch, recap,
       yesterdayQuality: this.cacheEntry(project.id, 'yesterday', recap.date),
       currentQuality: this.cacheEntry(project.id, 'current', today),
-      qualityEnabled: this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob' && new BobShellProvider(root).isAvailable(),
+      qualityEnabled: this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob' && bob.isAvailable(),
+      qualityRunning: this.qualityRunning,
       yesterdayReviewable: !!inputs?.yesterday.text.trim(),
       currentReviewable: !!inputs?.current.text.trim(),
       openThreads: await this.getTopThreads(),
@@ -420,29 +418,44 @@ export class ContextBackController implements vscode.Disposable {
     const { createHash } = await import('node:crypto');
     const yesterday: QualityInput = { text: yesterdayText, files: committed.files,
       hash: createHash('sha256').update(yesterdayText).digest('hex') };
-    const current = await ctx.currentSample(this.fileRepo.recentFiles(project.id).map(f => f.path));
+    const openEditorFiles = [
+      ...(vscode.window.activeTextEditor ? [vscode.window.activeTextEditor.document.uri.fsPath] : []),
+      ...vscode.window.visibleTextEditors.map(e => e.document.uri.fsPath),
+    ];
+    const candidateFiles = [
+      ...openEditorFiles,
+      ...this.fileRepo.recentFiles(project.id).map(f => f.path),
+    ];
+    const current = await ctx.currentSample(candidateFiles);
     return { yesterday, current, day: range.day, today: localDay(new Date()) };
   }
 
   async refreshQuality(force: boolean): Promise<void> {
-    if (!this.settings.enabled || !this.settings.aiEnabled || this.settings.aiProvider !== 'bob') {
-      if (force) vscode.window.showInformationMessage('ContextBack: Enable IBM Bob summaries in settings before sending code for review.');
+    if (!this.settings.enabled) return;
+    if (!force && (!this.settings.aiEnabled || this.settings.aiProvider !== 'bob')) return;
+    if (this.qualityRunning) {
+      if (force) void vscode.window.showInformationMessage('ContextBack: A Bob scan is already running.');
       return;
     }
-    if (this.qualityRunning) return;
     const project = this.projectMgr.current;
     const root = this.projectMgr.root;
     if (!project || !root) return;
-    const bob = new BobShellProvider(root);
+    let bob = await this.bobProvider(root);
     if (!bob.isAvailable()) {
-      if (force) vscode.window.showWarningMessage('ContextBack: Bob is unavailable. Install Bob Shell and set BOB_API_KEY in the workspace .env or VS Code environment.');
-      this.sidebar.refresh();
-      return;
+      if (!force || !await this.configureBob(false)) { this.sidebar.refresh(); return; }
+      bob = await this.bobProvider(root);
+      if (!bob.isAvailable()) return;
+    }
+    if (force && (!this.settings.aiEnabled || this.settings.aiProvider !== 'bob')) {
+      if (!await this.enableBobForWorkspace()) return;
     }
     this.qualityRunning = true;
+    this.sidebar.refresh();
     try {
       const inputs = await this.qualityInputs();
       if (!inputs) return;
+      let attempted = 0;
+      let succeeded = 0;
       for (const [kind, input, day] of [
         ['yesterday', inputs.yesterday, inputs.day],
         ['current', inputs.current, inputs.today],
@@ -450,16 +463,24 @@ export class ContextBackController implements vscode.Disposable {
         const previous = this.cacheEntry(project.id, kind, day);
         if (!shouldReview(previous, input, force)) continue;
         if (!this.settings.enabled || !this.settings.aiEnabled || this.settings.aiProvider !== 'bob') break;
+        attempted += 1;
         const assessed = await bob.assessQuality(input.text, kind);
+        if (assessed) succeeded += 1;
         const checkedAt = Date.now();
         const entry: CBQualityCacheEntry = {
           projectId: project.id, kind, day, inputHash: input.hash, checkedAt,
           result: assessed ? { ...assessed, checkedAt, inputHash: input.hash } : null,
+          error: assessed ? undefined : (bob.lastError || 'Scan finished without a valid score.'),
         };
         const rest = this.db.get('qualityCache').filter(e => !(e.projectId === project.id && e.kind === kind && e.day === day));
         if (this.settings.enabled && this.settings.aiEnabled && this.settings.aiProvider === 'bob')
           this.db.set('qualityCache', [...rest, entry]);
         this.sidebar.refresh();
+      }
+      if (force) {
+        if (!attempted) void vscode.window.showInformationMessage('ContextBack: No reviewable code found. Open a code file or make changes to scan.');
+        else if (!succeeded) void vscode.window.showWarningMessage(`ContextBack: Scan finished without a score. ${bob.lastError ?? 'Bob returned an invalid review response.'}`);
+        else void vscode.window.showInformationMessage(`ContextBack: Bob scored ${succeeded} code sample${succeeded === 1 ? '' : 's'}.`);
       }
     } finally {
       this.qualityRunning = false;
@@ -571,15 +592,16 @@ export class ContextBackController implements vscode.Disposable {
 
     let analysis = this.analyzer.analyze(session, events, errors, todos);
 
-    if (this.settings.aiEnabled && this.ai.isAvailable()) {
+    const ai = await this.bobProvider(ctx.root);
+    if (this.settings.aiEnabled && this.settings.aiProvider === 'bob' && ai.isAvailable()) {
       const git = await this.git.getFullInfo(ctx.root).catch(() => ({ branch: '', commits: [], changedFiles: [], stagedFiles: [], diffStat: '' }));
       const dump = this.analyzer.buildContextDump(
         this.projectMgr.current?.name ?? 'project',
         git.branch, events, errors, todos, git.commits, git.diffStat
       );
-      const aiResult = await this.ai.summarize(dump);
+      const aiResult = await ai.summarize(dump);
       if (aiResult) analysis = { ...aiResult, topics: analysis.topics };
-      else vscode.window.showWarningMessage('ContextBack: IBM Bob Shell did not return a summary. Set BOB_API_KEY in the workspace .env or VS Code environment, and check Bob Shell authentication. Showing the local summary.');
+      else vscode.window.showWarningMessage('ContextBack: IBM Bob Shell did not return a summary. Check Bob Shell authentication. Showing the local summary.');
     }
 
     vscode.window.showInformationMessage(
@@ -634,9 +656,44 @@ export class ContextBackController implements vscode.Disposable {
     vscode.window.showInformationMessage('ContextBack: History cleared.');
   }
 
-  private buildAI(): AIProvider {
-    if (!this.settings.aiEnabled || this.settings.aiProvider === 'disabled') return new DisabledAIProvider();
-    return new BobShellProvider(this.projectMgr.root ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd());
+  private async bobProvider(root: string): Promise<BobShellProvider> {
+    return new BobShellProvider(root, await this.context.secrets.get(BOB_API_KEY_SECRET));
+  }
+
+  private async enableBobForWorkspace(): Promise<boolean> {
+    if (!vscode.workspace.workspaceFolders?.length) return false;
+    const config = vscode.workspace.getConfiguration('contextBack');
+    await config.update('ai.provider', 'bob', vscode.ConfigurationTarget.Workspace);
+    await config.update('ai.enabled', true, vscode.ConfigurationTarget.Workspace);
+    this.settings = readCBSettings();
+    this.sidebar.refresh();
+    return true;
+  }
+
+  private async configureBob(scanAfterSave: boolean): Promise<boolean> {
+    const key = await vscode.window.showInputBox({
+      title: 'Connect IBM Bob to ContextBack',
+      prompt: 'Enter your IBM Bob API key. It is stored in VS Code SecretStorage and enables code scans for this workspace.',
+      password: true,
+      ignoreFocusOut: true,
+      validateInput: value => value.trim() ? undefined : 'Enter an API key, or press Escape to cancel.',
+    });
+    if (key === undefined) return false;
+    return this.storeBobKey(key, scanAfterSave);
+  }
+
+  private async storeBobKey(input: unknown, scanAfterSave: boolean): Promise<boolean> {
+    if (typeof input !== 'string' || !input.trim() || input.length > 512) return false;
+    if (!vscode.workspace.workspaceFolders?.length) {
+      void vscode.window.showWarningMessage('ContextBack: Open a project before connecting IBM Bob.');
+      return false;
+    }
+    await this.context.secrets.store(BOB_API_KEY_SECRET, input.trim());
+    await this.enableBobForWorkspace();
+    void vscode.window.showInformationMessage('ContextBack: IBM Bob API key saved in SecretStorage.');
+    this.sidebar.refresh();
+    if (scanAfterSave) await this.refreshQuality(true);
+    return true;
   }
 
 
@@ -645,6 +702,8 @@ export class ContextBackController implements vscode.Disposable {
       this.disposables.push(vscode.commands.registerCommand(`contextBack.${id}`, fn));
     cmd('openDashboard', () => this.openDashboard());
     cmd('openSidebar', () => openSidebarScreen('context'));
+    cmd('configureBob', () => this.configureBob(true));
+    this.disposables.push(vscode.commands.registerCommand('contextBack.storeBobKey', (key: unknown) => this.storeBobKey(key, true)));
     cmd('continueSession', () => this.continueSession());
     cmd('summarizeSession', () => this.summarizeSession());
     cmd('showOpenThreads', () => this.showOpenThreads());

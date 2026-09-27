@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import type { CodeBoyEngine } from '../core/CodeBoyEngine';
 import type { AssetManifest, ClientMessage, HostMessage, Snapshot } from '../models/types';
 import { parseClientMessage } from './MessageRouter';
+import { BOB_API_KEY_SECRET } from '../contextback/ai/BobShellProvider';
 
 export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   static readonly viewType = 'codeBoy.companion';
@@ -21,6 +22,9 @@ export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.D
   ) {
     this.development = context.extensionMode === vscode.ExtensionMode.Development;
     this.subscriptions.push(engine.onChange(snapshot => { if (this.ready && this.view?.visible) { this.post({ type: 'snapshot', snapshot: this.safeSnapshot(snapshot) }); } }));
+    this.subscriptions.push(context.secrets.onDidChange(event => {
+      if (event.key === BOB_API_KEY_SECRET) void this.postBobStatus();
+    }));
   }
 
   async resolveWebviewView(view: vscode.WebviewView): Promise<void> {
@@ -37,6 +41,7 @@ export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.D
         this.ready = true;
         if (this.manifest) { this.post({ type: 'init', manifest: this.manifest, snapshot: this.safeSnapshot(this.engine.snapshot()) }); }
         else { this.post({ type: 'error', message: 'The local sprite pack could not be loaded. Reinstall Code Boy to repair its assets.' }); }
+        void this.postBobStatus();
         if (this.pendingPanel) { this.post({ type: 'panel', panel: this.pendingPanel }); this.pendingPanel = undefined; }
         return;
       }
@@ -67,6 +72,10 @@ export class CodeBoyViewProvider implements vscode.WebviewViewProvider, vscode.D
   }
   private safeSnapshot(snapshot: Snapshot): Snapshot { return { ...snapshot, development: this.development }; }
   private post(message: HostMessage): void { if (this.view) { void this.view.webview.postMessage(message); } }
+  private async postBobStatus(): Promise<void> {
+    const configured = !!(await this.context.secrets.get(BOB_API_KEY_SECRET))?.trim();
+    if (this.ready) this.post({ type: 'bobStatus', configured });
+  }
 
   private async loadManifest(webview: vscode.Webview): Promise<AssetManifest> {
     const bytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this.context.extensionUri, 'assets', 'manifest.json'));

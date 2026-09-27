@@ -17,7 +17,11 @@ test('OverlayServer start throws error when all candidate ports 43821-43825 are 
   const blockers: http.Server[] = [];
   try {
     for (const port of ports) {
-      blockers.push(await listenPort(port));
+      try {
+        blockers.push(await listenPort(port));
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EADDRINUSE') throw error;
+      }
     }
 
     const mockContext = { extensionPath: process.cwd() } as unknown as import('vscode').ExtensionContext;

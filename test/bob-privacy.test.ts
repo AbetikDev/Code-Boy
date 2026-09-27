@@ -19,10 +19,12 @@ test('DisabledAIProvider and unconsented settings never execute Bob or make requ
   const summary = await disabled.summarize('any context');
   assert.equal(summary, null);
 
-  const bob = new BobShellProvider(process.cwd());
-  // Without BOB_API_KEY set or workspace .env, Bob is not available
+  const emptyWorkspace = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-bob-unconfigured-'));
+  const bob = new BobShellProvider(emptyWorkspace);
+  // Workspace environment files and inherited variables are never key sources.
+  fs.writeFileSync(path.join(emptyWorkspace, '.env'), 'BOB_API_KEY=ignored-test-value\n');
   const oldKey = process.env['BOB_API_KEY'];
-  delete process.env['BOB_API_KEY'];
+  process.env['BOB_API_KEY'] = 'ignored-inherited-value';
   try {
     assert.equal(bob.isAvailable(), false);
     const result = await bob.summarize('secret dump');
@@ -30,7 +32,19 @@ test('DisabledAIProvider and unconsented settings never execute Bob or make requ
     const quality = await bob.assessQuality('secret code', 'current');
     assert.equal(quality, null);
   } finally {
-    if (oldKey) process.env['BOB_API_KEY'] = oldKey;
+    if (oldKey === undefined) delete process.env['BOB_API_KEY'];
+    else process.env['BOB_API_KEY'] = oldKey;
+    fs.rmSync(emptyWorkspace, { recursive: true, force: true });
+  }
+});
+
+test('Bob key stored by Code Boy is available across workspaces', () => {
+  const otherWorkspace = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-bob-other-project-'));
+  try {
+    assert.equal(new BobShellProvider(otherWorkspace).isAvailable(), false);
+    assert.equal(new BobShellProvider(otherWorkspace, 'saved-key').isAvailable(), true);
+  } finally {
+    fs.rmSync(otherWorkspace, { recursive: true, force: true });
   }
 });
 

@@ -56,6 +56,27 @@ function mount(): void {
         <span class="memory-copy"><strong>CONTEXTBACK</strong><small>YESTERDAY'S WORK &amp; CODE SCAN</small></span>
         <span class="memory-arrow" aria-hidden="true">›</span>
       </button>
+      <button class="memory-link" id="configure-bob" type="button" aria-label="Set IBM Bob API key for ContextBack scans" aria-expanded="false" aria-controls="bob-key-form">
+        <span class="memory-icon" id="bob-key-icon" aria-hidden="true">◇</span>
+        <span class="memory-copy"><strong id="bob-key-title">IBM BOB API KEY</strong><small id="bob-key-status">CONNECT FOR CODE SCANS</small></span>
+        <span class="memory-arrow" aria-hidden="true">›</span>
+      </button>
+      <form class="bob-key-form" id="bob-key-form" hidden>
+        <div class="bob-guide">
+          <div class="bob-guide-title">HOW TO GET AN IBM BOB API KEY</div>
+          <ol class="bob-guide-steps">
+            <li>Open <a href="https://bob.ibm.com/docs/shell/account/api-keys" target="_blank" rel="noopener noreferrer">bob.ibm.com</a> and sign in.</li>
+            <li>Go to <strong>Account / Subscription Settings</strong> &rarr; <strong>API Keys</strong>.</li>
+            <li>Click <strong>Create API Key</strong> and select <strong>Inference</strong>.</li>
+            <li>Copy your key immediately (IBM only shows it once!).</li>
+          </ol>
+          <div class="bob-guide-note">The key is stored in <strong>VS Code SecretStorage</strong> (encrypted locally on your device, no .env file needed).</div>
+        </div>
+        <label for="bob-key-input">BOB API KEY</label>
+        <input id="bob-key-input" type="password" autocomplete="off" spellcheck="false" required maxlength="512" placeholder="Paste your IBM Bob key">
+        <button id="bob-key-submit" type="submit">SAVE &amp; SCAN</button>
+        <small>Requires Bob Shell CLI installed on your system (bob / bob.cmd).</small>
+      </form>
       <button class="memory-link overlay-link" id="toggle-overlay" type="button" aria-pressed="true">
         <span class="memory-icon" aria-hidden="true">★</span>
         <span class="memory-copy"><strong>FLOATING CODE BOY</strong><small id="overlay-label">ON · IN YOUR EDITOR</small></span>
@@ -96,6 +117,25 @@ function mount(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(button => button.addEventListener('click', () => { closeActionMenu(); openPanel(button.dataset.panel as 'stats' | 'room' | 'gallery'); }));
   $('am-settings').addEventListener('click', () => { closeActionMenu(); sound.play(); send({ type: 'command', command: 'settings' }); });
   $('open-contextback').addEventListener('click', () => { sound.play(); send({ type: 'command', command: 'context' }); });
+  $('configure-bob').addEventListener('click', () => {
+    sound.play();
+    const form = $('bob-key-form');
+    form.hidden = !form.hidden;
+    $('configure-bob').setAttribute('aria-expanded', String(!form.hidden));
+    if (!form.hidden) $<HTMLInputElement>('bob-key-input').focus();
+  });
+  $<HTMLFormElement>('bob-key-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const input = $<HTMLInputElement>('bob-key-input');
+    const key = input.value.trim();
+    if (!key) return;
+    send({ type: 'bobKey', key });
+    input.value = '';
+    $('bob-key-form').hidden = true;
+    $('configure-bob').setAttribute('aria-expanded', 'false');
+    $('configure-bob').focus();
+    updateBobUI(true);
+  });
   $('toggle-overlay').addEventListener('click', () => { sound.play(); send({ type: 'command', command: 'toggleOverlay' }); });
   $('level-button').addEventListener('click', () => openPanel('stats'));
   $('close-drawer').addEventListener('click', closePanel);
@@ -382,6 +422,25 @@ function showError(message: string): void {
   animator?.play('error_loading', true);
 }
 
+function updateBobUI(configured: boolean): void {
+  const title = document.getElementById('bob-key-title');
+  const status = document.getElementById('bob-key-status');
+  const icon = document.getElementById('bob-key-icon');
+  const button = document.getElementById('configure-bob');
+  const submitBtn = document.getElementById('bob-key-submit');
+  const input = document.getElementById('bob-key-input') as HTMLInputElement | null;
+  if (title) title.textContent = configured ? 'IBM BOB: CONNECTED' : 'IBM BOB API KEY';
+  if (status) status.textContent = configured ? 'KEY SAVED · CLICK TO CHANGE' : 'CONNECT FOR CODE SCANS';
+  if (icon) icon.textContent = configured ? '◈' : '◇';
+  if (button) {
+    button.setAttribute('aria-label', configured ? 'IBM Bob key is saved; click to change it' : 'Set IBM Bob API key for ContextBack scans');
+    if (configured) button.classList.add('configured');
+    else button.classList.remove('configured');
+  }
+  if (submitBtn) submitBtn.textContent = configured ? 'UPDATE & SCAN' : 'SAVE & SCAN';
+  if (input) input.placeholder = configured ? 'Paste new IBM Bob key to change' : 'Paste your IBM Bob key';
+}
+
 function receive(message: HostMessage): void {
   if (!message || typeof message !== 'object') { return; }
   switch (message.type) {
@@ -389,6 +448,9 @@ function receive(message: HostMessage): void {
     case 'snapshot': if (animator) { update(message.snapshot); } else { pendingSnapshot = message.snapshot; } break;
     case 'visibility': hostVisible = message.visible; syncVisibility(); break;
     case 'panel': if (snapshot) { openPanel(message.panel); } else { pendingPanel = message.panel; } break;
+    case 'bobStatus':
+      updateBobUI(message.configured);
+      break;
     case 'error': showError(message.message); break;
   }
 }

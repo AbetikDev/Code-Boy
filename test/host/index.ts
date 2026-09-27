@@ -88,8 +88,9 @@ export async function run(): Promise<void> {
   const health = await Promise.any([43821, 43822, 43823, 43824, 43825].map(async port => {
     const response = await fetch(`http://127.0.0.1:${port}/health`);
     if (!response.ok) throw new Error(`port ${port} unavailable`);
-    const body = await response.json() as { status?: string; appName?: string };
-    if (body.status !== 'ok' || body.appName !== vscode.env.appName) throw new Error(`port ${port} is not Code Boy`);
+    const body = await response.json() as { status?: string; appName?: string; pid?: number };
+    if (body.status !== 'ok' || body.appName !== vscode.env.appName || body.pid !== process.pid)
+      throw new Error(`port ${port} is not this Code Boy host`);
     return port;
   }));
   console.log(`CODE BOY OVERLAY HOST CHECK PASSED: test-installation patch, restore, and server on ${health}.`);
