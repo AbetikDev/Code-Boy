@@ -4,8 +4,8 @@ The [IBM hackathon guide](https://lablab-ibm-bob-2-hackathon-guide.s3.us.cloud-o
 
 | Capture | What is visible | Evidence status |
 | --- | --- | --- |
-| [task01](../../bob_sessions/codeboy_task01_coverage_summary.png) | Completed task response about test coverage and a consumption number in the header | Task work visible; the opened consumption-summary panel is not visible |
-| [task02](../../bob_sessions/codeboy_task02_test_suite_summary.png) | Completed task response about added tests and a consumption number in the header | Task work visible; the opened consumption-summary panel is not visible |
+| [task01](../../bob_sessions/codeboy_task01_test_coverage_consumption_summary.png) | Task session consumption summary for test coverage | Consumption summary panel visible |
+| [task02](../../bob_sessions/codeboy_task02_full_project_review_consumption_summary.png) | Task session consumption summary for full project review | Consumption summary panel visible |
 | [task03 response](codeboy_task03_discount_blocker_summary.png) | Bob response listing unverified items | Not a discount-blocker repair and not a consumption-summary screenshot; retained here for audit, not copied to `bob_sessions/` as proof |
 
 The Git history contains work by `Abetik`, `Maks0101aps`, `dersakyy`, and `sunabusan`; Git authorship does not establish the registered hackathon team roster or each person's Bob account. The repository has no Bob task captures attributed to individual participants. Before submission, check the actual roster and each participant's relevant Tasks in Bob IDE, capture the required summary panels, and record who captured each one.
